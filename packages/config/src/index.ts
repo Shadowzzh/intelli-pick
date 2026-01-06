@@ -1,8 +1,8 @@
 // packages/config/src/index.ts
 import { resolve } from "node:path";
 import { createJiti } from "jiti";
-import { ConfigSchema } from "./schema.js";
-import type { Config } from "./schema.js";
+import { ConfigSchema } from "./schema";
+import type { Config } from "./schema";
 
 export function defineConfig<T extends Config>(config: T): T {
 	return config;
@@ -22,4 +22,4 @@ export type {
 	RssConfig,
 	V2exConfig,
 	AiConfig,
-} from "./schema.js";
+} from "./schema";
