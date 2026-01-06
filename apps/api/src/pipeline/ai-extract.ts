@@ -1,26 +1,36 @@
+import type { ExtractResult } from "@ai-filter/shared";
 // apps/api/src/pipeline/ai-extract.ts
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { ExtractResult } from "@ai-filter/shared";
 import type { AiClient } from "../lib/ai.js";
-import type { PipelineContext, PipelineStep } from "./types.js";
 import { createLogger } from "../lib/logger.js";
+import type { PipelineContext, PipelineStep } from "./types.js";
 
 const logger = createLogger("ai-extract");
 
 const ExtractResultSchema = z.object({
-  title: z.string(),
-  summary: z.string(),
-  keyPoints: z.array(z.string()),
-  dataPoints: z.array(z.string()),
-  entities: z.array(z.object({
-    name: z.string(),
-    type: z.enum(["tool", "project", "library", "article", "person", "company", "event"]),
-    url: z.string().optional(),
-    description: z.string().optional(),
-  })),
-  category: z.string(),
-  tags: z.array(z.string()),
+	title: z.string(),
+	summary: z.string(),
+	keyPoints: z.array(z.string()),
+	dataPoints: z.array(z.string()),
+	entities: z.array(
+		z.object({
+			name: z.string(),
+			type: z.enum([
+				"tool",
+				"project",
+				"library",
+				"article",
+				"person",
+				"company",
+				"event",
+			]),
+			url: z.string().optional(),
+			description: z.string().optional(),
+		}),
+	),
+	category: z.string(),
+	tags: z.array(z.string()),
 });
 
 const EXTRACT_PROMPT = `你是一个内容分析器。从以下内容中提取结构化信息。
@@ -63,50 +73,53 @@ const EXTRACT_PROMPT = `你是一个内容分析器。从以下内容中提取�
 根据以上要求，输出 JSON 结果。`;
 
 export class AiExtractStep implements PipelineStep {
-  name = "ai-extract";
+	name = "ai-extract";
 
-  constructor(private ai: AiClient) {}
+	constructor(private ai: AiClient) {}
 
-  async process(ctx: PipelineContext): Promise<PipelineContext | null> {
-    const { raw } = ctx;
+	async process(ctx: PipelineContext): Promise<PipelineContext | null> {
+		const { raw } = ctx;
 
-    // 如果是 quarantine，跳过提取
-    if (ctx.filterResult?.decision === "quarantine") {
-      return ctx;
-    }
+		// 如果是 quarantine，跳过提取
+		if (ctx.filterResult?.decision === "quarantine") {
+			return ctx;
+		}
 
-    const prompt = EXTRACT_PROMPT.replace("{{content}}", raw.content);
+		const prompt = EXTRACT_PROMPT.replace("{{content}}", raw.content);
 
-    try {
-      const { object } = await generateObject({
-        model: this.ai.getModel("extractAndClassify"),
-        schema: ExtractResultSchema,
-        prompt,
-      });
+		try {
+			const { object } = await generateObject({
+				model: this.ai.getModel("extractAndClassify"),
+				schema: ExtractResultSchema,
+				prompt,
+			});
 
-      ctx.extractResult = object as ExtractResult;
+			ctx.extractResult = object as ExtractResult;
 
-      logger.info({
-        title: ctx.extractResult.title,
-        category: ctx.extractResult.category,
-        tags: ctx.extractResult.tags,
-        entitiesCount: ctx.extractResult.entities.length,
-      }, "AI extract result");
+			logger.info(
+				{
+					title: ctx.extractResult.title,
+					category: ctx.extractResult.category,
+					tags: ctx.extractResult.tags,
+					entitiesCount: ctx.extractResult.entities.length,
+				},
+				"AI extract result",
+			);
 
-      return ctx;
-    } catch (err) {
-      logger.error({ err }, "AI extract failed");
-      // 失败时使用基础信息
-      ctx.extractResult = {
-        title: raw.title || raw.content.slice(0, 50),
-        summary: raw.content.slice(0, 200),
-        keyPoints: [],
-        dataPoints: [],
-        entities: [],
-        category: "未分类",
-        tags: [],
-      };
-      return ctx;
-    }
-  }
+			return ctx;
+		} catch (err) {
+			logger.error({ err }, "AI extract failed");
+			// 失败时使用基础信息
+			ctx.extractResult = {
+				title: raw.title || raw.content.slice(0, 50),
+				summary: raw.content.slice(0, 200),
+				keyPoints: [],
+				dataPoints: [],
+				entities: [],
+				category: "未分类",
+				tags: [],
+			};
+			return ctx;
+		}
+	}
 }

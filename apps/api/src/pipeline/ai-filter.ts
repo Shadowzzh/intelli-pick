@@ -1,26 +1,26 @@
+import type { FilterResult } from "@ai-filter/shared";
 // apps/api/src/pipeline/ai-filter.ts
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { FilterResult } from "@ai-filter/shared";
 import type { AiClient } from "../lib/ai.js";
 import type { Config } from "../lib/config.js";
-import type { PipelineContext, PipelineStep } from "./types.js";
 import { createLogger } from "../lib/logger.js";
+import type { PipelineContext, PipelineStep } from "./types.js";
 
 const logger = createLogger("ai-filter");
 
 const FilterResultSchema = z.object({
-  decision: z.enum(["pass", "reject", "quarantine"]),
-  valueScore: z.number().min(0).max(100),
-  noiseScore: z.number().min(0).max(100),
-  safety: z.object({
-    nsfwSexual: z.number().min(0).max(3),
-    harassment: z.number().min(0).max(3),
-    scam: z.number().min(0).max(3),
-  }),
-  reasons: z.array(z.string()),
-  signals: z.array(z.string()),
-  oneLineWhy: z.string(),
+	decision: z.enum(["pass", "reject", "quarantine"]),
+	valueScore: z.number().min(0).max(100),
+	noiseScore: z.number().min(0).max(100),
+	safety: z.object({
+		nsfwSexual: z.number().min(0).max(3),
+		harassment: z.number().min(0).max(3),
+		scam: z.number().min(0).max(3),
+	}),
+	reasons: z.array(z.string()),
+	signals: z.array(z.string()),
+	oneLineWhy: z.string(),
 });
 
 const FILTER_PROMPT = `你是一个内容过滤器。判断以下内容是否应该进入后续处理流程。
@@ -64,69 +64,78 @@ AD_SPAM, LOW_SIGNAL, PURE_EMOTION, NSFW_SEXUAL, HARASSMENT, SCAM, DUPLICATE, BRE
 根据以上规则，输出 JSON 判定结果。`;
 
 export class AiFilterStep implements PipelineStep {
-  name = "ai-filter";
+	name = "ai-filter";
 
-  constructor(
-    private ai: AiClient,
-    private config: Config["filter"]
-  ) {}
+	constructor(
+		private ai: AiClient,
+		private config: Config["filter"],
+	) {}
 
-  async process(ctx: PipelineContext): Promise<PipelineContext | null> {
-    const { raw } = ctx;
+	async process(ctx: PipelineContext): Promise<PipelineContext | null> {
+		const { raw } = ctx;
 
-    const prompt = FILTER_PROMPT
-      .replace("{{author}}", raw.author || "unknown")
-      .replace("{{sourceType}}", raw.sourceType)
-      .replace("{{content}}", raw.content);
+		const prompt = FILTER_PROMPT.replace("{{author}}", raw.author || "unknown")
+			.replace("{{sourceType}}", raw.sourceType)
+			.replace("{{content}}", raw.content);
 
-    try {
-      const { object } = await generateObject({
-        model: this.ai.getModel("filter"),
-        schema: FilterResultSchema,
-        prompt,
-      });
+		try {
+			const { object } = await generateObject({
+				model: this.ai.getModel("filter"),
+				schema: FilterResultSchema,
+				prompt,
+			});
 
-      const result = object as FilterResult;
-      logger.info({
-        decision: result.decision,
-        valueScore: result.valueScore,
-        noiseScore: result.noiseScore,
-      }, "AI filter result");
+			const result = object as FilterResult;
+			logger.info(
+				{
+					decision: result.decision,
+					valueScore: result.valueScore,
+					noiseScore: result.noiseScore,
+				},
+				"AI filter result",
+			);
 
-      // 应用阈值调整
-      if (result.decision === "pass" && result.valueScore < this.config.thresholds.passMinValueScore) {
-        result.decision = "reject";
-        result.reasons.push("BELOW_VALUE_THRESHOLD");
-      }
+			// 应用阈值调整
+			if (
+				result.decision === "pass" &&
+				result.valueScore < this.config.thresholds.passMinValueScore
+			) {
+				result.decision = "reject";
+				result.reasons.push("BELOW_VALUE_THRESHOLD");
+			}
 
-      // 安全检查
-      if (this.config.thresholds.quarantineOnSafety) {
-        const { safety } = result;
-        if (safety.nsfwSexual >= 2 || safety.harassment >= 2 || safety.scam >= 2) {
-          result.decision = "quarantine";
-        }
-      }
+			// 安全检查
+			if (this.config.thresholds.quarantineOnSafety) {
+				const { safety } = result;
+				if (
+					safety.nsfwSexual >= 2 ||
+					safety.harassment >= 2 ||
+					safety.scam >= 2
+				) {
+					result.decision = "quarantine";
+				}
+			}
 
-      ctx.filterResult = result;
+			ctx.filterResult = result;
 
-      if (result.decision === "reject") {
-        return null;
-      }
+			if (result.decision === "reject") {
+				return null;
+			}
 
-      return ctx;
-    } catch (err) {
-      logger.error({ err }, "AI filter failed");
-      // 失败时默认通过，避免丢失内容
-      ctx.filterResult = {
-        decision: "pass",
-        valueScore: 50,
-        noiseScore: 50,
-        safety: { nsfwSexual: 0, harassment: 0, scam: 0 },
-        reasons: ["AI_FILTER_ERROR"],
-        signals: [],
-        oneLineWhy: "AI filter failed, defaulting to pass",
-      };
-      return ctx;
-    }
-  }
+			return ctx;
+		} catch (err) {
+			logger.error({ err }, "AI filter failed");
+			// 失败时默认通过，避免丢失内容
+			ctx.filterResult = {
+				decision: "pass",
+				valueScore: 50,
+				noiseScore: 50,
+				safety: { nsfwSexual: 0, harassment: 0, scam: 0 },
+				reasons: ["AI_FILTER_ERROR"],
+				signals: [],
+				oneLineWhy: "AI filter failed, defaulting to pass",
+			};
+			return ctx;
+		}
+	}
 }

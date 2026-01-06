@@ -2,14 +2,14 @@
 import pino from "pino";
 
 export const logger = pino({
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-    },
-  },
+	transport: {
+		target: "pino-pretty",
+		options: {
+			colorize: true,
+		},
+	},
 });
 
 export function createLogger(name: string) {
-  return logger.child({ name });
+	return logger.child({ name });
 }
