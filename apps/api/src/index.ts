@@ -13,7 +13,7 @@ const logger = createLogger("main");
 async function main() {
 	logger.info("Starting AI Filter...");
 
-	const config = await loadConfig();
+	const config = await loadConfig("../../config.ts");
 	logger.info({ sources: config.sources.length }, "Loaded config");
 
 	// 初始化
