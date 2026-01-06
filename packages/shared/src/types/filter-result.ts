@@ -27,7 +27,9 @@ export type FilterReason =
 	| "DUPLICATE"
 	| "BREAKING_NEWS_STYLE"
 	| "HAS_EVIDENCE"
-	| "WATCHLIST_OVERRIDE";
+	| "WATCHLIST_OVERRIDE"
+	| "BELOW_VALUE_THRESHOLD"
+	| "AI_FILTER_ERROR";
 
 export type FilterSignal =
 	| "hasNumbers"

@@ -23,6 +23,7 @@
 		"nanoid": "^5.0.0"
 	},
 	"devDependencies": {
+		"@types/node": "^22.0.0",
 		"drizzle-kit": "^0.30.0",
 		"typescript": "^5.7.0"
 	}
