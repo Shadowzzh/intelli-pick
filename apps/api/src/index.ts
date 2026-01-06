@@ -1,5 +1,4 @@
 // apps/api/src/index.ts
-import "dotenv/config";
 import { loadConfig } from "@ai-filter/config";
 import { env } from "@ai-filter/env";
 import { CronJob } from "cron";
@@ -19,6 +18,7 @@ async function main() {
 	// 初始化
 	const ai = createAiClient(config.ai);
 	const collector = createCollectorManager();
+	return
 	const queue = createQueue(env.REDIS_URL);
 	const worker = createWorker(env.REDIS_URL, config, ai);
 

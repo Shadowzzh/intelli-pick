@@ -1,4 +1,32 @@
 // packages/env/src/index.ts
+import { config } from "dotenv";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// 向上查找 .env 文件直到找到或到达根目录
+function findEnvFile(startDir: string): string | null {
+	let currentDir = startDir;
+	while (true) {
+		const envPath = resolve(currentDir, ".env");
+		if (existsSync(envPath)) {
+			return envPath;
+		}
+		const parentDir = dirname(currentDir);
+		if (parentDir === currentDir) {
+			// 已到达根目录
+			return null;
+		}
+		currentDir = parentDir;
+	}
+}
+
+// 从当前工作目录开始向上查找 .env 文件
+const envPath = findEnvFile(process.cwd());
+if (envPath) {
+	config({ path: envPath });
+}
+
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
@@ -15,7 +43,9 @@ export const env = createEnv({
 
 		// AI Providers
 		DEEPSEEK_API_KEY: z.string().min(1).optional(),
+		DEEPSEEK_BASE_URL: z.string().url().optional(),
 		ANTHROPIC_API_KEY: z.string().min(1).optional(),
+		ANTHROPIC_BASE_URL: z.string().url().optional(),
 
 		// Twitter（可选）
 		TWITTER_CLIENT_ID: z.string().optional(),
