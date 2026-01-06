@@ -5,11 +5,10 @@ import type { PipelineContext, PipelineStep } from "./types";
 
 const logger = createLogger("hard-filter");
 
-// 纯表情/纯脏话正则
-const PURE_EMOJI_REGEX = /^[\s\p{Emoji}\p{Emoji_Component}]+$/u;
-const PURE_NOISE_REGEX =
-	/^[\s哈嘿呵嘻666好的可以是的对啊卧槽艹牛逼nb厉害👍👎😂🤣😭😅🙏]+$/iu;
-
+/**
+ * 硬性过滤步骤
+ * 根据配置的规则过滤明显不合格的内容
+ */
 export class HardFilterStep implements PipelineStep {
 	name = "hard-filter";
 
@@ -42,16 +41,9 @@ export class HardFilterStep implements PipelineStep {
 
 		// 检查纯表情/纯噪声
 		const trimmed = raw.content.trim();
-		if (PURE_EMOJI_REGEX.test(trimmed) || PURE_NOISE_REGEX.test(trimmed)) {
-			logger.debug(
-				{ content: trimmed.slice(0, 50) },
-				"Blocked: pure emoji/noise",
-			);
-			return null;
-		}
 
 		// 检查过短且无链接
-		if (trimmed.length < 20 && !raw.url && !content.includes("http")) {
+		if (trimmed.length < 5 && !raw.url && !content.includes("http")) {
 			logger.debug(
 				{ length: trimmed.length },
 				"Blocked: too short without links",
