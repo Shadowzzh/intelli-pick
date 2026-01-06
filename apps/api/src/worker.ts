@@ -1,8 +1,8 @@
+import type { Config } from "@ai-filter/config";
 import type { RawContent } from "@ai-filter/shared";
 // apps/api/src/worker.ts
 import { Queue, Worker } from "bullmq";
 import type { AiClient } from "./lib/ai.js";
-import type { Config } from "./lib/config.js";
 import { createLogger } from "./lib/logger.js";
 import { Pipeline } from "./pipeline/index.js";
 

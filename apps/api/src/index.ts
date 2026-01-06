@@ -1,27 +1,26 @@
 // apps/api/src/index.ts
 import "dotenv/config";
+import { loadConfig } from "@ai-filter/config";
+import { env } from "@ai-filter/env";
 import { CronJob } from "cron";
 import { createCollectorManager } from "./collector/index.js";
 import { createAiClient } from "./lib/ai.js";
-import { loadConfig } from "./lib/config.js";
 import { createLogger } from "./lib/logger.js";
 import { createQueue, createWorker } from "./worker.js";
 
 const logger = createLogger("main");
 
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
-
 async function main() {
 	logger.info("Starting AI Filter...");
 
-	const config = loadConfig();
+	const config = await loadConfig();
 	logger.info({ sources: config.sources.length }, "Loaded config");
 
 	// 初始化
 	const ai = createAiClient(config.ai);
 	const collector = createCollectorManager();
-	const queue = createQueue(REDIS_URL);
-	const worker = createWorker(REDIS_URL, config, ai);
+	const queue = createQueue(env.REDIS_URL);
+	const worker = createWorker(env.REDIS_URL, config, ai);
 
 	// 采集任务
 	async function collect() {

@@ -1,7 +1,8 @@
+import type { SourceConfig, TwitterConfig } from "@ai-filter/config";
+import { env } from "@ai-filter/env";
 import type { RawContent } from "@ai-filter/shared";
 // apps/api/src/collector/plugins/twitter.ts
 import { TwitterApi } from "twitter-api-v2";
-import type { SourceConfig, TwitterConfig } from "../../lib/config.js";
 import { createLogger } from "../../lib/logger.js";
 import type { CollectorPlugin } from "../types.js";
 
@@ -13,11 +14,22 @@ export const twitterPlugin: CollectorPlugin = {
 	async collect(source: SourceConfig): Promise<RawContent[]> {
 		const config = source.config as TwitterConfig;
 
+		// 检查 Twitter 凭据是否配置
+		if (
+			!env.TWITTER_CLIENT_ID ||
+			!env.TWITTER_CLIENT_SECRET ||
+			!env.TWITTER_ACCESS_TOKEN ||
+			!env.TWITTER_REFRESH_TOKEN
+		) {
+			logger.warn("Twitter credentials not configured, skipping");
+			return [];
+		}
+
 		const client = new TwitterApi({
-			appKey: config.clientId,
-			appSecret: config.clientSecret,
-			accessToken: config.accessToken,
-			accessSecret: config.refreshToken, // OAuth 1.0a 使用
+			appKey: env.TWITTER_CLIENT_ID,
+			appSecret: env.TWITTER_CLIENT_SECRET,
+			accessToken: env.TWITTER_ACCESS_TOKEN,
+			accessSecret: env.TWITTER_REFRESH_TOKEN, // OAuth 1.0a 使用
 		});
 
 		const results: RawContent[] = [];

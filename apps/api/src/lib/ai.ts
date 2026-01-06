@@ -1,9 +1,10 @@
+import type { AiConfig } from "@ai-filter/config";
+import { env } from "@ai-filter/env";
 import { createAnthropic } from "@ai-sdk/anthropic";
 // apps/api/src/lib/ai.ts
 import { createOpenAI } from "@ai-sdk/openai";
-import type { Config } from "./config.js";
 
-export function createAiClient(config: Config["ai"]) {
+export function createAiClient(config: AiConfig) {
 	const providers: Record<
 		string,
 		ReturnType<typeof createOpenAI> | ReturnType<typeof createAnthropic>
@@ -12,19 +13,25 @@ export function createAiClient(config: Config["ai"]) {
 	for (const [name, providerConfig] of Object.entries(config.providers)) {
 		if (name === "anthropic") {
 			providers[name] = createAnthropic({
-				apiKey: providerConfig.apiKey,
+				apiKey: env.ANTHROPIC_API_KEY,
 			});
-		} else {
-			// OpenAI 兼容 (DeepSeek 等)
+		} else if (name === "deepseek") {
+			// DeepSeek (OpenAI 兼容)
 			providers[name] = createOpenAI({
 				baseURL: providerConfig.baseUrl,
-				apiKey: providerConfig.apiKey,
+				apiKey: env.DEEPSEEK_API_KEY,
+			});
+		} else {
+			// 其他 OpenAI 兼容提供商
+			providers[name] = createOpenAI({
+				baseURL: providerConfig.baseUrl,
+				apiKey: env.DEEPSEEK_API_KEY, // 默认使用 DEEPSEEK_API_KEY
 			});
 		}
 	}
 
 	return {
-		getModel(taskName: keyof Config["ai"]["tasks"]) {
+		getModel(taskName: keyof AiConfig["tasks"]) {
 			const task = config.tasks[taskName];
 			const provider = providers[task.provider];
 			if (!provider) {

@@ -1,5 +1,14 @@
 {
 	"$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
+	"files": {
+		"ignore": [
+			".turbo",
+			"**/dist",
+			"node_modules",
+			"**/*.config.js",
+			"**/*.config.d.ts"
+		]
+	},
 	"organizeImports": {
 		"enabled": true
 	},

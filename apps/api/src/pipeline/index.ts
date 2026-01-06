@@ -1,7 +1,7 @@
+import type { Config } from "@ai-filter/config";
 // apps/api/src/pipeline/index.ts
 import type { RawContent } from "@ai-filter/shared";
 import type { AiClient } from "../lib/ai.js";
-import type { Config } from "../lib/config.js";
 import { createLogger } from "../lib/logger.js";
 import { AiExtractStep } from "./ai-extract.js";
 import { AiFilterStep } from "./ai-filter.js";

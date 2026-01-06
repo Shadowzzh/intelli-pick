@@ -1,9 +1,9 @@
+import type { Config } from "@ai-filter/config";
 import type { FilterResult } from "@ai-filter/shared";
 // apps/api/src/pipeline/ai-filter.ts
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { AiClient } from "../lib/ai.js";
-import type { Config } from "../lib/config.js";
 import { createLogger } from "../lib/logger.js";
 import type { PipelineContext, PipelineStep } from "./types.js";
 

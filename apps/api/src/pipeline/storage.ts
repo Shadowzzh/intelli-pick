@@ -1,3 +1,4 @@
+import type { Config } from "@ai-filter/config";
 // apps/api/src/pipeline/storage.ts
 import {
 	contents,
@@ -8,7 +9,6 @@ import {
 } from "@ai-filter/db";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
-import type { Config } from "../lib/config.js";
 import { createLogger } from "../lib/logger.js";
 import type { PipelineContext, PipelineStep } from "./types.js";
 

@@ -1,6 +1,6 @@
+import type { SourceConfig } from "@ai-filter/config";
 // apps/api/src/collector/manager.ts
 import type { RawContent } from "@ai-filter/shared";
-import type { SourceConfig } from "../lib/config.js";
 import { createLogger } from "../lib/logger.js";
 import type { CollectorPlugin } from "./types.js";
 

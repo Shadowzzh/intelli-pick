@@ -1,5 +1,5 @@
 // apps/api/src/pipeline/hard-filter.ts
-import type { Config } from "../lib/config.js";
+import type { Config } from "@ai-filter/config";
 import { createLogger } from "../lib/logger.js";
 import type { PipelineContext, PipelineStep } from "./types.js";
 
@@ -8,7 +8,7 @@ const logger = createLogger("hard-filter");
 // 纯表情/纯脏话正则
 const PURE_EMOJI_REGEX = /^[\s\p{Emoji}\p{Emoji_Component}]+$/u;
 const PURE_NOISE_REGEX =
-	/^[\s哈嘿呵嘻666好的可以是的对啊卧槽艹牛逼nb厉害👍🏻👎😂🤣😭😅🙏]+$/iu;
+	/^[\s哈嘿呵嘻666好的可以是的对啊卧槽艹牛逼nb厉害👍👎😂🤣😭😅🙏]+$/iu;
 
 export class HardFilterStep implements PipelineStep {
 	name = "hard-filter";
