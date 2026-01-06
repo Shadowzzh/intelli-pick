@@ -5,6 +5,7 @@ import { CronJob } from "cron";
 import { createCollectorManager } from "./collector/index";
 import { createAiClient } from "./lib/ai";
 import { createLogger } from "./lib/logger";
+import { initializeProxy } from "./lib/proxy";
 import { createQueue, createWorker } from "./worker";
 
 const logger = createLogger("main");
@@ -14,6 +15,9 @@ async function main() {
 
 	const config = await loadConfig("../../config.ts");
 	logger.info({ sources: config.sources.length }, "Loaded config");
+
+	// 初始化代理
+	initializeProxy(config);
 
 	// 初始化
 	const ai = createAiClient(config.ai);

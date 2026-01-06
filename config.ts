@@ -67,4 +67,7 @@ export default defineConfig({
 	scheduler: {
 		timezone: "Asia/Shanghai",
 	},
+	network: {
+		httpProxy: "http://127.0.0.1:7890",
+	},
 });

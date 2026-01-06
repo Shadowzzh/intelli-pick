@@ -14,6 +14,7 @@ export function createAiClient(config: AiConfig) {
 		if (name === "anthropic") {
 			providers[name] = createAnthropic({
 				apiKey: env.ANTHROPIC_API_KEY,
+				baseURL: env.ANTHROPIC_BASE_URL,
 			});
 		} else if (name === "deepseek") {
 			// DeepSeek (OpenAI 兼容)

@@ -74,6 +74,11 @@ export const ConfigSchema = z.object({
 	scheduler: z.object({
 		timezone: z.string().default("Asia/Shanghai"),
 	}),
+	network: z
+		.object({
+			httpProxy: z.string().url().optional(),
+		})
+		.optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

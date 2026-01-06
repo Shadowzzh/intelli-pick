@@ -2,6 +2,7 @@ import type { SourceConfig, V2exConfig } from "@ai-filter/config";
 import type { RawContent } from "@ai-filter/shared";
 // apps/api/src/collector/plugins/v2ex.ts
 import { fetch } from "undici";
+import { getProxyAgent } from "../../lib/proxy";
 import type { CollectorPlugin } from "../types";
 
 interface V2exTopic {
@@ -24,7 +25,8 @@ export const v2exPlugin: CollectorPlugin = {
 				? "https://www.v2ex.com/api/topics/hot.json"
 				: `https://www.v2ex.com/api/topics/show.json?node_name=${config.node}`;
 
-		const response = await fetch(apiUrl);
+		const dispatcher = getProxyAgent();
+		const response = await fetch(apiUrl, { dispatcher });
 		const topics = (await response.json()) as V2exTopic[];
 
 		return topics.map((topic) => ({
