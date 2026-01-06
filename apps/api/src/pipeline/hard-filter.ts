@@ -1,7 +1,7 @@
 // apps/api/src/pipeline/hard-filter.ts
 import type { Config } from "@ai-filter/config";
-import { createLogger } from "../lib/logger.js";
-import type { PipelineContext, PipelineStep } from "./types.js";
+import { createLogger } from "../lib/logger";
+import type { PipelineContext, PipelineStep } from "./types";
 
 const logger = createLogger("hard-filter");
 

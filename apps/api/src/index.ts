@@ -2,10 +2,10 @@
 import { loadConfig } from "@ai-filter/config";
 import { env } from "@ai-filter/env";
 import { CronJob } from "cron";
-import { createCollectorManager } from "./collector/index.js";
-import { createAiClient } from "./lib/ai.js";
-import { createLogger } from "./lib/logger.js";
-import { createQueue, createWorker } from "./worker.js";
+import { createCollectorManager } from "./collector/index";
+import { createAiClient } from "./lib/ai";
+import { createLogger } from "./lib/logger";
+import { createQueue, createWorker } from "./worker";
 
 const logger = createLogger("main");
 
@@ -18,7 +18,6 @@ async function main() {
 	// 初始化
 	const ai = createAiClient(config.ai);
 	const collector = createCollectorManager();
-	return
 	const queue = createQueue(env.REDIS_URL);
 	const worker = createWorker(env.REDIS_URL, config, ai);
 

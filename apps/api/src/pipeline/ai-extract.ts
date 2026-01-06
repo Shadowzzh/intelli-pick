@@ -2,9 +2,9 @@ import type { ExtractResult } from "@ai-filter/shared";
 // apps/api/src/pipeline/ai-extract.ts
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { AiClient } from "../lib/ai.js";
-import { createLogger } from "../lib/logger.js";
-import type { PipelineContext, PipelineStep } from "./types.js";
+import type { AiClient } from "../lib/ai";
+import { createLogger } from "../lib/logger";
+import type { PipelineContext, PipelineStep } from "./types";
 
 const logger = createLogger("ai-extract");
 

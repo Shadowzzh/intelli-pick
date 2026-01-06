@@ -2,9 +2,9 @@ import type { Config } from "@ai-filter/config";
 import type { RawContent } from "@ai-filter/shared";
 // apps/api/src/worker.ts
 import { Queue, Worker } from "bullmq";
-import type { AiClient } from "./lib/ai.js";
-import { createLogger } from "./lib/logger.js";
-import { Pipeline } from "./pipeline/index.js";
+import type { AiClient } from "./lib/ai";
+import { createLogger } from "./lib/logger";
+import { Pipeline } from "./pipeline/index";
 
 const logger = createLogger("worker");
 

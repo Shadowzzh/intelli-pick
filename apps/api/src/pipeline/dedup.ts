@@ -1,8 +1,8 @@
 // apps/api/src/pipeline/dedup.ts
 import { contents, db } from "@ai-filter/db";
 import { eq, or } from "drizzle-orm";
-import { createLogger } from "../lib/logger.js";
-import type { PipelineContext, PipelineStep } from "./types.js";
+import { createLogger } from "../lib/logger";
+import type { PipelineContext, PipelineStep } from "./types";
 
 const logger = createLogger("dedup");
 

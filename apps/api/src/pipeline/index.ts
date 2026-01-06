@@ -1,14 +1,14 @@
 import type { Config } from "@ai-filter/config";
 // apps/api/src/pipeline/index.ts
 import type { RawContent } from "@ai-filter/shared";
-import type { AiClient } from "../lib/ai.js";
-import { createLogger } from "../lib/logger.js";
-import { AiExtractStep } from "./ai-extract.js";
-import { AiFilterStep } from "./ai-filter.js";
-import { DedupStep } from "./dedup.js";
-import { HardFilterStep } from "./hard-filter.js";
-import { StorageStep } from "./storage.js";
-import type { PipelineContext, PipelineStep } from "./types.js";
+import type { AiClient } from "../lib/ai";
+import { createLogger } from "../lib/logger";
+import { AiExtractStep } from "./ai-extract";
+import { AiFilterStep } from "./ai-filter";
+import { DedupStep } from "./dedup";
+import { HardFilterStep } from "./hard-filter";
+import { StorageStep } from "./storage";
+import type { PipelineContext, PipelineStep } from "./types";
 
 const logger = createLogger("pipeline");
 
@@ -60,4 +60,4 @@ export class Pipeline {
 	}
 }
 
-export type { PipelineContext, PipelineStep } from "./types.js";
+export type { PipelineContext, PipelineStep } from "./types";

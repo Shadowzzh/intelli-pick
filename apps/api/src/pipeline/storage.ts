@@ -9,8 +9,8 @@ import {
 } from "@ai-filter/db";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
-import { createLogger } from "../lib/logger.js";
-import type { PipelineContext, PipelineStep } from "./types.js";
+import { createLogger } from "../lib/logger";
+import type { PipelineContext, PipelineStep } from "./types";
 
 const logger = createLogger("storage");
 
