@@ -1,7 +1,7 @@
 // packages/db/src/schema/quarantine.ts
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
-import { sources } from "./sources.js";
+import { sources } from "./sources";
 
 export const quarantine = pgTable("quarantine", {
 	id: text("id")

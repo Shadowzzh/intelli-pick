@@ -11,7 +11,9 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"db:generate": "turbo db:generate",
-		"db:migrate": "turbo db:migrate"
+		"db:migrate": "turbo db:migrate",
+		"db:push": "turbo db:push",
+		"db:studio": "turbo db:studio"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",

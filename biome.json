@@ -6,7 +6,8 @@
 			"**/dist",
 			"node_modules",
 			"**/*.config.js",
-			"**/*.config.d.ts"
+			"**/*.config.d.ts",
+			"**/drizzle"
 		]
 	},
 	"organizeImports": {

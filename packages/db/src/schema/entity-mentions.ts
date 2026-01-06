@@ -1,9 +1,9 @@
 // packages/db/src/schema/entity-mentions.ts
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
-import { contents } from "./contents.js";
-import { entities } from "./entities.js";
-import { sources } from "./sources.js";
+import { contents } from "./contents";
+import { entities } from "./entities";
+import { sources } from "./sources";
 
 export const entityMentions = pgTable("entity_mentions", {
 	id: text("id")

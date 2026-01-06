@@ -5,13 +5,16 @@ import { z } from "zod";
 export const env = createEnv({
 	server: {
 		// 数据库
-		DATABASE_URL: z.string().url(),
+		DATABASE_URL: z
+			.string()
+			.url()
+			.default("postgresql://localhost:5432/ai_filter"),
 
 		// Redis
-		REDIS_URL: z.string().url(),
+		REDIS_URL: z.string().url().default("redis://localhost:6379"),
 
 		// AI Providers
-		DEEPSEEK_API_KEY: z.string().min(1),
+		DEEPSEEK_API_KEY: z.string().min(1).optional(),
 		ANTHROPIC_API_KEY: z.string().min(1).optional(),
 
 		// Twitter（可选）

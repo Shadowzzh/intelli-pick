@@ -1,7 +1,7 @@
 // packages/db/src/schema/contents.ts
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
-import { sources } from "./sources.js";
+import { sources } from "./sources";
 
 export const contents = pgTable("contents", {
 	id: text("id")
