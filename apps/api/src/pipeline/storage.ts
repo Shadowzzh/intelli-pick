@@ -63,7 +63,8 @@ export class StorageStep implements PipelineStep {
 				tags: extractResult?.tags,
 				filterVersion: this.config.promptVersion,
 				filterResult: filterResult,
-				publishedAt: raw.publishedAt,
+				// BullMQ 序列化后 Date 变成字符串，需要转换回来
+				publishedAt: raw.publishedAt ? new Date(raw.publishedAt) : null,
 			})
 			.returning();
 
