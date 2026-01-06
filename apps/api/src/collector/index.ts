@@ -1,6 +1,6 @@
 // apps/api/src/collector/index.ts
-import { CollectorManager } from "./manager.js";
-import { rssPlugin, twitterPlugin, v2exPlugin } from "./plugins/index.js";
+import { CollectorManager } from "./manager";
+import { rssPlugin, twitterPlugin, v2exPlugin } from "./plugins";
 
 export function createCollectorManager(): CollectorManager {
 	const manager = new CollectorManager();
@@ -12,5 +12,5 @@ export function createCollectorManager(): CollectorManager {
 	return manager;
 }
 
-export { CollectorManager } from "./manager.js";
-export type { CollectorPlugin } from "./types.js";
+export { CollectorManager } from "./manager";
+export type { CollectorPlugin } from "./types";

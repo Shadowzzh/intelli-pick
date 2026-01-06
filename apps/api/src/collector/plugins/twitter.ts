@@ -3,8 +3,8 @@ import { env } from "@ai-filter/env";
 import type { RawContent } from "@ai-filter/shared";
 // apps/api/src/collector/plugins/twitter.ts
 import { TwitterApi } from "twitter-api-v2";
-import { createLogger } from "../../lib/logger.js";
-import type { CollectorPlugin } from "../types.js";
+import { createLogger } from "../../lib/logger";
+import type { CollectorPlugin } from "../types";
 
 const logger = createLogger("twitter-plugin");
 

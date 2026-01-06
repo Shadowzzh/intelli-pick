@@ -2,7 +2,7 @@ import type { RssConfig, SourceConfig } from "@ai-filter/config";
 import type { RawContent } from "@ai-filter/shared";
 // apps/api/src/collector/plugins/rss.ts
 import Parser from "rss-parser";
-import type { CollectorPlugin } from "../types.js";
+import type { CollectorPlugin } from "../types";
 
 const parser = new Parser();
 

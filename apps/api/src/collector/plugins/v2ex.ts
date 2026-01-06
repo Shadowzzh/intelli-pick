@@ -2,7 +2,7 @@ import type { SourceConfig, V2exConfig } from "@ai-filter/config";
 import type { RawContent } from "@ai-filter/shared";
 // apps/api/src/collector/plugins/v2ex.ts
 import { fetch } from "undici";
-import type { CollectorPlugin } from "../types.js";
+import type { CollectorPlugin } from "../types";
 
 interface V2exTopic {
 	id: number;
