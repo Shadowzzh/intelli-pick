@@ -1,9 +1,13 @@
 {
 	"name": "ai-filter",
 	"private": true,
+	"dependencies": {
+		"@ai-filter/config": "workspace:*"
+	},
 	"scripts": {
 		"dev": "turbo dev",
 		"build": "turbo build",
+		"typecheck": "tsc --noEmit && turbo typecheck",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"db:generate": "turbo db:generate",
