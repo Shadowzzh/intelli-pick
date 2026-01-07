@@ -4,6 +4,7 @@ import { env } from "@intellipick/env";
 import { CronJob } from "cron";
 import { createCollectorManager } from "./collector/index";
 import { createAiClient } from "./lib/ai";
+import { filterExistingContent } from "./lib/dedup";
 import { createLogger } from "./lib/logger";
 import { initializeProxy } from "./lib/proxy";
 import { syncSources } from "./lib/sources";
@@ -40,7 +41,10 @@ async function main() {
 		logger.info("Starting collection...");
 		const items = await collector.collectAll(config.sources);
 
-		for (const item of items) {
+		// 入队前批量去重
+		const newItems = await filterExistingContent(items);
+
+		for (const item of newItems) {
 			await queue.add("process", item, {
 				jobId: `${item.sourceType}-${item.externalId}`,
 				removeOnComplete: true,
@@ -48,7 +52,14 @@ async function main() {
 			});
 		}
 
-		logger.info({ count: items.length }, "Added items to queue");
+		logger.info(
+			{
+				collected: items.length,
+				new: newItems.length,
+				duplicate: items.length - newItems.length,
+			},
+			"Added items to queue",
+		);
 	}
 
 	// 定时调度

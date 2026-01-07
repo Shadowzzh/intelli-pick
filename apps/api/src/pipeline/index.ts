@@ -17,7 +17,6 @@ export class Pipeline {
 
 	constructor(config: Config, ai: AiClient) {
 		this.steps = [
-			new DedupStep(),
 			new HardFilterStep(config.filter.hardRules),
 			new AiFilterStep(ai, config.filter),
 			new AiExtractStep(ai),
