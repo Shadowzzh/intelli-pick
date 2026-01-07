@@ -30,4 +30,22 @@ export const sources: SourceConfig[] = [
 			maxResults: 10,
 		},
 	},
+	{
+		name: "少数派首页",
+		type: "rss",
+		enabled: true,
+		fetchInterval: 3600, // 1 小时
+		config: {
+			url: "https://rsshub.app/sspai/index",
+		},
+	},
+	{
+		name: "36氪热榜",
+		type: "rss",
+		enabled: true,
+		fetchInterval: 1800, // 30 分钟（热榜更新较快）
+		config: {
+			url: "https://rsshub.app/36kr/hot-list",
+		},
+	},
 ];
