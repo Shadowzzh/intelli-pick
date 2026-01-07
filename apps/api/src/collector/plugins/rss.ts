@@ -3,8 +3,13 @@ import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/rss.ts
 import Parser from "rss-parser";
 import type { CollectorPlugin } from "../types";
+import { getNodeProxyAgent } from "../../lib/proxy";
 
-const parser = new Parser();
+const parser = new Parser({
+	requestOptions: {
+		agent: getNodeProxyAgent(),
+	},
+});
 
 export const rssPlugin: CollectorPlugin = {
 	type: "rss",
