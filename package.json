@@ -1,8 +1,8 @@
 {
-	"name": "ai-filter",
+	"name": "intellipick",
 	"private": true,
 	"dependencies": {
-		"@ai-filter/config": "workspace:*"
+		"@intellipick/config": "workspace:*"
 	},
 	"scripts": {
 		"dev": "turbo dev",

@@ -1,4 +1,4 @@
-import type { Config } from "@ai-filter/config";
+import type { Config } from "@intellipick/config";
 // apps/api/src/pipeline/storage.ts
 import {
 	contents,
@@ -6,7 +6,7 @@ import {
 	entities,
 	entityMentions,
 	quarantine,
-} from "@ai-filter/db";
+} from "@intellipick/db";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { createLogger } from "../lib/logger";

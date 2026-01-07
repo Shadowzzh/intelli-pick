@@ -1,5 +1,5 @@
-import type { Config } from "@ai-filter/config";
-import type { RawContent } from "@ai-filter/shared";
+import type { Config } from "@intellipick/config";
+import type { RawContent } from "@intellipick/shared";
 // apps/api/src/worker.ts
 import { Queue, Worker } from "bullmq";
 import type { AiClient } from "./lib/ai";

@@ -1,5 +1,5 @@
 // apps/api/src/pipeline/hard-filter.ts
-import type { Config } from "@ai-filter/config";
+import type { Config } from "@intellipick/config";
 import { createLogger } from "../lib/logger";
 import type { PipelineContext, PipelineStep } from "./types";
 

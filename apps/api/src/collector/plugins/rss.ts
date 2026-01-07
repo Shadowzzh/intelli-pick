@@ -1,5 +1,5 @@
-import type { RssConfig, SourceConfig } from "@ai-filter/config";
-import type { RawContent } from "@ai-filter/shared";
+import type { RssConfig, SourceConfig } from "@intellipick/config";
+import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/rss.ts
 import Parser from "rss-parser";
 import type { CollectorPlugin } from "../types";

@@ -1,4 +1,4 @@
-import type { ExtractResult } from "@ai-filter/shared";
+import type { ExtractResult } from "@intellipick/shared";
 // apps/api/src/pipeline/ai-extract.ts
 import { generateObject } from "ai";
 import { z } from "zod";

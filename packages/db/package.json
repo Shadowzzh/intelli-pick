@@ -1,5 +1,5 @@
 {
-	"name": "@ai-filter/db",
+	"name": "@intellipick/db",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -19,7 +19,7 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@ai-filter/env": "workspace:*",
+		"@intellipick/env": "workspace:*",
 		"drizzle-orm": "^0.38.0",
 		"nanoid": "^5.0.0",
 		"postgres": "^3.4.0"

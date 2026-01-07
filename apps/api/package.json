@@ -1,5 +1,5 @@
 {
-	"name": "@ai-filter/api",
+	"name": "@intellipick/api",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -10,10 +10,10 @@
 		"start": "node dist/index.js"
 	},
 	"dependencies": {
-		"@ai-filter/config": "workspace:*",
-		"@ai-filter/env": "workspace:*",
-		"@ai-filter/shared": "workspace:*",
-		"@ai-filter/db": "workspace:*",
+		"@intellipick/config": "workspace:*",
+		"@intellipick/env": "workspace:*",
+		"@intellipick/shared": "workspace:*",
+		"@intellipick/db": "workspace:*",
 		"drizzle-orm": "^0.38.0",
 		"ai": "^4.0.0",
 		"@ai-sdk/openai": "^1.0.0",

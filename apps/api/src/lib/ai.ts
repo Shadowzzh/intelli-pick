@@ -1,8 +1,8 @@
-import type { AiConfig } from "@ai-filter/config";
-import { env } from "@ai-filter/env";
 import { createAnthropic } from "@ai-sdk/anthropic";
 // apps/api/src/lib/ai.ts
 import { createOpenAI } from "@ai-sdk/openai";
+import type { AiConfig } from "@intellipick/config";
+import { env } from "@intellipick/env";
 
 export function createAiClient(config: AiConfig) {
 	const providers: Record<

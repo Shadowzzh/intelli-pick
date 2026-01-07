@@ -1,6 +1,6 @@
-import type { Config } from "@ai-filter/config";
+import type { Config } from "@intellipick/config";
 // apps/api/src/pipeline/index.ts
-import type { RawContent } from "@ai-filter/shared";
+import type { RawContent } from "@intellipick/shared";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
 import { AiExtractStep } from "./ai-extract";

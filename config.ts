@@ -1,5 +1,5 @@
 // config.ts - 用户配置文件
-import { defineConfig } from "@ai-filter/config";
+import { defineConfig } from "@intellipick/config";
 
 export default defineConfig({
 	ai: {

@@ -1,5 +1,5 @@
 // apps/api/src/lib/proxy.ts
-import type { Config } from "@ai-filter/config";
+import type { Config } from "@intellipick/config";
 import { ProxyAgent } from "undici";
 
 let proxyAgent: ProxyAgent | undefined;

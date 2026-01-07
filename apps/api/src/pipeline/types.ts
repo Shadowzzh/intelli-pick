@@ -3,7 +3,7 @@ import type {
 	ExtractResult,
 	FilterResult,
 	RawContent,
-} from "@ai-filter/shared";
+} from "@intellipick/shared";
 
 export interface PipelineContext {
 	raw: RawContent;

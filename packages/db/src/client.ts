@@ -1,5 +1,5 @@
 // packages/db/src/client.ts
-import { env } from "@ai-filter/env";
+import { env } from "@intellipick/env";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema/index.js";

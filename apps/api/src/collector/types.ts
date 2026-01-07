@@ -1,6 +1,6 @@
-import type { SourceConfig } from "@ai-filter/config";
+import type { SourceConfig } from "@intellipick/config";
 // apps/api/src/collector/types.ts
-import type { RawContent } from "@ai-filter/shared";
+import type { RawContent } from "@intellipick/shared";
 
 export interface CollectorPlugin {
 	type: string;

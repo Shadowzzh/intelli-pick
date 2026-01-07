@@ -1,5 +1,5 @@
-import type { Config } from "@ai-filter/config";
-import type { FilterResult } from "@ai-filter/shared";
+import type { Config } from "@intellipick/config";
+import type { FilterResult } from "@intellipick/shared";
 // apps/api/src/pipeline/ai-filter.ts
 import { generateObject } from "ai";
 import { z } from "zod";

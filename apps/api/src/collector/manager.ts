@@ -1,6 +1,6 @@
-import type { SourceConfig } from "@ai-filter/config";
+import type { SourceConfig } from "@intellipick/config";
 // apps/api/src/collector/manager.ts
-import type { RawContent } from "@ai-filter/shared";
+import type { RawContent } from "@intellipick/shared";
 import { createLogger } from "../lib/logger";
 import type { CollectorPlugin } from "./types";
 

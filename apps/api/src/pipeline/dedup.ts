@@ -1,5 +1,5 @@
 // apps/api/src/pipeline/dedup.ts
-import { contents, db } from "@ai-filter/db";
+import { contents, db } from "@intellipick/db";
 import { eq, or } from "drizzle-orm";
 import { createLogger } from "../lib/logger";
 import type { PipelineContext, PipelineStep } from "./types";

@@ -22,5 +22,5 @@
 	"[jsonc]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
-	"cSpell.words": ["Dedup"]
+	"cSpell.words": ["Dedup", "intellipick"]
 }

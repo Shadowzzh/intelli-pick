@@ -1,5 +1,5 @@
-import type { SourceConfig, V2exConfig } from "@ai-filter/config";
-import type { RawContent } from "@ai-filter/shared";
+import type { SourceConfig, V2exConfig } from "@intellipick/config";
+import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/v2ex.ts
 import { fetch } from "undici";
 import { getProxyAgent } from "../../lib/proxy";

@@ -1,5 +1,5 @@
 // packages/db/drizzle.config.ts
-import { env } from "@ai-filter/env";
+import { env } from "@intellipick/env";
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({

@@ -1,6 +1,6 @@
 // apps/api/src/index.ts
-import { loadConfig } from "@ai-filter/config";
-import { env } from "@ai-filter/env";
+import { loadConfig } from "@intellipick/config";
+import { env } from "@intellipick/env";
 import { CronJob } from "cron";
 import { createCollectorManager } from "./collector/index";
 import { createAiClient } from "./lib/ai";

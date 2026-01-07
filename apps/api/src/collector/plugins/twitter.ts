@@ -1,6 +1,6 @@
-import type { SourceConfig, TwitterConfig } from "@ai-filter/config";
-import { env } from "@ai-filter/env";
-import type { RawContent } from "@ai-filter/shared";
+import type { SourceConfig, TwitterConfig } from "@intellipick/config";
+import { env } from "@intellipick/env";
+import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/twitter.ts
 import { TwitterApi } from "twitter-api-v2";
 import { createLogger } from "../../lib/logger";

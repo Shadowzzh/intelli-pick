@@ -1,6 +1,6 @@
 // apps/api/src/lib/sources.ts
-import type { Config } from "@ai-filter/config";
-import { db, sources } from "@ai-filter/db";
+import type { Config } from "@intellipick/config";
+import { db, sources } from "@intellipick/db";
 import { eq } from "drizzle-orm";
 import { createLogger } from "./logger";
 
