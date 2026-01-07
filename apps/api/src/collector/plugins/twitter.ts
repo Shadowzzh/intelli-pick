@@ -6,6 +6,7 @@ import { TwitterApi } from "twitter-api-v2";
 import { createLogger } from "../../lib/logger";
 import { getNodeProxyAgent } from "../../lib/proxy";
 import type { CollectorPlugin } from "../types";
+import { extractErrorInfo, isRateLimitError } from "./twitter-types";
 
 const logger = createLogger("twitter-plugin");
 
@@ -74,10 +75,14 @@ export const twitterPlugin: CollectorPlugin = {
 						});
 					}
 				} catch (err) {
-					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-					if ((err as any)?.code === 429 || (err as any)?.statusCode === 429) {
+					if (isRateLimitError(err)) {
+						const errorInfo = extractErrorInfo(err);
 						logger.warn(
-							{ source: source.name },
+							{
+								source: source.name,
+								...errorInfo,
+								fullError: err,
+							},
 							"Twitter API rate limit exceeded (429), skipping this cycle",
 						);
 						return [];
@@ -113,12 +118,7 @@ export const twitterPlugin: CollectorPlugin = {
 							});
 						}
 					} catch (err) {
-						if (
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(err as any)?.code === 429 ||
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(err as any)?.statusCode === 429
-						) {
+						if (isRateLimitError(err)) {
 							logger.warn(
 								{ source: source.name, username },
 								"Twitter API rate limit exceeded (429), skipping user",
@@ -151,10 +151,14 @@ export const twitterPlugin: CollectorPlugin = {
 						});
 					}
 				} catch (err) {
-					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-					if ((err as any)?.code === 429 || (err as any)?.statusCode === 429) {
+					if (isRateLimitError(err)) {
+						const errorInfo = extractErrorInfo(err);
 						logger.warn(
-							{ source: source.name },
+							{
+								source: source.name,
+								...errorInfo,
+								fullError: err,
+							},
 							"Twitter API rate limit exceeded (429), skipping this cycle",
 						);
 						return [];

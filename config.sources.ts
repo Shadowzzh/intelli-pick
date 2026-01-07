@@ -20,16 +20,17 @@ export const sources: SourceConfig[] = [
 			node: "hot",
 		},
 	},
-	{
-		name: "Twitter 推荐",
-		type: "twitter",
-		enabled: true,
-		fetchInterval: 20 * 60, // 20 分钟
-		config: {
-			mode: "home",
-			maxResults: 10,
-		},
-	},
+	// 废弃了 免费计划 一个月 100 个帖子的额度，pro 计划要 200$
+	// {
+	// 	name: "Twitter 推荐",
+	// 	type: "twitter",
+	// 	enabled: true,
+	// 	fetchInterval: 20 * 60, // 20 分钟
+	// 	config: {
+	// 		mode: "home",
+	// 		maxResults: 10,
+	// 	},
+	// },
 	{
 		name: "少数派首页",
 		type: "rss",

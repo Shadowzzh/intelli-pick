@@ -22,7 +22,7 @@
 	"[jsonc]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
-	"cSpell.words": ["bullmq", "Dedup", "intellipick"],
+	"cSpell.words": ["bullmq", "Dedup", "intellipick", "RSSHUB"],
 	// 排除测试脚本文件的 TypeScript 检查（它们使用 tsx 运行时，不需要编译）
 	"typescript.preferences.excludeFiles": {
 		"**/packages/test-scripts/src/**/*.ts": true,
