@@ -42,7 +42,7 @@ export const twitterPlugin: CollectorPlugin = {
 		);
 
 		if (httpAgent) {
-			logger.info("Twitter client configured with proxy");
+			logger.debug("Twitter client configured with proxy");
 		} else {
 			logger.debug("Twitter client without proxy");
 		}
