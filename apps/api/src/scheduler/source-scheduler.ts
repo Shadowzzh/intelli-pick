@@ -99,7 +99,7 @@ export class SourceScheduler {
 			// 入队
 			for (const item of newItems) {
 				await this.queue.add("process", item, {
-					jobId: `${item.sourceType}-${item.externalId}`,
+					jobId: `${item.sourceType}-${item.externalId.replace(/:/g, '-')}`,
 					removeOnComplete: true,
 					removeOnFail: 100,
 				});
