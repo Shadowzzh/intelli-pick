@@ -6,10 +6,10 @@ import { z } from "zod";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
 import {
-	StepStatus,
 	type PipelineContext,
 	type PipelineStep,
 	type StepResult,
+	StepStatus,
 } from "./types";
 
 const logger = createLogger("ai-filter");

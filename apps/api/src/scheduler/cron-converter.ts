@@ -12,9 +12,7 @@ export function convertToCron(seconds: number): string {
 	const minutes = Math.floor(seconds / 60);
 
 	if (minutes < 1) {
-		throw new Error(
-			`fetchInterval too small: ${seconds}s (minimum 60s)`,
-		);
+		throw new Error(`fetchInterval too small: ${seconds}s (minimum 60s)`);
 	}
 
 	// 小于 60 分钟：每 N 分钟执行

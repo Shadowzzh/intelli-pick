@@ -3,10 +3,10 @@ import { contents, db } from "@intellipick/db";
 import { eq, or } from "drizzle-orm";
 import { createLogger } from "../lib/logger";
 import {
-	StepStatus,
 	type PipelineContext,
 	type PipelineStep,
 	type StepResult,
+	StepStatus,
 } from "./types";
 
 const logger = createLogger("dedup");

@@ -74,10 +74,8 @@ export const twitterPlugin: CollectorPlugin = {
 						});
 					}
 				} catch (err) {
-					if (
-						(err as any)?.code === 429 ||
-						(err as any)?.statusCode === 429
-					) {
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					if ((err as any)?.code === 429 || (err as any)?.statusCode === 429) {
 						logger.warn(
 							{ source: source.name },
 							"Twitter API rate limit exceeded (429), skipping this cycle",
@@ -116,7 +114,9 @@ export const twitterPlugin: CollectorPlugin = {
 						}
 					} catch (err) {
 						if (
+							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 							(err as any)?.code === 429 ||
+							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 							(err as any)?.statusCode === 429
 						) {
 							logger.warn(
@@ -151,10 +151,8 @@ export const twitterPlugin: CollectorPlugin = {
 						});
 					}
 				} catch (err) {
-					if (
-						(err as any)?.code === 429 ||
-						(err as any)?.statusCode === 429
-					) {
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					if ((err as any)?.code === 429 || (err as any)?.statusCode === 429) {
 						logger.warn(
 							{ source: source.name },
 							"Twitter API rate limit exceeded (429), skipping this cycle",

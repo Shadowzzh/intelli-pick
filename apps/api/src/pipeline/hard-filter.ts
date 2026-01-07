@@ -2,10 +2,10 @@
 import type { Config } from "@intellipick/config";
 import { createLogger } from "../lib/logger";
 import {
-	StepStatus,
 	type PipelineContext,
 	type PipelineStep,
 	type StepResult,
+	StepStatus,
 } from "./types";
 
 const logger = createLogger("hard-filter");

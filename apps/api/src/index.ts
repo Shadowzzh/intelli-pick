@@ -6,8 +6,8 @@ import { createAiClient } from "./lib/ai";
 import { createLogger } from "./lib/logger";
 import { initializeProxy } from "./lib/proxy";
 import { syncSources } from "./lib/sources";
-import { createQueue, createWorker } from "./worker";
 import { SourceScheduler } from "./scheduler";
+import { createQueue, createWorker } from "./worker";
 
 const logger = createLogger("main");
 

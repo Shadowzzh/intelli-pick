@@ -1,8 +1,7 @@
 import type { SourceConfig } from "@intellipick/config";
-import type { CollectorManager } from "../collector/index";
 import type { Queue } from "bullmq";
-import type { RawContent } from "@intellipick/shared";
 import { CronJob } from "cron";
+import type { CollectorManager } from "../collector/index";
 import { filterExistingContent } from "../lib/dedup";
 import { createLogger } from "../lib/logger";
 import { convertToCron } from "./cron-converter";
