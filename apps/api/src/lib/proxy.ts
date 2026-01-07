@@ -1,7 +1,7 @@
 // apps/api/src/lib/proxy.ts
 import type { Config } from "@intellipick/config";
-import { ProxyAgent } from "undici";
 import { HttpsProxyAgent } from "https-proxy-agent";
+import { ProxyAgent } from "undici";
 
 let proxyAgent: ProxyAgent | undefined;
 let nodeProxyAgent: HttpsProxyAgent<string> | undefined;

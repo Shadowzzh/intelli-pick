@@ -3,6 +3,16 @@
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
+	"exports": {
+		"./lib/ai": {
+			"types": "./dist/lib/ai.d.ts",
+			"import": "./dist/lib/ai.js"
+		},
+		"./pipeline": {
+			"types": "./dist/pipeline.d.ts",
+			"import": "./dist/pipeline.js"
+		}
+	},
 	"scripts": {
 		"dev": "tsx watch src/index.ts",
 		"build": "tsc",

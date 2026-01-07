@@ -3,8 +3,8 @@ import { env } from "@intellipick/env";
 import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/twitter.ts
 import { TwitterApi } from "twitter-api-v2";
-import { getNodeProxyAgent } from "../../lib/proxy";
 import { createLogger } from "../../lib/logger";
+import { getNodeProxyAgent } from "../../lib/proxy";
 import type { CollectorPlugin } from "../types";
 
 const logger = createLogger("twitter-plugin");
