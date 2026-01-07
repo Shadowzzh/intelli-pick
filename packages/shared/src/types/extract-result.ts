@@ -20,11 +20,5 @@ export interface ExtractedEntity {
 	description?: string;
 }
 
-export type EntityType =
-	| "tool"
-	| "project"
-	| "library"
-	| "article"
-	| "person"
-	| "company"
-	| "event";
+// 完全开放的实体类型系统,允许 AI 自由定义
+export type EntityType = string;

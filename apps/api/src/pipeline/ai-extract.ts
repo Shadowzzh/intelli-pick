@@ -21,15 +21,7 @@ const ExtractResultSchema = z.object({
 	entities: z.array(
 		z.object({
 			name: z.string(),
-			type: z.enum([
-				"tool",
-				"project",
-				"library",
-				"article",
-				"person",
-				"company",
-				"event",
-			]),
+			type: z.string(), // 完全开放,允许 AI 自由定义
 			url: z.string().optional(),
 			description: z.string().optional(),
 		}),
@@ -63,17 +55,17 @@ const EXTRACT_PROMPT = `你是一个内容分析器。从以下内容中提取�
 - 如果没有数据点，返回空数组 []
 
 ### entities (必需)
-实体对象数组，每个实体包含：
+实体对象数组,每个实体包含:
 - name: 实体名称
-- type: 实体类型，必须是以下之一: "tool", "project", "library", "article", "person", "company", "event"
+- type: 实体类型 (如 person、company、country、location、organization、product 等)
 - url: (可选) 相关URL
 - description: (可选) 简短描述
 
-注意事项：
-- 只提取明确提到的实体，不要推断
-- type 必须严格使用上述 7 种类型之一
-- 如果没有符合条件的实体，返回空数组 []
-- 绝对不要返回字符串或其他非对象类型
+注意事项:
+- 只提取明确提到的实体,不要推断
+- type 可以是任何描述实体类型的字符串
+- 常见类型参考: person、company、country、location、organization、product、tool、project、library、article、event
+- 如果没有符合条件的实体,返回空数组 []
 
 ### category (必需)
 - 内容所属大类
