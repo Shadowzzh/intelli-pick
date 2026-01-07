@@ -1,4 +1,5 @@
 import { AiExtractStep, type PipelineContext } from "@intellipick/api/pipeline";
+import { StepStatus } from "@intellipick/api/pipeline/types";
 import type { ExtractResult, RawContent } from "@intellipick/shared";
 import {
 	getErrorMessage,
@@ -72,11 +73,25 @@ async function main() {
 		const start = Date.now();
 		try {
 			const ctx: PipelineContext = { raw: item };
-			const result = await aiExtractStep.process(ctx);
+			const stepResult = await aiExtractStep.process(ctx);
 			const duration = Date.now() - start;
-			const extractResult = result?.extractResult;
 
-			if (result && extractResult) {
+			// 情况 1: 错误
+			if (stepResult.status === StepStatus.Error) {
+				results.push({
+					index: i,
+					item,
+					success: false,
+					duration,
+					error: stepResult.error?.message || "Unknown error",
+				});
+				console.log(
+					`   ❌ 失败 (${duration}ms): ${stepResult.error?.message || "Unknown error"}`,
+				);
+			}
+			// 情况 2: 成功（Continue 或 Filtered）
+			else if (stepResult.context?.extractResult) {
+				const extractResult = stepResult.context.extractResult;
 				results.push({
 					index: i,
 					item,

@@ -10,7 +10,12 @@ import {
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { createLogger } from "../lib/logger";
-import type { PipelineContext, PipelineStep } from "./types";
+import {
+	StepStatus,
+	type PipelineContext,
+	type PipelineStep,
+	type StepResult,
+} from "./types";
 
 const logger = createLogger("storage");
 
@@ -19,7 +24,7 @@ export class StorageStep implements PipelineStep {
 
 	constructor(private config: Config["filter"]) {}
 
-	async process(ctx: PipelineContext): Promise<PipelineContext | null> {
+	async process(ctx: PipelineContext): Promise<StepResult> {
 		const { raw, filterResult, extractResult } = ctx;
 
 		// 处理 quarantine
@@ -42,7 +47,10 @@ export class StorageStep implements PipelineStep {
 			});
 
 			logger.info({ externalId: raw.externalId }, "Stored in quarantine");
-			return ctx;
+			return {
+				status: StepStatus.Continue,
+				context: ctx,
+			};
 		}
 
 		// 存储内容
@@ -116,6 +124,9 @@ export class StorageStep implements PipelineStep {
 			}
 		}
 
-		return ctx;
+		return {
+			status: StepStatus.Continue,
+			context: ctx,
+		};
 	}
 }

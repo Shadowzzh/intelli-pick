@@ -11,7 +11,19 @@ export interface PipelineContext {
 	extractResult?: ExtractResult;
 }
 
+export enum StepStatus {
+	Continue = "continue",
+	Filtered = "filtered",
+	Error = "error",
+}
+
+export interface StepResult {
+	status: StepStatus;
+	context?: PipelineContext;
+	error?: Error;
+}
+
 export interface PipelineStep {
 	name: string;
-	process(ctx: PipelineContext): Promise<PipelineContext | null>;
+	process(ctx: PipelineContext): Promise<StepResult>;
 }

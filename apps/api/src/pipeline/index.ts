@@ -8,7 +8,15 @@ import { AiFilterStep } from "./ai-filter";
 import { DedupStep } from "./dedup";
 import { HardFilterStep } from "./hard-filter";
 import { StorageStep } from "./storage";
-import type { PipelineContext, PipelineStep } from "./types";
+import {
+	type PipelineContext,
+	type PipelineStep,
+	type StepResult,
+	StepStatus,
+} from "./types";
+
+// Re-export StepStatus as a value
+export { StepStatus };
 
 const logger = createLogger("pipeline");
 
@@ -25,16 +33,33 @@ export class Pipeline {
 	}
 
 	async process(raw: RawContent): Promise<boolean> {
-		let ctx: PipelineContext | null = { raw };
+		let ctx: PipelineContext = { raw };
 
 		for (const step of this.steps) {
-			if (!ctx) break;
-
 			logger.debug({ step: step.name }, "Running pipeline step");
-			ctx = await step.process(ctx);
+			const result = await step.process(ctx);
 
-			if (!ctx) {
-				logger.debug({ step: step.name }, "Content filtered out");
+			if (result.status === StepStatus.Filtered) {
+				logger.debug(
+					{
+						step: step.name,
+						reason: result.context?.filterResult?.oneLineWhy,
+					},
+					"Content filtered out",
+				);
+				return false;
+			}
+
+			if (result.status === StepStatus.Error) {
+				logger.error({ step: step.name, error: result.error }, "Step failed");
+				return false;
+			}
+
+			if (result.status === StepStatus.Continue && result.context) {
+				ctx = result.context;
+			} else {
+				// 不应该到达这里，但作为保险
+				logger.warn({ step: step.name, result }, "Unexpected step result");
 				return false;
 			}
 		}
@@ -59,4 +84,5 @@ export class Pipeline {
 	}
 }
 
-export type { PipelineContext, PipelineStep } from "./types";
+// Re-export types
+export type { PipelineContext, PipelineStep, StepResult };

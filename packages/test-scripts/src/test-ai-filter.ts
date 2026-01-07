@@ -1,4 +1,5 @@
 import { AiFilterStep, type PipelineContext } from "@intellipick/api/pipeline";
+import { StepStatus } from "@intellipick/api/pipeline/types";
 import type { FilterResult, RawContent } from "@intellipick/shared";
 import {
 	getErrorMessage,
@@ -19,6 +20,7 @@ interface TestResult {
 	duration: number;
 	error?: string;
 	result?: FilterResult;
+	filtered?: boolean; // 标记是否被过滤（reject）
 }
 
 /**
@@ -81,40 +83,79 @@ async function main() {
 		const start = Date.now();
 		try {
 			const ctx: PipelineContext = { raw: item };
-			const result = await aiFilterStep.process(ctx);
+			const stepResult = await aiFilterStep.process(ctx);
 			const duration = Date.now() - start;
-			const filterResult = result?.filterResult;
 
-			if (result && filterResult) {
+			// 情况 1: 错误
+			if (stepResult.status === StepStatus.Error) {
+				results.push({
+					index: i,
+					item,
+					success: false,
+					duration,
+					error: stepResult.error?.message || "Unknown error",
+				});
+				console.log(
+					`   ❌ 失败 (${duration}ms): ${stepResult.error?.message || "Unknown error"}`,
+				);
+			}
+			// 情况 2: 被过滤 - 但现在有原因信息
+			else if (stepResult.status === StepStatus.Filtered) {
+				const filterResult = stepResult.context?.filterResult;
 				results.push({
 					index: i,
 					item,
 					success: true,
 					duration,
 					result: filterResult,
+					filtered: true,
 				});
+				console.log(`   🔒 过滤 (${duration}ms)`);
+				if (filterResult) {
+					console.log(`      说明: ${filterResult.oneLineWhy}`);
+					console.log(`      评分: ${filterResult.valueScore}/100`);
+				}
+			}
+			// 情况 3: 继续执行 - 正常通过
+			else if (stepResult.status === StepStatus.Continue) {
+				const filterResult = stepResult.context?.filterResult;
+				if (filterResult) {
+					results.push({
+						index: i,
+						item,
+						success: true,
+						duration,
+						result: filterResult,
+						filtered: false,
+					});
 
-				console.log(`   ✅ 完成 (${duration}ms)`);
-				console.log("\n   📊 AI Filter 结果:");
-				console.log(`      决策: ${filterResult.decision}`);
-				console.log(`      价值评分: ${filterResult.valueScore}/100`);
-				console.log(`      噪声评分: ${filterResult.noiseScore}/100`);
-				console.log("      安全评估:");
-				console.log(`        - NSFW: ${filterResult.safety.nsfwSexual}/3`);
-				console.log(`        - 骚扰: ${filterResult.safety.harassment}/3`);
-				console.log(`        - 诈骗: ${filterResult.safety.scam}/3`);
-				console.log(`      原因: [${filterResult.reasons.join(", ")}]`);
-				console.log(`      信号: [${filterResult.signals.join(", ")}]`);
-				console.log(`      说明: ${filterResult.oneLineWhy}`);
-			} else {
-				results.push({
-					index: i,
-					item,
-					success: false,
-					duration,
-					error: "返回结果为空",
-				});
-				console.log(`   ❌ 失败 (${duration}ms): 返回结果为空`);
+					if (filterResult.decision === "pass") {
+						console.log(`   ✅ 通过 (${duration}ms)`);
+					} else if (filterResult.decision === "quarantine") {
+						console.log(`   ⚠️  隔离 (${duration}ms)`);
+					}
+
+					console.log("\n   📊 AI Filter 结果:");
+					console.log(`      决策: ${filterResult.decision}`);
+					console.log(`      价值评分: ${filterResult.valueScore}/100`);
+					console.log(`      噪声评分: ${filterResult.noiseScore}/100`);
+					console.log("      安全评估:");
+					console.log(`        - NSFW: ${filterResult.safety.nsfwSexual}/3`);
+					console.log(`        - 骚扰: ${filterResult.safety.harassment}/3`);
+					console.log(`        - 诈骗: ${filterResult.safety.scam}/3`);
+					console.log(`      原因: [${filterResult.reasons.join(", ")}]`);
+					console.log(`      信号: [${filterResult.signals.join(", ")}]`);
+					console.log(`      说明: ${filterResult.oneLineWhy}`);
+				} else {
+					results.push({
+						index: i,
+						item,
+						success: true,
+						duration,
+						filtered: false,
+					});
+					console.log(`   ✅ 通过 (${duration}ms): 无 filterResult`);
+				}
 			}
 		} catch (err) {
 			const duration = Date.now() - start;
@@ -138,35 +179,37 @@ async function main() {
 	printTitleSeparator();
 
 	const total = results.length;
-	const successCount = results.filter((r) => r.success).length;
-	const failCount = total - successCount;
-
-	console.log(`\n总样本数: ${total}`);
-	console.log(
-		`成功: ${successCount} (${((successCount / total) * 100).toFixed(1)}%)`,
-	);
-	console.log(
-		`失败: ${failCount} (${((failCount / total) * 100).toFixed(1)}%)`,
-	);
-
-	// 决策统计
 	const passCount = results.filter((r) => r.result?.decision === "pass").length;
 	const rejectCount = results.filter(
-		(r) => r.result?.decision === "reject",
+		(r) => r.result?.decision === "reject" || r.filtered,
 	).length;
-	console.log("\n🎯 决策分布:");
+	const quarantineCount = results.filter(
+		(r) => r.result?.decision === "quarantine",
+	).length;
+	const failCount = results.filter((r) => !r.success).length;
+
+	console.log(`\n总样本数: ${total}`);
+	console.log("\n📋 处理结果:");
 	console.log(
-		`  Pass: ${passCount}/${total} (${((passCount / total) * 100).toFixed(1)}%)`,
+		`  ✅ 通过: ${passCount}/${total} (${((passCount / total) * 100).toFixed(1)}%)`,
 	);
 	console.log(
-		`  Reject: ${rejectCount}/${total} (${((rejectCount / total) * 100).toFixed(1)}%)`,
+		`  🔒 过滤: ${rejectCount}/${total} (${((rejectCount / total) * 100).toFixed(1)}%)`,
+	);
+	if (quarantineCount > 0) {
+		console.log(
+			`  ⚠️  隔离: ${quarantineCount}/${total} (${((quarantineCount / total) * 100).toFixed(1)}%)`,
+		);
+	}
+	console.log(
+		`  ❌ 失败: ${failCount}/${total} (${((failCount / total) * 100).toFixed(1)}%)`,
 	);
 
 	// 失败详情
 	if (failCount > 0) {
 		console.log("\n❌ 失败详情:");
 		for (const r of results.filter((r) => !r.success)) {
-			console.log(`  - ${r.index + 1}. ${r.error || "Unknown error"}`);
+			console.log(`  - 样本 ${r.index + 1}: ${r.error || "Unknown error"}`);
 		}
 	}
 
@@ -180,22 +223,54 @@ async function main() {
 	console.log(`  最快: ${minTime}ms`);
 	console.log(`  最慢: ${maxTime}ms`);
 
-	// 评分统计
-	if (successCount > 0) {
-		const successResults = results.filter(
-			(r): r is TestResult & { result: FilterResult } =>
-				r.success && r.result !== undefined,
-		);
+	// 评分统计 - 只统计有结果的项目（包括过滤的）
+	const resultsWithData = results.filter(
+		(r): r is TestResult & { result: FilterResult } => r.result !== undefined,
+	);
+
+	if (resultsWithData.length > 0) {
 		const avgValueScore =
-			successResults.reduce((sum, r) => sum + r.result.valueScore, 0) /
-			successResults.length;
+			resultsWithData.reduce((sum, r) => sum + r.result.valueScore, 0) /
+			resultsWithData.length;
 		const avgNoiseScore =
-			successResults.reduce((sum, r) => sum + r.result.noiseScore, 0) /
-			successResults.length;
+			resultsWithData.reduce((sum, r) => sum + r.result.noiseScore, 0) /
+			resultsWithData.length;
 
 		console.log("\n📈 评分统计:");
 		console.log(`  平均价值评分: ${avgValueScore.toFixed(1)}/100`);
 		console.log(`  平均噪声评分: ${avgNoiseScore.toFixed(1)}/100`);
+
+		// 按决策分组统计
+		const passResults = resultsWithData.filter(
+			(r) => r.result.decision === "pass",
+		);
+		const rejectResults = resultsWithData.filter(
+			(r) => r.result.decision === "reject",
+		);
+
+		if (passResults.length > 0) {
+			const avgPassValue =
+				passResults.reduce((sum, r) => sum + r.result.valueScore, 0) /
+				passResults.length;
+			const avgPassNoise =
+				passResults.reduce((sum, r) => sum + r.result.noiseScore, 0) /
+				passResults.length;
+			console.log("\n  通过样本的评分:");
+			console.log(`    平均价值评分: ${avgPassValue.toFixed(1)}/100`);
+			console.log(`    平均噪声评分: ${avgPassNoise.toFixed(1)}/100`);
+		}
+
+		if (rejectResults.length > 0) {
+			const avgRejectValue =
+				rejectResults.reduce((sum, r) => sum + r.result.valueScore, 0) /
+				rejectResults.length;
+			const avgRejectNoise =
+				rejectResults.reduce((sum, r) => sum + r.result.noiseScore, 0) /
+				rejectResults.length;
+			console.log("\n  过滤样本的评分:");
+			console.log(`    平均价值评分: ${avgRejectValue.toFixed(1)}/100`);
+			console.log(`    平均噪声评分: ${avgRejectNoise.toFixed(1)}/100`);
+		}
 	}
 
 	printTitleSeparator();

@@ -1,7 +1,12 @@
 // apps/api/src/pipeline/hard-filter.ts
 import type { Config } from "@intellipick/config";
 import { createLogger } from "../lib/logger";
-import type { PipelineContext, PipelineStep } from "./types";
+import {
+	StepStatus,
+	type PipelineContext,
+	type PipelineStep,
+	type StepResult,
+} from "./types";
 
 const logger = createLogger("hard-filter");
 
@@ -14,9 +19,12 @@ export class HardFilterStep implements PipelineStep {
 
 	constructor(private config: Config["filter"]["hardRules"]) {}
 
-	async process(ctx: PipelineContext): Promise<PipelineContext | null> {
+	async process(ctx: PipelineContext): Promise<StepResult> {
 		if (!this.config.enabled) {
-			return ctx;
+			return {
+				status: StepStatus.Continue,
+				context: ctx,
+			};
 		}
 
 		const { raw } = ctx;
@@ -27,7 +35,10 @@ export class HardFilterStep implements PipelineStep {
 		for (const domain of this.config.blacklistDomains) {
 			if (url.includes(domain.toLowerCase())) {
 				logger.debug({ url, domain }, "Blocked by blacklist domain");
-				return null;
+				return {
+					status: StepStatus.Filtered,
+					context: ctx,
+				};
 			}
 		}
 
@@ -35,7 +46,10 @@ export class HardFilterStep implements PipelineStep {
 		for (const keyword of this.config.spamKeywords) {
 			if (content.includes(keyword.toLowerCase())) {
 				logger.debug({ keyword }, "Blocked by spam keyword");
-				return null;
+				return {
+					status: StepStatus.Filtered,
+					context: ctx,
+				};
 			}
 		}
 
@@ -48,9 +62,15 @@ export class HardFilterStep implements PipelineStep {
 				{ length: trimmed.length },
 				"Blocked: too short without links",
 			);
-			return null;
+			return {
+				status: StepStatus.Filtered,
+				context: ctx,
+			};
 		}
 
-		return ctx;
+		return {
+			status: StepStatus.Continue,
+			context: ctx,
+		};
 	}
 }

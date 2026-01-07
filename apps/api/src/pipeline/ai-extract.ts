@@ -4,7 +4,12 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
-import type { PipelineContext, PipelineStep } from "./types";
+import {
+	StepStatus,
+	type PipelineContext,
+	type PipelineStep,
+	type StepResult,
+} from "./types";
 
 const logger = createLogger("ai-extract");
 
@@ -89,12 +94,15 @@ export class AiExtractStep implements PipelineStep {
 
 	constructor(private ai: AiClient) {}
 
-	async process(ctx: PipelineContext): Promise<PipelineContext | null> {
+	async process(ctx: PipelineContext): Promise<StepResult> {
 		const { raw } = ctx;
 
 		// 如果是 quarantine，跳过提取
 		if (ctx.filterResult?.decision === "quarantine") {
-			return ctx;
+			return {
+				status: StepStatus.Continue,
+				context: ctx,
+			};
 		}
 
 		const prompt = EXTRACT_PROMPT.replace("{{content}}", raw.content);
@@ -118,11 +126,16 @@ export class AiExtractStep implements PipelineStep {
 				"AI extract result",
 			);
 
-			return ctx;
+			return {
+				status: StepStatus.Continue,
+				context: ctx,
+			};
 		} catch (err) {
 			logger.error({ err }, "AI extract failed");
-			// 失败时使用基础信息
-			return null;
+			return {
+				status: StepStatus.Error,
+				error: err as Error,
+			};
 		}
 	}
 }

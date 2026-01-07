@@ -11,6 +11,10 @@
 		"./pipeline": {
 			"types": "./dist/pipeline.d.ts",
 			"import": "./dist/pipeline.js"
+		},
+		"./pipeline/*": {
+			"types": "./dist/pipeline/*.d.ts",
+			"import": "./dist/pipeline/*.js"
 		}
 	},
 	"scripts": {

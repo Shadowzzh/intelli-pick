@@ -5,7 +5,12 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
-import type { PipelineContext, PipelineStep } from "./types";
+import {
+	StepStatus,
+	type PipelineContext,
+	type PipelineStep,
+	type StepResult,
+} from "./types";
 
 const logger = createLogger("ai-filter");
 
@@ -91,7 +96,7 @@ export class AiFilterStep implements PipelineStep {
 		private config: Config["filter"],
 	) {}
 
-	async process(ctx: PipelineContext): Promise<PipelineContext | null> {
+	async process(ctx: PipelineContext): Promise<StepResult> {
 		const { raw } = ctx;
 
 		const prompt = FILTER_PROMPT.replace("{{author}}", raw.author || "unknown")
@@ -114,6 +119,7 @@ export class AiFilterStep implements PipelineStep {
 				},
 				"AI filter result",
 			);
+			logger.debug({ result }, "AI filter detailed result");
 
 			// 应用阈值调整
 			if (
@@ -139,13 +145,22 @@ export class AiFilterStep implements PipelineStep {
 			ctx.filterResult = result;
 
 			if (result.decision === "reject") {
-				return null;
+				return {
+					status: StepStatus.Filtered,
+					context: ctx,
+				};
 			}
 
-			return ctx;
+			return {
+				status: StepStatus.Continue,
+				context: ctx,
+			};
 		} catch (err) {
 			logger.error({ err }, "AI filter failed");
-			return null;
+			return {
+				status: StepStatus.Error,
+				error: err as Error,
+			};
 		}
 	}
 }

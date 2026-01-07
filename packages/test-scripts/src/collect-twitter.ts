@@ -49,7 +49,9 @@ async function main() {
 	const config = await loadConfig();
 	process.chdir(originalCwd);
 
-	const twitterSource = config.sources.find((s: { type: string }) => s.type === "twitter");
+	const twitterSource = config.sources.find(
+		(s: { type: string }) => s.type === "twitter",
+	);
 
 	if (!twitterSource) {
 		console.error("❌ 未找到 Twitter 数据源配置");
