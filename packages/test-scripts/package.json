@@ -1,0 +1,41 @@
+{
+	"name": "@intellipick/test-scripts",
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		"./collect-twitter": "./dist/collect-twitter.js",
+		"./test-ai-pipeline": "./dist/test-ai-pipeline.js"
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"typecheck": "tsc --noEmit",
+
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write .",
+		"collect": "tsx src/collect-twitter.ts",
+		"test:filter": "tsx src/test-ai-filter.ts",
+		"test:extract": "tsx src/test-ai-extract.ts",
+		"test": "echo 'Please specify which test to run: test:filter or test:extract'"
+	},
+	"dependencies": {
+		"@intellipick/api": "workspace:*",
+		"@intellipick/config": "workspace:*",
+		"@intellipick/db": "workspace:*",
+		"@intellipick/env": "workspace:*",
+		"@intellipick/shared": "workspace:*",
+		"@ai-sdk/anthropic": "^1.0.0",
+		"@ai-sdk/openai": "^1.0.0",
+		"ai": "^4.0.0",
+		"drizzle-orm": "^0.38.0",
+		"https-proxy-agent": "^7.0.6",
+		"twitter-api-v2": "^1.18.0",
+		"zod": "^3.24.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.0.0",
+		"tsx": "^4.19.0",
+		"typescript": "^5.7.0"
+	}
+}
