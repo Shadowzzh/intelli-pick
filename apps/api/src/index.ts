@@ -28,6 +28,11 @@ async function main() {
 	const ai = createAiClient(config.ai);
 	const collector = createCollectorManager(sourceMap);
 	const queue = createQueue(env.REDIS_URL);
+
+	// 清空启动前的旧任务（避免 source_id 等配置变更导致的不一致）
+	await queue.drain();
+	logger.info("Cleared old jobs from queue");
+
 	const worker = createWorker(env.REDIS_URL, config, ai);
 
 	// 采集任务
