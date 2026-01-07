@@ -26,7 +26,10 @@ export const v2exPlugin: CollectorPlugin = {
 				: `https://www.v2ex.com/api/topics/show.json?node_name=${config.node}`;
 
 		const dispatcher = getProxyAgent();
-		const response = await fetch(apiUrl, { dispatcher });
+		const response = await fetch(apiUrl, {
+			dispatcher,
+			signal: AbortSignal.timeout(10000), // 10秒超时
+		});
 		const topics = (await response.json()) as V2exTopic[];
 
 		return topics.map((topic) => ({

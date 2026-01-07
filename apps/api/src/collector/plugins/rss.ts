@@ -22,9 +22,12 @@ export const rssPlugin: CollectorPlugin = {
 						},
 						requestOptions: {
 							agent: httpAgent,
+							timeout: 10000, // 10秒超时
 						},
 					}
-				: undefined,
+				: {
+						timeout: 10000, // 10秒超时（无代理情况）
+					},
 		);
 
 		const feed = await parser.parseURL(config.url);

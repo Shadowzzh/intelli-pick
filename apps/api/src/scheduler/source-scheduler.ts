@@ -90,8 +90,16 @@ export class SourceScheduler {
 		try {
 			logger.info({ source: source.name }, "Starting collection...");
 
-			// 采集单个 source
-			const items = await this.collector.collectSource(source);
+			// 采集单个 source（带15秒超时保护）
+			const items = await Promise.race([
+				this.collector.collectSource(source),
+				new Promise<never>((_, reject) =>
+					setTimeout(
+						() => reject(new Error("Collection timeout after 15s")),
+						15000,
+					),
+				),
+			]);
 
 			// 去重
 			const newItems = await filterExistingContent(items);
@@ -117,7 +125,17 @@ export class SourceScheduler {
 				"Collection completed",
 			);
 		} catch (err) {
-			logger.error({ source: source.name, err }, "Collection failed");
+			const errorMessage = err instanceof Error ? err.message : String(err);
+			const isTimeout = errorMessage.includes("timeout");
+
+			logger.error(
+				{
+					source: source.name,
+					error: errorMessage,
+					errorType: isTimeout ? "TIMEOUT_ERROR" : "COLLECTION_ERROR",
+				},
+				isTimeout ? "Collection timeout" : "Collection failed",
+			);
 		} finally {
 			this.releaseLock(source.name);
 		}
