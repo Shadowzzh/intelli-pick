@@ -14,7 +14,8 @@
 		"db:generate": "turbo db:generate",
 		"db:migrate": "turbo db:migrate",
 		"db:push": "turbo db:push",
-		"db:studio": "turbo db:studio"
+		"db:studio": "turbo db:studio",
+		"redis:status": "./scripts/redis-status.sh"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",
