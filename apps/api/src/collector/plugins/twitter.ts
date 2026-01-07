@@ -52,25 +52,39 @@ export const twitterPlugin: CollectorPlugin = {
 		try {
 			if (config.mode === "home") {
 				// Home Timeline
-				const timeline = await client.v2.homeTimeline({
-					max_results: config.maxResults,
-					"tweet.fields": ["created_at", "author_id", "text"],
-					expansions: ["author_id"],
-				});
-
-				for (const tweet of timeline.data.data || []) {
-					results.push({
-						sourceType: "twitter",
-						sourceId: sourceId, // 使用数据库中的 source ID
-						externalId: tweet.id,
-						title: null,
-						content: tweet.text,
-						url: `https://twitter.com/i/web/status/${tweet.id}`,
-						author: tweet.author_id || null,
-						publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
-						collectedAt: new Date(),
-						raw: tweet,
+				try {
+					const timeline = await client.v2.homeTimeline({
+						max_results: config.maxResults,
+						"tweet.fields": ["created_at", "author_id", "text"],
+						expansions: ["author_id"],
 					});
+
+					for (const tweet of timeline.data.data || []) {
+						results.push({
+							sourceType: "twitter",
+							sourceId: sourceId, // 使用数据库中的 source ID
+							externalId: tweet.id,
+							title: null,
+							content: tweet.text,
+							url: `https://twitter.com/i/web/status/${tweet.id}`,
+							author: tweet.author_id || null,
+							publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
+							collectedAt: new Date(),
+							raw: tweet,
+						});
+					}
+				} catch (err) {
+					if (
+						(err as any)?.code === 429 ||
+						(err as any)?.statusCode === 429
+					) {
+						logger.warn(
+							{ source: source.name },
+							"Twitter API rate limit exceeded (429), skipping this cycle",
+						);
+						return [];
+					}
+					throw err;
 				}
 			} else if (config.mode === "user" && config.usernames) {
 				// User Timeline
@@ -101,29 +115,53 @@ export const twitterPlugin: CollectorPlugin = {
 							});
 						}
 					} catch (err) {
+						if (
+							(err as any)?.code === 429 ||
+							(err as any)?.statusCode === 429
+						) {
+							logger.warn(
+								{ source: source.name, username },
+								"Twitter API rate limit exceeded (429), skipping user",
+							);
+							continue; // 跳过这个用户，继续下一个
+						}
 						logger.error({ err, username }, "Failed to fetch user timeline");
 					}
 				}
 			} else if (config.mode === "list" && config.listId) {
 				// List Timeline
-				const listTweets = await client.v2.listTweets(config.listId, {
-					max_results: config.maxResults,
-					"tweet.fields": ["created_at", "author_id", "text"],
-				});
-
-				for (const tweet of listTweets.data.data || []) {
-					results.push({
-						sourceType: "twitter",
-						sourceId: sourceId, // 使用数据库中的 source ID
-						externalId: tweet.id,
-						title: null,
-						content: tweet.text,
-						url: `https://twitter.com/i/web/status/${tweet.id}`,
-						author: tweet.author_id || null,
-						publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
-						collectedAt: new Date(),
-						raw: tweet,
+				try {
+					const listTweets = await client.v2.listTweets(config.listId, {
+						max_results: config.maxResults,
+						"tweet.fields": ["created_at", "author_id", "text"],
 					});
+
+					for (const tweet of listTweets.data.data || []) {
+						results.push({
+							sourceType: "twitter",
+							sourceId: sourceId, // 使用数据库中的 source ID
+							externalId: tweet.id,
+							title: null,
+							content: tweet.text,
+							url: `https://twitter.com/i/web/status/${tweet.id}`,
+							author: tweet.author_id || null,
+							publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
+							collectedAt: new Date(),
+							raw: tweet,
+						});
+					}
+				} catch (err) {
+					if (
+						(err as any)?.code === 429 ||
+						(err as any)?.statusCode === 429
+					) {
+						logger.warn(
+							{ source: source.name },
+							"Twitter API rate limit exceeded (429), skipping this cycle",
+						);
+						return [];
+					}
+					throw err;
 				}
 			}
 		} catch (err) {
