@@ -1,16 +1,18 @@
 // packages/config/src/index.ts
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createJiti } from "jiti";
-import { ConfigSchema } from "./schema";
-import type { Config } from "./schema";
+import { ConfigSchema } from "./schema.js";
+import type { Config } from "./schema.js";
 
-export function defineConfig<T extends Config>(config: T): T {
-	return config;
+export function defineConfig(config: Config): Config {
+	return ConfigSchema.parse(config);
 }
 
 export async function loadConfig(path = "config.ts"): Promise<Config> {
-	const jiti = createJiti(import.meta.url);
-	const mod = await jiti.import(resolve(process.cwd(), path));
+	const jiti = createJiti(process.cwd());
+	const fullPath = resolve(process.cwd(), path);
+	const mod = await jiti.import(fullPath);
 	const raw = (mod as { default: unknown }).default;
 	return ConfigSchema.parse(raw);
 }
