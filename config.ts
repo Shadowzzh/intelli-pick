@@ -7,7 +7,9 @@ export default defineConfig({
 			deepseek: {
 				baseUrl: "https://api.deepseek.com/v1",
 			},
-			anthropic: {},
+			anthropic: {
+				baseUrl: "https://open.bigmodel.cn/api/anthropic/v1",
+			},
 		},
 		tasks: {
 			filter: {
@@ -15,8 +17,8 @@ export default defineConfig({
 				model: "deepseek-chat",
 			},
 			extractAndClassify: {
-				provider: "anthropic",
-				model: "claude-sonnet-4-20250514",
+				provider: "deepseek",
+				model: "deepseek-chat",
 			},
 		},
 	},
@@ -24,8 +26,8 @@ export default defineConfig({
 		{
 			name: "Hacker News",
 			type: "rss",
-			enabled: true,
-			fetchInterval: 3600,
+			enabled: false,
+			fetchInterval: 3600, // 1 小时
 			config: {
 				url: "https://hnrss.org/frontpage",
 			},
@@ -33,8 +35,8 @@ export default defineConfig({
 		{
 			name: "V2EX 热门",
 			type: "v2ex",
-			enabled: true,
-			fetchInterval: 3600,
+			enabled: false,
+			fetchInterval: 1800, // 30 分钟
 			config: {
 				node: "hot",
 			},
@@ -42,11 +44,11 @@ export default defineConfig({
 		{
 			name: "Twitter 推荐",
 			type: "twitter",
-			enabled: false,
-			fetchInterval: 3600,
+			enabled: true,
+			fetchInterval: 1800, // 30 分钟
 			config: {
 				mode: "home",
-				maxResults: 50,
+				maxResults: 10,
 			},
 		},
 	],
