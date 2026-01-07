@@ -3,6 +3,7 @@ import { env } from "@intellipick/env";
 import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/twitter.ts
 import { TwitterApi } from "twitter-api-v2";
+import { getNodeProxyAgent } from "../../lib/proxy";
 import { createLogger } from "../../lib/logger";
 import type { CollectorPlugin } from "../types";
 
@@ -25,12 +26,26 @@ export const twitterPlugin: CollectorPlugin = {
 			return [];
 		}
 
-		const client = new TwitterApi({
-			appKey: env.TWITTER_CLIENT_ID,
-			appSecret: env.TWITTER_CLIENT_SECRET,
-			accessToken: env.TWITTER_ACCESS_TOKEN,
-			accessSecret: env.TWITTER_REFRESH_TOKEN, // OAuth 1.0a 使用
-		});
+		// 获取代理 agent
+		const httpAgent = getNodeProxyAgent();
+
+		const client = new TwitterApi(
+			{
+				appKey: env.TWITTER_CLIENT_ID,
+				appSecret: env.TWITTER_CLIENT_SECRET,
+				accessToken: env.TWITTER_ACCESS_TOKEN,
+				accessSecret: env.TWITTER_REFRESH_TOKEN,
+			},
+			{
+				httpAgent, // 使用代理 agent
+			},
+		);
+
+		if (httpAgent) {
+			logger.info("Twitter client configured with proxy");
+		} else {
+			logger.debug("Twitter client without proxy");
+		}
 
 		const results: RawContent[] = [];
 
