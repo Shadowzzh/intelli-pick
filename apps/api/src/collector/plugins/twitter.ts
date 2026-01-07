@@ -11,7 +11,7 @@ const logger = createLogger("twitter-plugin");
 export const twitterPlugin: CollectorPlugin = {
 	type: "twitter",
 
-	async collect(source: SourceConfig): Promise<RawContent[]> {
+	async collect(source: SourceConfig, sourceId: string): Promise<RawContent[]> {
 		const config = source.config as TwitterConfig;
 
 		// 检查 Twitter 凭据是否配置
@@ -46,7 +46,7 @@ export const twitterPlugin: CollectorPlugin = {
 				for (const tweet of timeline.data.data || []) {
 					results.push({
 						sourceType: "twitter",
-						sourceId: source.name,
+						sourceId: sourceId, // 使用数据库中的 source ID
 						externalId: tweet.id,
 						title: null,
 						content: tweet.text,
@@ -72,7 +72,7 @@ export const twitterPlugin: CollectorPlugin = {
 						for (const tweet of tweets.data.data || []) {
 							results.push({
 								sourceType: "twitter",
-								sourceId: source.name,
+								sourceId: sourceId, // 使用数据库中的 source ID
 								externalId: tweet.id,
 								title: null,
 								content: tweet.text,
@@ -99,7 +99,7 @@ export const twitterPlugin: CollectorPlugin = {
 				for (const tweet of listTweets.data.data || []) {
 					results.push({
 						sourceType: "twitter",
-						sourceId: source.name,
+						sourceId: sourceId, // 使用数据库中的 source ID
 						externalId: tweet.id,
 						title: null,
 						content: tweet.text,

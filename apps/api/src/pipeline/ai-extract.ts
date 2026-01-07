@@ -35,42 +35,54 @@ const ExtractResultSchema = z.object({
 
 const EXTRACT_PROMPT = `你是一个内容分析器。从以下内容中提取结构化信息。
 
-## 提取字段
+## 必须返回的字段
 
-### title
+### title (必需)
 - 如果原文有标题，使用原标题
 - 如果没有（如推文），生成一个简洁的标题（<20字）
 
-### summary
+### summary (必需)
 - 用 1-2 句话总结核心内容
 - 保留关键信息，去除冗余
 
-### keyPoints
+### keyPoints (必需)
 - 提取核心观点、结论、主张
 - 每条观点独立成句
 - 最多 5 条
+- 如果没有明确观点，返回空数组 []
 
-### dataPoints
+### dataPoints (必需)
 - 提取具体数字、量化信息
 - 如：融资金额、性能数据、用户数、价格等
 - 格式："[指标] [数值]"
+- 如果没有数据点，返回空数组 []
 
-### entities
-- 提取提到的实体：工具、项目、库、文章、人物、公司、事件
-- 只提取明确提到的，不要推断
+### entities (必需)
+实体对象数组，每个实体包含：
+- name: 实体名称
+- type: 实体类型，必须是以下之一: "tool", "project", "library", "article", "person", "company", "event"
+- url: (可选) 相关URL
+- description: (可选) 简短描述
 
-### category
+注意事项：
+- 只提取明确提到的实体，不要推断
+- type 必须严格使用上述 7 种类型之一
+- 如果没有符合条件的实体，返回空数组 []
+- 绝对不要返回字符串或其他非对象类型
+
+### category (必需)
 - 内容所属大类
 - 如：技术、财经、生活、娱乐、政治、科学等
 
-### tags
+### tags (必需)
 - 细分标签，3-5 个
 - 如：AI、LLM、开源、融资、教程等
+- 如果无法提取标签，至少返回一个通用标签
 
 ## 输入
 {{content}}
 
-根据以上要求，输出 JSON 结果。`;
+根据以上要求，输出完整的 JSON 结果，确保所有字段都存在且类型正确。`;
 
 export class AiExtractStep implements PipelineStep {
 	name = "ai-extract";

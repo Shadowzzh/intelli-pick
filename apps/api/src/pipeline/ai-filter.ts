@@ -49,11 +49,31 @@ const FILTER_PROMPT = `你是一个内容过滤器。判断以下内容是否应
 - 出现实体（公司/产品/人物/项目）+ 动作/事件 + 可追踪线索
 - 有爆料、风险提示、反驳证据、数据/截图描述
 
-## signals 可选值
-hasNumbers, hasSourceLink, hasNamedEntities, hasConcreteClaim, isBreakingStyle, hasCodeBlock, hasQuote, mentionsProduct, mentionsPerson, hasDataPoint
+## 必须返回的字段
 
-## reasons 可选值
-AD_SPAM, LOW_SIGNAL, PURE_EMOTION, NSFW_SEXUAL, HARASSMENT, SCAM, DUPLICATE, BREAKING_NEWS_STYLE, HAS_EVIDENCE, WATCHLIST_OVERRIDE
+### decision (必需)
+取值: "pass" | "reject" | "quarantine"
+
+### valueScore (必需)
+信息价值评分，0-100 的整数
+
+### noiseScore (必需)
+噪声程度评分，0-100 的整数
+
+### safety (必需)
+安全评估对象，必须包含以下字段：
+- nsfwSexual: 0-3 的整数（0=无，1=暗示，2=明确，3=严重）
+- harassment: 0-3 的整数（0=无，1=轻微，2=中度，3=严重）
+- scam: 0-3 的整数（0=无，1=可疑，2=明确，3=严重）
+
+### reasons (必需)
+原因列表，可选值: AD_SPAM, LOW_SIGNAL, PURE_EMOTION, NSFW_SEXUAL, HARASSMENT, SCAM, DUPLICATE, BREAKING_NEWS_STYLE, HAS_EVIDENCE, WATCHLIST_OVERRIDE
+
+### signals (必需)
+信号列表，可选值: hasNumbers, hasSourceLink, hasNamedEntities, hasConcreteClaim, isBreakingStyle, hasCodeBlock, hasQuote, mentionsProduct, mentionsPerson, hasDataPoint
+
+### oneLineWhy (必需)
+一句话解释判定原因
 
 ## 输入
 作者: {{author}}
@@ -61,7 +81,7 @@ AD_SPAM, LOW_SIGNAL, PURE_EMOTION, NSFW_SEXUAL, HARASSMENT, SCAM, DUPLICATE, BRE
 内容:
 {{content}}
 
-根据以上规则，输出 JSON 判定结果。`;
+根据以上规则，输出完整的 JSON 判定结果，确保包含所有必需字段。`;
 
 export class AiFilterStep implements PipelineStep {
 	name = "ai-filter";

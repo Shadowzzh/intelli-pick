@@ -9,6 +9,8 @@ const logger = createLogger("collector-manager");
 export class CollectorManager {
 	private plugins = new Map<string, CollectorPlugin>();
 
+	constructor(private sourceMap: Map<string, string>) {}
+
 	register(plugin: CollectorPlugin): void {
 		this.plugins.set(plugin.type, plugin);
 		logger.info({ type: plugin.type }, "Registered collector plugin");
@@ -21,12 +23,22 @@ export class CollectorManager {
 			return [];
 		}
 
+		// 获取数据库中的 source ID
+		const sourceId = this.sourceMap.get(source.name);
+		if (!sourceId) {
+			logger.error(
+				{ name: source.name },
+				"Source not found in database, skipping",
+			);
+			return [];
+		}
+
 		try {
 			logger.info(
 				{ name: source.name, type: source.type },
 				"Collecting from source",
 			);
-			const results = await plugin.collect(source);
+			const results = await plugin.collect(source, sourceId);
 			logger.info(
 				{ name: source.name, count: results.length },
 				"Collected items",

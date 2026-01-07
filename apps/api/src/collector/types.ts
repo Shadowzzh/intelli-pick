@@ -4,5 +4,5 @@ import type { RawContent } from "@ai-filter/shared";
 
 export interface CollectorPlugin {
 	type: string;
-	collect(source: SourceConfig): Promise<RawContent[]>;
+	collect(source: SourceConfig, sourceId: string): Promise<RawContent[]>;
 }

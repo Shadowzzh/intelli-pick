@@ -18,7 +18,7 @@ interface V2exTopic {
 export const v2exPlugin: CollectorPlugin = {
 	type: "v2ex",
 
-	async collect(source: SourceConfig): Promise<RawContent[]> {
+	async collect(source: SourceConfig, sourceId: string): Promise<RawContent[]> {
 		const config = source.config as V2exConfig;
 		const apiUrl =
 			config.node === "hot"
@@ -31,7 +31,7 @@ export const v2exPlugin: CollectorPlugin = {
 
 		return topics.map((topic) => ({
 			sourceType: "v2ex",
-			sourceId: source.name,
+			sourceId: sourceId, // 使用数据库中的 source ID
 			externalId: String(topic.id),
 			title: topic.title,
 			content: topic.content || topic.content_rendered || "",

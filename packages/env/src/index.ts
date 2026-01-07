@@ -1,8 +1,8 @@
-// packages/env/src/index.ts
-import { config } from "dotenv";
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+// packages/env/src/index.ts
+import { config } from "dotenv";
 
 // 向上查找 .env 文件直到找到或到达根目录
 function findEnvFile(startDir: string): string | null {

@@ -2,8 +2,10 @@
 import { CollectorManager } from "./manager";
 import { rssPlugin, twitterPlugin, v2exPlugin } from "./plugins";
 
-export function createCollectorManager(): CollectorManager {
-	const manager = new CollectorManager();
+export function createCollectorManager(
+	sourceMap: Map<string, string>,
+): CollectorManager {
+	const manager = new CollectorManager(sourceMap);
 
 	manager.register(rssPlugin);
 	manager.register(v2exPlugin);

@@ -6,6 +6,7 @@ import { createCollectorManager } from "./collector/index";
 import { createAiClient } from "./lib/ai";
 import { createLogger } from "./lib/logger";
 import { initializeProxy } from "./lib/proxy";
+import { syncSources } from "./lib/sources";
 import { createQueue, createWorker } from "./worker";
 
 const logger = createLogger("main");
@@ -19,9 +20,13 @@ async function main() {
 	// 初始化代理
 	initializeProxy(config);
 
+	// 同步 sources 到数据库
+	const sourceMap = await syncSources(config);
+	logger.info({ count: sourceMap.size }, "Synced sources to database");
+
 	// 初始化
 	const ai = createAiClient(config.ai);
-	const collector = createCollectorManager();
+	const collector = createCollectorManager(sourceMap);
 	const queue = createQueue(env.REDIS_URL);
 	const worker = createWorker(env.REDIS_URL, config, ai);
 
