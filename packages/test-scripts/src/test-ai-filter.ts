@@ -63,6 +63,7 @@ async function main() {
 			passMinValueScore: 30,
 			rejectMaxValueScore: 15,
 			quarantineOnSafety: true,
+			rejectToQuarantineMinScore: 30,
 		},
 		promptVersion: "v1.0",
 		quarantineTTLDays: 30,

@@ -59,6 +59,7 @@ const ThresholdsSchema = z.object({
 	passMinValueScore: z.number().default(30),
 	rejectMaxValueScore: z.number().default(15),
 	quarantineOnSafety: z.boolean().default(true),
+	rejectToQuarantineMinScore: z.number().default(30), // 拒绝但保留观察的最低分数
 });
 
 // 队列配置

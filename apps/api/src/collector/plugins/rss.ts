@@ -23,7 +23,7 @@ export const rssPlugin: CollectorPlugin = {
 						requestOptions: {
 							agent: httpAgent,
 						},
-				  }
+					}
 				: undefined,
 		);
 

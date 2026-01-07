@@ -29,6 +29,7 @@ export type FilterReason =
 	| "HAS_EVIDENCE"
 	| "WATCHLIST_OVERRIDE"
 	| "BELOW_VALUE_THRESHOLD"
+	| "EDGE_CASE_PROTECTION"
 	| "AI_FILTER_ERROR";
 
 export type FilterSignal =

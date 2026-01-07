@@ -28,10 +28,10 @@ export default defineConfig({
 		lockTimeout: 5 * 60 * 1000, // 5分钟，单位毫秒
 	},
 	queue: {
-		concurrency: 3, // 同时处理
+		concurrency: 5, // 同时处理
 		rateLimit: {
-			max: 2, // 每秒最多
-			duration: 1000 * 10, // 时间窗口
+			max: 10, // 每个时间窗口的最大任务数
+			duration: 1000 * 10, // 时间窗口，单位毫秒
 		},
 		retry: {
 			attempts: 0, // 失败重试
@@ -42,21 +42,22 @@ export default defineConfig({
 		},
 	},
 	network: {
-		httpProxy: "http://127.0.0.1:7890",
+		httpProxy: "http://127.0.0.1:7890", // 如果需要通过代理访问外网，请设置此项
 	},
 	sources,
 	filter: {
 		hardRules: {
-			enabled: true,
-			blacklistDomains: ["bit.ly/spam"],
-			spamKeywords: ["微信群", "返利", "优惠码", "开户", "代投", "包赚"],
+			enabled: true, // 启用硬规则过滤
+			blacklistDomains: ["bit.ly/spam"], // 黑名单域名
+			spamKeywords: ["微信群", "返利", "优惠码", "开户", "代投", "包赚"], // 垃圾内容关键词
 		},
 		thresholds: {
-			passMinValueScore: 30,
-			rejectMaxValueScore: 15,
-			quarantineOnSafety: true,
+			passMinValueScore: 50, // 及格分数线
+			rejectMaxValueScore: 30, // 拒绝分数线
+			quarantineOnSafety: true, // 安全性低于阈值时隔离
+			rejectToQuarantineMinScore: 30, // 拒绝但保留观察的最低分数
 		},
-		promptVersion: "v1.0",
-		quarantineTTLDays: 30,
+		promptVersion: "v1.0", // 使用的提示词版本
+		quarantineTTLDays: 30, // 隔离内容保存天数
 	},
 });

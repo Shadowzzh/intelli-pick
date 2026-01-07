@@ -142,6 +142,16 @@ export class AiFilterStep implements PipelineStep {
 				}
 			}
 
+			// 边界情况保护：如果最终决策是 reject 但分数 >= 阈值，改为 quarantine
+			// 这样可以保留可能有价值的内容，避免假阳性
+			if (
+				result.decision === "reject" &&
+				result.valueScore >= this.config.thresholds.rejectToQuarantineMinScore
+			) {
+				result.decision = "quarantine";
+				result.reasons.push("EDGE_CASE_PROTECTION");
+			}
+
 			ctx.filterResult = result;
 
 			if (result.decision === "reject") {

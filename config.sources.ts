@@ -6,7 +6,7 @@ export const sources: SourceConfig[] = [
 		name: "Hacker News",
 		type: "rss",
 		enabled: false,
-		fetchInterval: 3600, // 1 小时
+		fetchInterval: 1800, // 1 小时
 		config: {
 			url: "https://hnrss.org/frontpage",
 		},
@@ -14,8 +14,8 @@ export const sources: SourceConfig[] = [
 	{
 		name: "V2EX 热门",
 		type: "v2ex",
-		enabled: false,
-		fetchInterval: 1800, // 30 分钟
+		enabled: true,
+		fetchInterval: 20 * 60, // 20 分钟
 		config: {
 			node: "hot",
 		},
@@ -23,8 +23,8 @@ export const sources: SourceConfig[] = [
 	{
 		name: "Twitter 推荐",
 		type: "twitter",
-		enabled: false,
-		fetchInterval: 1800, // 30 分钟
+		enabled: true,
+		fetchInterval: 20 * 60, // 20 分钟
 		config: {
 			mode: "home",
 			maxResults: 10,
@@ -34,7 +34,7 @@ export const sources: SourceConfig[] = [
 		name: "少数派首页",
 		type: "rss",
 		enabled: true,
-		fetchInterval: 3600, // 1 小时
+		fetchInterval: 20 * 60, // 20 分钟
 		config: {
 			url: "http://localhost:1200/sspai/index", // 使用本地 RSSHub
 		},
@@ -43,7 +43,7 @@ export const sources: SourceConfig[] = [
 		name: "36氪热榜",
 		type: "rss",
 		enabled: true,
-		fetchInterval: 1800, // 30 分钟（热榜更新较快）
+		fetchInterval: 20 * 60, // 20 分钟
 		config: {
 			url: "https://36kr.com/feed", // 使用官方 RSS
 		},
