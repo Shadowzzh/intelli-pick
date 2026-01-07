@@ -67,6 +67,20 @@ export default defineConfig({
 	scheduler: {
 		timezone: "Asia/Shanghai",
 	},
+	queue: {
+		concurrency: 1, // 同时处理
+		rateLimit: {
+			max: 1, // 每秒最多
+			duration: 1000 * 100, // 时间窗口
+		},
+		retry: {
+			attempts: 0, // 失败重试
+			backoff: {
+				type: "exponential", // 指数退避
+				delay: 2000, // 首次延迟
+			},
+		},
+	},
 	network: {
 		httpProxy: "http://127.0.0.1:7890",
 	},

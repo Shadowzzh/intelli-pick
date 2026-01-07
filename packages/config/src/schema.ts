@@ -61,6 +61,22 @@ const ThresholdsSchema = z.object({
 	quarantineOnSafety: z.boolean().default(true),
 });
 
+// 队列配置
+const QueueConfigSchema = z.object({
+	concurrency: z.number().default(3),
+	rateLimit: z.object({
+		max: z.number().default(5),
+		duration: z.number().default(1000),
+	}),
+	retry: z.object({
+		attempts: z.number().default(3),
+		backoff: z.object({
+			type: z.enum(["exponential", "fixed"]).default("exponential"),
+			delay: z.number().default(2000),
+		}),
+	}),
+});
+
 // 完整配置
 export const ConfigSchema = z.object({
 	ai: AiConfigSchema,
@@ -74,6 +90,7 @@ export const ConfigSchema = z.object({
 	scheduler: z.object({
 		timezone: z.string().default("Asia/Shanghai"),
 	}),
+	queue: QueueConfigSchema,
 	network: z
 		.object({
 			httpProxy: z.string().url().optional(),
@@ -87,3 +104,4 @@ export type TwitterConfig = z.infer<typeof TwitterConfigSchema>;
 export type RssConfig = z.infer<typeof RssConfigSchema>;
 export type V2exConfig = z.infer<typeof V2exConfigSchema>;
 export type AiConfig = z.infer<typeof AiConfigSchema>;
+export type QueueConfig = z.infer<typeof QueueConfigSchema>;

@@ -32,7 +32,19 @@ export function createWorker(
 		},
 		{
 			connection: { url: redisUrl },
-			concurrency: 5,
+			concurrency: config.queue.concurrency,
+			limiter: {
+				max: config.queue.rateLimit.max,
+				duration: config.queue.rateLimit.duration,
+			},
+			settings: {
+				backoffStrategy: (attemptsMade: number) => {
+					const { type, delay } = config.queue.retry.backoff;
+					return type === "exponential"
+						? delay * 2 ** attemptsMade // 失败一次，不是立刻再试，而是等得越来越久再试。
+						: delay;
+				},
+			},
 		},
 	);
 
