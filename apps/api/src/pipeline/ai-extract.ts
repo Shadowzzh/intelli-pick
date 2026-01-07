@@ -122,16 +122,7 @@ export class AiExtractStep implements PipelineStep {
 		} catch (err) {
 			logger.error({ err }, "AI extract failed");
 			// 失败时使用基础信息
-			ctx.extractResult = {
-				title: raw.title || raw.content.slice(0, 50),
-				summary: raw.content.slice(0, 200),
-				keyPoints: [],
-				dataPoints: [],
-				entities: [],
-				category: "未分类",
-				tags: [],
-			};
-			return ctx;
+			return null;
 		}
 	}
 }

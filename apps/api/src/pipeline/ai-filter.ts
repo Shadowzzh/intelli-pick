@@ -145,17 +145,7 @@ export class AiFilterStep implements PipelineStep {
 			return ctx;
 		} catch (err) {
 			logger.error({ err }, "AI filter failed");
-			// 失败时默认通过，避免丢失内容
-			ctx.filterResult = {
-				decision: "pass",
-				valueScore: 50,
-				noiseScore: 50,
-				safety: { nsfwSexual: 0, harassment: 0, scam: 0 },
-				reasons: ["AI_FILTER_ERROR"],
-				signals: [],
-				oneLineWhy: "AI filter failed, defaulting to pass",
-			};
-			return ctx;
+			return null;
 		}
 	}
 }
