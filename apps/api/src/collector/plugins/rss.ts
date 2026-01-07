@@ -2,20 +2,27 @@ import type { RssConfig, SourceConfig } from "@intellipick/config";
 import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/rss.ts
 import Parser from "rss-parser";
-import type { CollectorPlugin } from "../types";
 import { getNodeProxyAgent } from "../../lib/proxy";
-
-const parser = new Parser({
-	requestOptions: {
-		agent: getNodeProxyAgent(),
-	},
-});
+import type { CollectorPlugin } from "../types";
 
 export const rssPlugin: CollectorPlugin = {
 	type: "rss",
 
 	async collect(source: SourceConfig, sourceId: string): Promise<RawContent[]> {
 		const config = source.config as RssConfig;
+
+		// 创建带代理的 parser 实例
+		const httpAgent = getNodeProxyAgent();
+		const parser = new Parser(
+			httpAgent
+				? {
+						requestOptions: {
+							agent: httpAgent,
+						},
+				  }
+				: undefined,
+		);
+
 		const feed = await parser.parseURL(config.url);
 
 		return (feed.items || []).map((item) => ({
