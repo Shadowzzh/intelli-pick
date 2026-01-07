@@ -14,7 +14,7 @@ export const sources: SourceConfig[] = [
 	{
 		name: "V2EX 热门",
 		type: "v2ex",
-		enabled: true,
+		enabled: false,
 		fetchInterval: 1800, // 30 分钟
 		config: {
 			node: "hot",
@@ -36,7 +36,7 @@ export const sources: SourceConfig[] = [
 		enabled: true,
 		fetchInterval: 3600, // 1 小时
 		config: {
-			url: "https://rsshub.app/sspai/index",
+			url: "http://localhost:1200/sspai/index", // 使用本地 RSSHub
 		},
 	},
 	{
@@ -45,7 +45,7 @@ export const sources: SourceConfig[] = [
 		enabled: true,
 		fetchInterval: 1800, // 30 分钟（热榜更新较快）
 		config: {
-			url: "https://rsshub.app/36kr/hot-list",
+			url: "https://36kr.com/feed", // 使用官方 RSS
 		},
 	},
 ];
