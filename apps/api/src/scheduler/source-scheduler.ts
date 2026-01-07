@@ -12,13 +12,13 @@ const logger = createLogger("source-scheduler");
 export class SourceScheduler {
 	private cronJobs: CronJob[] = [];
 	private locks = new Map<string, { locked: boolean; lockedAt: Date }>();
-	private readonly LOCK_TIMEOUT = 5 * 60 * 1000; // 5分钟
 
 	constructor(
 		private sources: SourceConfig[],
 		private collector: CollectorManager,
 		private queue: Queue,
 		private timezone: string,
+		private readonly lockTimeout: number,
 	) {}
 
 	/**
@@ -132,7 +132,7 @@ export class SourceScheduler {
 
 		if (
 			!lock?.locked ||
-			Date.now() - lock.lockedAt.getTime() > this.LOCK_TIMEOUT
+			Date.now() - lock.lockedAt.getTime() > this.lockTimeout
 		) {
 			if (lock?.locked) {
 				logger.warn(

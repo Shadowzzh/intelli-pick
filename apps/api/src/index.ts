@@ -41,6 +41,7 @@ async function main() {
 		collector,
 		queue,
 		config.scheduler.timezone,
+		config.scheduler.lockTimeout,
 	);
 
 	// 启动调度器（创建 CronJob）

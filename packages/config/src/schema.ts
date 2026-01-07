@@ -89,6 +89,7 @@ export const ConfigSchema = z.object({
 	}),
 	scheduler: z.object({
 		timezone: z.string().default("Asia/Shanghai"),
+		lockTimeout: z.number().default(5 * 60 * 1000), // 5分钟，单位毫秒
 	}),
 	queue: QueueConfigSchema,
 	network: z

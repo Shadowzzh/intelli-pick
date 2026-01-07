@@ -68,6 +68,7 @@ export default defineConfig({
 	},
 	scheduler: {
 		timezone: "Asia/Shanghai",
+		lockTimeout: 5 * 60 * 1000, // 5分钟，单位毫秒
 	},
 	queue: {
 		concurrency: 1, // 同时处理
