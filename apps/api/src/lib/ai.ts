@@ -10,22 +10,22 @@ export function createAiClient(config: AiConfig) {
 		ReturnType<typeof createOpenAI> | ReturnType<typeof createAnthropic>
 	> = {};
 
-	for (const [name, providerConfig] of Object.entries(config.providers)) {
+	for (const [name, provider] of Object.entries(config.providers)) {
 		if (name === "anthropic") {
 			providers[name] = createAnthropic({
+				baseURL: env.ANTHROPIC_BASE_URL || provider.baseUrl,
 				apiKey: env.ANTHROPIC_API_KEY,
-				baseURL: env.ANTHROPIC_BASE_URL,
 			});
 		} else if (name === "deepseek") {
 			// DeepSeek (OpenAI 兼容)
 			providers[name] = createOpenAI({
-				baseURL: providerConfig.baseUrl,
+				baseURL: env.DEEPSEEK_BASE_URL || provider.baseUrl,
 				apiKey: env.DEEPSEEK_API_KEY,
 			});
 		} else {
 			// 其他 OpenAI 兼容提供商
 			providers[name] = createOpenAI({
-				baseURL: providerConfig.baseUrl,
+				baseURL: env.DEEPSEEK_BASE_URL || provider.baseUrl,
 				apiKey: env.DEEPSEEK_API_KEY, // 默认使用 DEEPSEEK_API_KEY
 			});
 		}
