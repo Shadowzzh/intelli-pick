@@ -18,7 +18,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "3000:3000"
+      - "8085:3000"
     networks:
       - intellipick-network
     # 日志配置：限制单个日志文件大小和数量
