@@ -12,7 +12,7 @@ export async function entitiesRoutes(
 	app.get("/entities", async (req, reply) => {
 		const { page, limit } = parsePagination(req.query as any);
 		const result = await service.findTrending({ page, limit });
-		return reply.send(result);
+		return result;
 	});
 
 	// Get single entity
@@ -21,9 +21,16 @@ export async function entitiesRoutes(
 		const result = await service.findById(id);
 
 		if (!result) {
-			throw new NotFoundError("Entity", id);
+			reply.code(404).send({
+				success: false,
+				error: {
+					code: "NOT_FOUND",
+					message: `Entity with id ${id} not found`,
+				},
+			});
+			return;
 		}
 
-		return reply.send(result);
+		return result;
 	});
 }

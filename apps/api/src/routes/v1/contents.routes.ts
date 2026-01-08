@@ -18,7 +18,7 @@ export async function contentsRoutes(
 		};
 
 		const result = await service.findPaginated({ page, limit, filters });
-		return reply.send(result);
+		return result;
 	});
 
 	// Get single content
@@ -27,9 +27,16 @@ export async function contentsRoutes(
 		const result = await service.findById(id);
 
 		if (!result) {
-			throw new NotFoundError("Content", id);
+			reply.code(404).send({
+				success: false,
+				error: {
+					code: "NOT_FOUND",
+					message: `Content with id ${id} not found`,
+				},
+			});
+			return;
 		}
 
-		return reply.send(result);
+		return result;
 	});
 }

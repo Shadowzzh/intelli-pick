@@ -23,7 +23,9 @@ export async function createApp(): Promise<FastifyInstance> {
 		origin:
 			process.env.API_CORS_ORIGIN === "*"
 				? true
-				: process.env.API_CORS_ORIGIN?.split(","),
+				: process.env.API_CORS_ORIGIN
+					? process.env.API_CORS_ORIGIN.split(",")
+					: true, // Default to true if not set (for tests)
 	});
 
 	// Rate limiting

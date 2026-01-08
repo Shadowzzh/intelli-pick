@@ -11,6 +11,15 @@ export class ApiError extends Error {
 		super(message);
 		this.name = "ApiError";
 	}
+
+	// Add statusCode property for Fastify
+	get statusCode(): number {
+		if (this.code === ErrorCode.NOT_FOUND) return 404;
+		if (this.code === ErrorCode.VALIDATION_ERROR) return 400;
+		if (this.code === ErrorCode.UNAUTHORIZED) return 401;
+		if (this.code === ErrorCode.RATE_LIMIT_EXCEEDED) return 429;
+		return 500;
+	}
 }
 
 export class NotFoundError extends ApiError {
@@ -32,10 +41,16 @@ export class ValidationError extends ApiError {
 	}
 }
 
-export async function handleError(error: FastifyError, reply: FastifyReply) {
+export function handleError(error: FastifyError, reply: FastifyReply) {
+	// Handle CORS and other early errors where reply might not be fully initialized
+	if (typeof reply.code !== "function") {
+		reply.log.error(error);
+		return;
+	}
+
 	if (error instanceof ApiError) {
 		const statusCode = error.code === ErrorCode.NOT_FOUND ? 404 : 400;
-		reply.status(statusCode).send({
+		reply.code(statusCode).send({
 			success: false,
 			error: {
 				code: error.code,
@@ -43,14 +58,15 @@ export async function handleError(error: FastifyError, reply: FastifyReply) {
 				details: error.details,
 			},
 		});
-	} else {
-		reply.log.error(error);
-		reply.status(500).send({
-			success: false,
-			error: {
-				code: ErrorCode.INTERNAL_ERROR,
-				message: "Internal server error",
-			},
-		});
+		return;
 	}
+
+	reply.log.error(error);
+	reply.code(500).send({
+		success: false,
+		error: {
+			code: ErrorCode.INTERNAL_ERROR,
+			message: "Internal server error",
+		},
+	});
 }

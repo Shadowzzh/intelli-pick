@@ -27,10 +27,11 @@ export async function aiChatRoutes(
 		const { message } = req.body as { message: string };
 
 		if (!message) {
-			return reply.status(400).send({
+			reply.status(400).send({
 				success: false,
 				error: { code: "VALIDATION_ERROR", message: "Message is required" },
 			});
+			return;
 		}
 
 		try {
@@ -110,29 +111,30 @@ export async function aiChatRoutes(
 					],
 				});
 
-				return reply.send({
+				return {
 					success: true,
 					data: {
 						response: followUp.text,
 						toolResults,
 					},
-				});
+				};
 			}
 
 			// No tool calls, just return the text
-			return reply.send({
+			return {
 				success: true,
 				data: { response: result.text },
-			});
+			};
 		} catch (error: any) {
 			req.log.error(error);
-			return reply.status(500).send({
+			reply.status(500).send({
 				success: false,
 				error: {
 					code: "INTERNAL_ERROR",
 					message: error.message || "AI processing failed",
 				},
 			});
+			return;
 		}
 	});
 }

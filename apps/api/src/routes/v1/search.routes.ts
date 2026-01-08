@@ -13,16 +13,17 @@ export async function searchRoutes(
 		};
 
 		if (!query || typeof query !== "string") {
-			return reply.status(400).send({
+			reply.status(400).send({
 				success: false,
 				error: {
 					code: "VALIDATION_ERROR",
 					message: "Query is required",
 				},
 			});
+			return;
 		}
 
 		const result = await service.search(query, limit);
-		return reply.send({ success: true, data: result });
+		return { success: true, data: result };
 	});
 }
