@@ -89,7 +89,8 @@ pnpm start
 
 ```
 apps/
-  api/                  # 主应用程序
+  api/                  # HTTP API 服务器（RESTful + GraphQL）
+  worker/               # 后台处理系统（collector + worker + scheduler）
 packages/
   config/              # 配置加载和验证
   db/                  # 数据库 schema 和客户端
@@ -99,6 +100,7 @@ packages/
 
 ### 核心流程
 
+**Worker（后台处理）:**
 1. **采集 (Collector)**: 从配置的数据源采集原始内容
 2. **队列 (Queue)**: 使用 BullMQ 管理任务队列
 3. **处理管道 (Pipeline)**:
@@ -109,6 +111,11 @@ packages/
    - 存储到数据库
 4. **调度 (Scheduler)**: 定时触发采集任务
 
+**API（HTTP 服务）:**
+- RESTful API - 标准的 HTTP 端点
+- GraphQL API - 灵活的查询接口
+- AI Chat - 自然语言查询接口
+
 ## 技术栈
 
 - **运行时**: Node.js 18+ / TypeScript
@@ -118,6 +125,42 @@ packages/
 - **队列**: BullMQ + Redis
 - **AI SDK**: Vercel AI SDK
 - **代码风格**: Biome
+
+## API
+
+IntelliPick 提供双 API 接口用于访问已过滤的内容和实体：
+- **RESTful API** - 标准 HTTP 端点，返回 JSON 响应
+- **GraphQL API** - 灵活的查询接口，支持强类型
+- **AI Chat** - 自然语言接口，由 DeepSeek 驱动
+
+详见 [docs/api.md](./docs/api.md) 获取完整的 API 文档，以及 [docs/api-examples.md](./docs/api-examples.md) 查看使用示例。
+
+### 快速开始
+
+\`\`\`bash
+# 启动 API 服务器
+cd apps/api && pnpm dev
+
+# 尝试健康检查
+curl http://localhost:3000/health
+
+# 获取最新内容
+curl http://localhost:3000/api/v1/contents
+
+# 打开 GraphQL playground
+open http://localhost:3000/graphql
+\`\`\`
+
+### 主要端点
+
+- `GET /health` - 健康检查
+- `GET /api/v1/contents` - 内容列表（支持分页和过滤）
+- `GET /api/v1/contents/:id` - 单个内容详情
+- `GET /api/v1/entities` - 热门实体列表
+- `GET /api/v1/entities/:id` - 单个实体详情
+- `POST /api/v1/search` - 全文搜索
+- `POST /api/v1/ai/chat` - AI 自然语言对话
+- `POST /graphql` - GraphQL 查询
 
 ## 常用命令
 
