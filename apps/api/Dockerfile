@@ -1,5 +1,5 @@
 # ============================================
-# Worker 应用生产环境镜像（本地编译方案）
+# API 应用生产环境镜像（本地编译方案）
 # ============================================
 # 使用前请先在项目根目录执行：pnpm build
 #
@@ -23,7 +23,7 @@ COPY packages/env/package.json ./packages/env/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/config/package.json ./packages/config/
 COPY packages/db/package.json ./packages/db/
-COPY apps/worker/package.json ./apps/worker/
+COPY apps/api/package.json ./apps/api/
 
 # 只安装生产依赖（不包含 devDependencies）
 RUN pnpm install --prod --frozen-lockfile
@@ -34,14 +34,14 @@ COPY packages/env/dist ./packages/env/dist
 COPY packages/shared/dist ./packages/shared/dist
 COPY packages/config/dist ./packages/config/dist
 COPY packages/db/dist ./packages/db/dist
-COPY apps/worker/dist ./apps/worker/dist
+COPY apps/api/dist ./apps/api/dist
 
 # 复制 workspace 包到 node_modules
-RUN mkdir -p /app/apps/worker/node_modules/@intellipick && \
-    cp -r ./packages/env/dist/* /app/apps/worker/node_modules/@intellipick/env/ && \
-    cp -r ./packages/shared/dist/* /app/apps/worker/node_modules/@intellipick/shared/ && \
-    cp -r ./packages/config/dist/* /app/apps/worker/node_modules/@intellipick/config/ && \
-    cp -r ./packages/db/dist/* /app/apps/worker/node_modules/@intellipick/db/
+RUN mkdir -p /app/apps/api/node_modules/@intellipick && \
+    cp -r ./packages/env/dist/* /app/apps/api/node_modules/@intellipick/env/ && \
+    cp -r ./packages/shared/dist/* /app/apps/api/node_modules/@intellipick/shared/ && \
+    cp -r ./packages/config/dist/* /app/apps/api/node_modules/@intellipick/config/ && \
+    cp -r ./packages/db/dist/* /app/apps/api/node_modules/@intellipick/db/
 
 # 复制必要的配置文件
 COPY config*.ts ./
@@ -50,8 +50,11 @@ COPY config*.ts ./
 ENV NODE_ENV=production
 ENV LOG_LEVEL=info
 
-# 设置工作目录为 Worker 应用
-WORKDIR /app/apps/worker
+# 设置工作目录为 API 应用
+WORKDIR /app/apps/api
+
+# 暴露端口
+EXPOSE 3000
 
 # 运行编译后的 JS
 CMD ["node", "dist/index.js"]

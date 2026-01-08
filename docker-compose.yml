@@ -2,7 +2,7 @@ services:
   # ============================================
   # 应用服务
   # ============================================
-  intellipick-app:
+  intellipick-api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -17,6 +17,8 @@ services:
       - .env.production
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    ports:
+      - "3000:3000"
     networks:
       - intellipick-network
     # 日志配置：限制单个日志文件大小和数量
@@ -25,9 +27,32 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    # 如果需要暴露端口给外部访问，取消下面的注释
-    # ports:
-    #   - "3000:3000"
+
+  intellipick-worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: intellipick-worker
+    restart: unless-stopped
+    depends_on:
+      intellipick-db:
+        condition: service_healthy
+      intellipick-redis:
+        condition: service_started
+      intellipick-rsshub:
+        condition: service_healthy
+    env_file:
+      - .env.production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - intellipick-network
+    # 日志配置：限制单个日志文件大小和数量
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ============================================
   # PostgreSQL 数据库
@@ -77,6 +102,8 @@ services:
     image: diygod/rsshub:chromium-bundled
     container_name: intellipick-rsshub
     restart: unless-stopped
+    ports:
+      - '1200:1200'
     depends_on:
       intellipick-redis:
         condition: service_healthy
@@ -91,8 +118,6 @@ services:
       NO_PROXY: 'localhost,127.0.0.1,intellipick-redis,intellipick-db,intellipick-app'
     networks:
       - intellipick-network
-    # 不暴露端口,仅在内部网络访问
-    # 应用通过 http://intellipick-rsshub:1200 访问
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:1200/healthz']
       interval: 30s
