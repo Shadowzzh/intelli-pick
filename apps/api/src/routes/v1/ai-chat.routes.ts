@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateText } from "ai";
+import type { Config } from "@intellipick/config";
 // apps/api/src/routes/v1/ai-chat.routes.ts
 import type { FastifyInstance } from "fastify";
 import { aiTools } from "../../ai/tools.js";
@@ -9,12 +10,6 @@ import type {
 	SearchService,
 } from "../../services/index.js";
 
-// Create OpenAI-compatible client for DeepSeek
-const deepseek = createOpenAI({
-	baseURL: process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com/v1",
-	apiKey: process.env.DEEPSEEK_API_KEY || "",
-});
-
 export async function aiChatRoutes(
 	app: FastifyInstance,
 	services: {
@@ -22,7 +17,20 @@ export async function aiChatRoutes(
 		entitiesService: EntitiesService;
 		searchService: SearchService;
 	},
+	config?: Config,
 ) {
+	// Get AI chat configuration from config
+	const chatConfig = config?.ai.tasks.chat;
+	const chatProviderConfig = chatConfig
+		? config?.ai.providers[chatConfig.provider]
+		: null;
+
+	// Create OpenAI-compatible client for AI chat
+	const deepseek = createOpenAI({
+		baseURL: chatProviderConfig?.baseUrl || "https://api.deepseek.com/v1",
+		apiKey: process.env.DEEPSEEK_API_KEY || "",
+	});
+
 	app.post("/ai/chat", async (req, reply) => {
 		const { message } = req.body as { message: string };
 
@@ -35,7 +43,7 @@ export async function aiChatRoutes(
 		}
 
 		try {
-			const model = process.env.AI_CHAT_MODEL || "deepseek-chat";
+			const model = chatConfig?.model || "deepseek-chat";
 
 			const result = await generateText({
 				model: deepseek(model),

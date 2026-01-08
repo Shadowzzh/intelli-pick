@@ -54,29 +54,46 @@ pnpm build              # 构建 API
 pnpm start              # 运行构建后的 API
 ```
 
+### Worker 应用（后台处理）
+```bash
+cd apps/worker
+pnpm dev                # 开发模式运行 Worker
+pnpm build              # 构建 Worker
+pnpm start              # 运行构建后的 Worker
+```
+
+### Docker
+```bash
+docker-compose up -d    # 启动所有服务（API、Worker、PostgreSQL、Redis、RSSHub）
+docker-compose logs -f  # 查看日志
+docker-compose down     # 停止所有服务
+```
+
 ## 架构概览
 
 ### Monorepo 结构
 
 ```
 apps/
-  api/                  # 主应用程序
+  api/                  # HTTP API 服务器 (Fastify + GraphQL Yoga)
+  worker/               # 后台处理系统 (Collector + Worker + Scheduler)
 packages/
   config/              # 配置加载和验证
-  db/                  # 数据库 schema 和客户端
+  db/                  # 数据库 schema 和客户端 (Drizzle ORM)
   env/                 # 环境变量验证
   shared/              # 共享类型定义
+docs/                  # 项目文档（API 文档、设计文档等）
 ```
 
 ### 核心工作流程
 
-1. **采集 (Collector)**: `apps/api/src/collector/`
+1. **采集 (Collector)**: `apps/worker/src/collector/`
    - 插件化架构，每个数据源类型对应一个插件
    - CollectorManager 管理所有插件
    - 支持的插件: RSS、Twitter、V2EX
    - 采集到的原始内容 (RawContent) 发送到 BullMQ 队列
 
-2. **处理管道 (Pipeline)**: `apps/api/src/pipeline/`
+2. **处理管道 (Pipeline)**: `apps/worker/src/pipeline/`
    - 顺序执行的步骤链，每个步骤可以过滤或增强内容
    - 步骤顺序:
      1. `DedupStep` - 去重检查
@@ -86,15 +103,29 @@ packages/
      5. `StorageStep` - 存储到数据库或隔离区
    - 如果任何步骤返回 null，内容被过滤掉，管道终止
 
-3. **队列处理 (Worker)**: `apps/api/src/worker.ts`
+3. **队列处理 (Worker)**: `apps/worker/src/worker.ts`
    - BullMQ worker 从队列中取出 RawContent
    - 调用 Pipeline 处理每个内容
    - 并发度为 5
 
-4. **调度器**: `apps/api/src/index.ts`
-   - Cron 定时任务每小时触发一次采集
+4. **调度器**: `apps/worker/src/scheduler/`
+   - Cron 定时任务触发采集
+   - 支持每个数据源独立的采集间隔
    - 启动时立即执行一次采集
    - 优雅关闭处理
+
+### API 服务器
+
+**位置**: `apps/api/src/`
+- **Fastify** - RESTful API
+- **GraphQL Yoga** - GraphQL 查询接口
+- **服务层**：
+  - ContentsService - 内容管理
+  - EntitiesService - 实体管理
+  - SearchService - 全文搜索
+- **存储层**：
+  - ContentsRepository - 内容仓库
+  - EntitiesRepository - 实体仓库
 
 ### 数据库 Schema
 
@@ -136,16 +167,16 @@ packages/
 
 ### 添加新数据源
 
-1. 在 `apps/api/src/collector/plugins/` 创建新插件
+1. 在 `apps/worker/src/collector/plugins/` 创建新插件
 2. 实现 `CollectorPlugin` 接口
-3. 在 `apps/api/src/collector/index.ts` 注册插件
+3. 在 `apps/worker/src/collector/index.ts` 注册插件
 4. 在 `packages/config/src/schema.ts` 添加配置 schema
 
 ### 添加新过滤步骤
 
-1. 在 `apps/api/src/pipeline/` 创建新步骤
+1. 在 `apps/worker/src/pipeline/` 创建新步骤
 2. 实现 `PipelineStep` 接口
-3. 在 `apps/api/src/pipeline/index.ts` 的 Pipeline 构造函数中插入到合适位置
+3. 在 `apps/worker/src/pipeline/index.ts` 的 Pipeline 构造函数中插入到合适位置
 
 ### 修改数据库 Schema
 
@@ -159,3 +190,26 @@ packages/
 需要运行的服务:
 - PostgreSQL (默认 localhost:5432)
 - Redis (默认 localhost:6379)
+
+### 测试
+
+```bash
+# 运行所有测试
+pnpm test
+
+# 运行单个测试文件
+pnpm test apps/api/src/__tests__/example.test.ts
+
+# 监听模式
+pnpm test:watch
+```
+
+## 项目文档
+
+详细文档位于 `docs/` 目录：
+- `api.md` - API 文档
+- `api-examples.md` - API 使用示例
+- `design.md` - 系统设计文档
+- `performance-evaluation.md` - 性能评估
+- `queue-configuration-guide.md` - 队列配置指南
+- `DOCKER_NETWORK_AND_PROXY.md` - Docker 网络和代理配置

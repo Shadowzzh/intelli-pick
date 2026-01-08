@@ -44,6 +44,7 @@ const AiConfigSchema = z.object({
 	tasks: z.object({
 		filter: AiTaskSchema,
 		extractAndClassify: AiTaskSchema,
+		chat: AiTaskSchema.optional(),
 	}),
 });
 

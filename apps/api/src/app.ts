@@ -1,6 +1,7 @@
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { db } from "@intellipick/db";
+import type { Config } from "@intellipick/config";
 // apps/api/src/app.ts
 import fastify, { type FastifyInstance } from "fastify";
 import { createGraphQLServer } from "./graphql/index.js";
@@ -16,19 +17,19 @@ import {
 	SearchService,
 } from "./services/index.js";
 
-export async function createApp(): Promise<FastifyInstance> {
+export async function createApp(config?: Config): Promise<FastifyInstance> {
 	const app = fastify({
 		logger: true,
 	});
 
-	// CORS (支持环境变量或配置文件)
-	const corsOrigin = process.env.API_CORS_ORIGIN || "*";
+	// CORS (从配置文件读取)
+	const corsOrigin = config?.api?.corsOrigin || "*";
 	await app.register(cors, {
-		origin: corsOrigin === "*" ? true : corsOrigin.split(","),
+		origin: corsOrigin === "*" ? true : corsOrigin,
 	});
 
-	// Rate limiting (支持环境变量或配置文件)
-	const rateLimitMax = Number.parseInt(process.env.API_RATE_LIMIT || "100");
+	// Rate limiting (从配置文件读取)
+	const rateLimitMax = config?.api?.rateLimit || 100;
 	await app.register(rateLimit, {
 		max: rateLimitMax,
 		timeWindow: "1 minute",
@@ -56,6 +57,7 @@ export async function createApp(): Promise<FastifyInstance> {
 		contentsService,
 		entitiesService,
 		searchService,
+		config,
 	});
 
 	// GraphQL

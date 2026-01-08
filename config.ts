@@ -21,6 +21,10 @@ export default defineConfig({
 				provider: "deepseek",
 				model: "deepseek-chat",
 			},
+			chat: {
+				provider: "deepseek",
+				model: "deepseek-chat",
+			},
 		},
 	},
 	scheduler: {

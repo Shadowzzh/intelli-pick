@@ -34,6 +34,9 @@ export function createAiClient(config: AiConfig) {
 	return {
 		getModel(taskName: keyof AiConfig["tasks"]) {
 			const task = config.tasks[taskName];
+			if (!task) {
+				throw new Error(`Task ${taskName} not configured`);
+			}
 			const provider = providers[task.provider];
 			if (!provider) {
 				throw new Error(`Provider ${task.provider} not configured`);
