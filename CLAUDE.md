@@ -1,0 +1,161 @@
+# CLAUDE.md
+
+此文件为 Claude Code (claude.ai/code) 在此仓库中工作提供指导。
+
+## 项目概述
+
+IntelliPick（智选）是一个基于 AI 的智能内容筛选和价值提取系统。它从多个来源（RSS、Twitter、V2EX 等）采集内容，通过 AI 进行质量过滤和实体提取，最终将有价值的内容存储到数据库中。
+
+## 技术栈
+
+- **包管理**: pnpm workspace (monorepo)
+- **构建工具**: Turbo
+- **运行时**: Node.js 18+
+- **语言**: TypeScript
+- **数据库**: PostgreSQL (通过 Drizzle ORM)
+- **队列**: BullMQ + Redis
+- **AI SDK**: Vercel AI SDK (支持 Anthropic、DeepSeek 等)
+- **代码风格**: Biome
+
+## 常用命令
+
+### 开发
+```bash
+pnpm dev                 # 开发模式运行所有包
+pnpm build              # 构建所有包
+pnpm typecheck          # 类型检查
+```
+
+### 代码质量
+```bash
+pnpm lint               # 检查代码风格
+pnpm lint:fix           # 自动修复代码风格问题
+pnpm format             # 格式化代码
+```
+
+### 数据库
+```bash
+pnpm db:generate        # 根据 schema 生成迁移文件
+pnpm db:migrate         # 运行迁移
+pnpm db:push            # 直接推送 schema 到数据库（开发用）
+pnpm db:studio          # 打开 Drizzle Studio
+```
+
+### Redis
+```bash
+pnpm redis:status       # 查看 Redis 和队列状态
+```
+
+### API 应用
+```bash
+cd apps/api
+pnpm dev                # 开发模式运行 API
+pnpm build              # 构建 API
+pnpm start              # 运行构建后的 API
+```
+
+## 架构概览
+
+### Monorepo 结构
+
+```
+apps/
+  api/                  # 主应用程序
+packages/
+  config/              # 配置加载和验证
+  db/                  # 数据库 schema 和客户端
+  env/                 # 环境变量验证
+  shared/              # 共享类型定义
+```
+
+### 核心工作流程
+
+1. **采集 (Collector)**: `apps/api/src/collector/`
+   - 插件化架构，每个数据源类型对应一个插件
+   - CollectorManager 管理所有插件
+   - 支持的插件: RSS、Twitter、V2EX
+   - 采集到的原始内容 (RawContent) 发送到 BullMQ 队列
+
+2. **处理管道 (Pipeline)**: `apps/api/src/pipeline/`
+   - 顺序执行的步骤链，每个步骤可以过滤或增强内容
+   - 步骤顺序:
+     1. `DedupStep` - 去重检查
+     2. `HardFilterStep` - 硬规则过滤（黑名单域名、垃圾关键词）
+     3. `AiFilterStep` - AI 质量评分和安全检查
+     4. `AiExtractStep` - AI 实体提取和分类
+     5. `StorageStep` - 存储到数据库或隔离区
+   - 如果任何步骤返回 null，内容被过滤掉，管道终止
+
+3. **队列处理 (Worker)**: `apps/api/src/worker.ts`
+   - BullMQ worker 从队列中取出 RawContent
+   - 调用 Pipeline 处理每个内容
+   - 并发度为 5
+
+4. **调度器**: `apps/api/src/index.ts`
+   - Cron 定时任务每小时触发一次采集
+   - 启动时立即执行一次采集
+   - 优雅关闭处理
+
+### 数据库 Schema
+
+位于 `packages/db/src/schema/`:
+- `sources` - 数据源配置（从 config.ts 同步）
+- `contents` - 通过过滤的内容
+- `entities` - 提取的实体（人、组织、产品等）
+- `entity-mentions` - 内容中提到的实体
+- `tags` - 内容标签
+- `quarantine` - 未通过过滤但未明确拒绝的内容（有 TTL）
+
+### 配置系统
+
+- **用户配置**: 根目录 `config.ts`
+  - 使用 `defineConfig()` 定义配置
+  - 包含 AI 提供商、数据源、过滤规则、网络代理等
+
+- **环境变量**: `.env` (参考 `.env.example`)
+  - DATABASE_URL - PostgreSQL 连接串
+  - REDIS_URL - Redis 连接串
+  - AI 提供商 API keys
+
+### AI 集成
+
+- 使用 Vercel AI SDK 统一接口
+- 支持多个提供商（Anthropic、DeepSeek 等）
+- 两个主要任务:
+  - `filter` - 内容质量评分和安全检查
+  - `extractAndClassify` - 实体提取和内容分类
+- AI 客户端创建: `apps/api/src/lib/ai.ts`
+
+### 代理支持
+
+- 通过 `config.network.httpProxy` 配置
+- 使用 `undici` 的 ProxyAgent
+- 在应用启动时初始化: `apps/api/src/lib/proxy.ts`
+
+## 开发注意事项
+
+### 添加新数据源
+
+1. 在 `apps/api/src/collector/plugins/` 创建新插件
+2. 实现 `CollectorPlugin` 接口
+3. 在 `apps/api/src/collector/index.ts` 注册插件
+4. 在 `packages/config/src/schema.ts` 添加配置 schema
+
+### 添加新过滤步骤
+
+1. 在 `apps/api/src/pipeline/` 创建新步骤
+2. 实现 `PipelineStep` 接口
+3. 在 `apps/api/src/pipeline/index.ts` 的 Pipeline 构造函数中插入到合适位置
+
+### 修改数据库 Schema
+
+1. 编辑 `packages/db/src/schema/` 中的文件
+2. 运行 `pnpm db:generate` 生成迁移
+3. 运行 `pnpm db:migrate` 应用迁移
+4. 开发时可用 `pnpm db:push` 直接推送
+
+### 环境准备
+
+需要运行的服务:
+- PostgreSQL (默认 localhost:5432)
+- Redis (默认 localhost:6379)

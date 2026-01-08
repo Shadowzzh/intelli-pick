@@ -1,5 +1,5 @@
-import { AiFilterStep, type PipelineContext } from "@intellipick/api/pipeline";
-import { StepStatus } from "@intellipick/api/pipeline/types";
+import { AiFilterStep, type PipelineContext } from "@intellipick/worker/pipeline";
+import { StepStatus } from "@intellipick/worker/pipeline/types";
 import type { FilterResult, RawContent } from "@intellipick/shared";
 import {
 	getErrorMessage,

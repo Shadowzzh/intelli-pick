@@ -1,13 +1,13 @@
 # ============================================
-# IntelliPick API - 部署 Makefile
+# IntelliPick Worker - 部署 Makefile
 # ============================================
 #
-# 此 Makefile 专用于 API 应用的 Docker 部署
+# 此 Makefile 专用于 Worker 应用的 Docker 部署
 #
 # 使用方法：
-#   make -C apps/api help
+#   make -C apps/worker help
 
-#   make <target>      # 从 apps/api/ 目录执行
+#   make <target>      # 从 apps/worker/ 目录执行
 #   make <target>      # 或从项目根目录执行（自动切换）
 #
 # 常用命令：
@@ -19,14 +19,14 @@
 # 项目根目录
 PROJECT_ROOT := $(shell dirname $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST)))))
 
-# 检查当前目录，如果不在 apps/api/，自动切换
-ifeq ($(findstring apps/api,$(CURDIR)),)
-  # 不在 apps/api/，切换到项目根目录执行 make
+# 检查当前目录，如果不在 apps/worker/，自动切换
+ifeq ($(findstring apps/worker,$(CURDIR)),)
+  # 不在 apps/worker/，切换到项目根目录执行 make
   .PHONY: $(MAKECMDGOALS)
   $(MAKECMDGOALS):
-	@cd $(PROJECT_ROOT) && pnpm --filter @intellipick/api make $(MAKECMDGOALS)
+	@cd $(PROJECT_ROOT) && pnpm --filter @intellipick/worker make $(MAKECMDGOALS)
 else
-  # 在 apps/api/，执行实际的部署命令
+  # 在 apps/worker/，执行实际的部署命令
   .PHONY: help deploy build up down logs logs-app ps restart
   .PHONY: shell db redis db-migrate logs-tail clean-images
 

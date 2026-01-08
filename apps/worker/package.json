@@ -1,5 +1,5 @@
 {
-	"name": "@intellipick/api",
+	"name": "@intellipick/worker",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",

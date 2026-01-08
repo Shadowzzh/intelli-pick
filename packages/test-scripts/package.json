@@ -21,7 +21,7 @@
 		"test": "echo 'Please specify which test to run: test:filter, test:filter-verbose or test:extract'"
 	},
 	"dependencies": {
-		"@intellipick/api": "workspace:*",
+		"@intellipick/worker": "workspace:*",
 		"@intellipick/config": "workspace:*",
 		"@intellipick/db": "workspace:*",
 		"@intellipick/env": "workspace:*",
