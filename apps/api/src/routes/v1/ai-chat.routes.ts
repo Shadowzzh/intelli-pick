@@ -1,13 +1,13 @@
-// apps/api/src/routes/v1/ai-chat.routes.ts
-import type { FastifyInstance } from "fastify";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateText } from "ai";
-import {
+// apps/api/src/routes/v1/ai-chat.routes.ts
+import type { FastifyInstance } from "fastify";
+import { aiTools } from "../../ai/tools.js";
+import type {
 	ContentsService,
 	EntitiesService,
 	SearchService,
 } from "../../services/index.js";
-import { aiTools } from "../../ai/tools.js";
 
 // Create OpenAI-compatible client for DeepSeek
 const deepseek = createOpenAI({
@@ -71,11 +71,10 @@ export async function aiChatRoutes(
 						}
 
 						case "searchContents": {
-							const searchResult =
-								await services.searchService.searchContents(
-									(toolCall.args as any).query,
-									(toolCall.args as any).limit || 10,
-								);
+							const searchResult = await services.searchService.searchContents(
+								(toolCall.args as any).query,
+								(toolCall.args as any).limit || 10,
+							);
 							data = searchResult;
 							break;
 						}

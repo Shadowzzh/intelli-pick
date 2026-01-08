@@ -1,10 +1,7 @@
 // apps/api/src/services/entities.service.ts
 import type { Database } from "@intellipick/db";
-import type {
-	PaginatedResponse,
-	PaginationMeta,
-} from "@intellipick/shared";
-import { EntitiesRepository } from "../repositories/entities.repository.js";
+import type { PaginatedResponse, PaginationMeta } from "@intellipick/shared";
+import type { EntitiesRepository } from "../repositories/entities.repository.js";
 
 export class EntitiesService {
 	constructor(private entitiesRepo: EntitiesRepository) {}

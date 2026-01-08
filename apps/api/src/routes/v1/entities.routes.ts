@@ -1,8 +1,8 @@
 // apps/api/src/routes/v1/entities.routes.ts
 import type { FastifyInstance } from "fastify";
 import { NotFoundError } from "../../lib/errors.js";
-import { EntitiesService } from "../../services/entities.service.js";
 import { parsePagination } from "../../lib/validation.js";
+import type { EntitiesService } from "../../services/entities.service.js";
 
 export async function entitiesRoutes(
 	app: FastifyInstance,

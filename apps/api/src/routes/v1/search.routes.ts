@@ -1,6 +1,6 @@
 // apps/api/src/routes/v1/search.routes.ts
 import type { FastifyInstance } from "fastify";
-import { SearchService } from "../../services/search.service.js";
+import type { SearchService } from "../../services/search.service.js";
 
 export async function searchRoutes(
 	app: FastifyInstance,

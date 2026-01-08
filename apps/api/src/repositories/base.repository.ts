@@ -1,12 +1,10 @@
+import type { Database } from "@intellipick/db";
 // apps/api/src/repositories/base.repository.ts
 import type { SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import type { Database } from "@intellipick/db";
 
 export abstract class BaseRepository {
-	constructor(
-		protected db: Database,
-	) {}
+	constructor(protected db: Database) {}
 
 	async count(table: any, where?: SQL): Promise<number> {
 		const [result] = await this.db

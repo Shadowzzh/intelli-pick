@@ -1,7 +1,7 @@
-// apps/api/src/__tests__/search.test.ts
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createApp } from "../app.js";
 import type { FastifyInstance } from "fastify";
+// apps/api/src/__tests__/search.test.ts
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createApp } from "../app.js";
 
 describe("Search API", () => {
 	let app: FastifyInstance;

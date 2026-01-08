@@ -1,7 +1,7 @@
 // apps/api/src/repositories/contents.repository.ts
 import { contents } from "@intellipick/db";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { Database } from "@intellipick/db";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 export class ContentsRepository {
 	constructor(private db: Database) {}
@@ -32,9 +32,7 @@ export class ContentsRepository {
 		}
 
 		if (filters.tags && filters.tags.length > 0) {
-			conditions.push(
-				sql`${contents.tags} && ${JSON.stringify(filters.tags)}`,
-			);
+			conditions.push(sql`${contents.tags} && ${JSON.stringify(filters.tags)}`);
 		}
 
 		if (filters.sourceId) {
@@ -57,8 +55,7 @@ export class ContentsRepository {
 
 		let orderBySql;
 		if (filters.orderBy) {
-			const column =
-				contents[filters.orderBy.column as keyof typeof contents];
+			const column = contents[filters.orderBy.column as keyof typeof contents];
 			orderBySql =
 				filters.orderBy.direction === "asc"
 					? asc(column as any)
@@ -90,9 +87,7 @@ export class ContentsRepository {
 		}
 
 		if (filters.tags && filters.tags.length > 0) {
-			conditions.push(
-				sql`${contents.tags} && ${JSON.stringify(filters.tags)}`,
-			);
+			conditions.push(sql`${contents.tags} && ${JSON.stringify(filters.tags)}`);
 		}
 
 		if (filters.sourceId) {

@@ -1,8 +1,8 @@
 // apps/api/src/routes/v1/contents.routes.ts
 import type { FastifyInstance } from "fastify";
 import { NotFoundError } from "../../lib/errors.js";
-import { ContentsService } from "../../services/contents.service.js";
 import { parsePagination } from "../../lib/validation.js";
+import type { ContentsService } from "../../services/contents.service.js";
 
 export async function contentsRoutes(
 	app: FastifyInstance,

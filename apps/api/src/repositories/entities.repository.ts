@@ -1,7 +1,7 @@
 // apps/api/src/repositories/entities.repository.ts
 import { entities } from "@intellipick/db";
-import { desc, eq, sql } from "drizzle-orm";
 import type { Database } from "@intellipick/db";
+import { desc, eq, sql } from "drizzle-orm";
 
 export class EntitiesRepository {
 	constructor(private db: Database) {}

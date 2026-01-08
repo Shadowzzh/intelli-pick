@@ -1,17 +1,20 @@
-// apps/api/src/app.ts
-import fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
+import { db } from "@intellipick/db";
+// apps/api/src/app.ts
+import fastify, { type FastifyInstance } from "fastify";
+import { createGraphQLServer } from "./graphql/index.js";
 import { handleError } from "./lib/errors.js";
+import {
+	ContentsRepository,
+	EntitiesRepository,
+} from "./repositories/index.js";
 import { registerV1Routes } from "./routes/v1/index.js";
 import {
 	ContentsService,
 	EntitiesService,
 	SearchService,
 } from "./services/index.js";
-import { ContentsRepository, EntitiesRepository } from "./repositories/index.js";
-import { createGraphQLServer } from "./graphql/index.js";
-import { db } from "@intellipick/db";
 
 export async function createApp(): Promise<FastifyInstance> {
 	const app = fastify({
@@ -21,10 +24,7 @@ export async function createApp(): Promise<FastifyInstance> {
 	// CORS (支持环境变量或配置文件)
 	const corsOrigin = process.env.API_CORS_ORIGIN || "*";
 	await app.register(cors, {
-		origin:
-			corsOrigin === "*"
-				? true
-				: corsOrigin.split(","),
+		origin: corsOrigin === "*" ? true : corsOrigin.split(","),
 	});
 
 	// Rate limiting (支持环境变量或配置文件)
@@ -65,15 +65,11 @@ export async function createApp(): Promise<FastifyInstance> {
 		url: yoga.graphqlEndpoint,
 		method: ["GET", "POST", "OPTIONS"],
 		handler: async (req, reply) => {
-			const response = await yoga.handleNodeRequest(req.raw);
-			if (response) {
-				response.headers.forEach((value, key) => {
-					reply.header(key, value);
-				});
-				reply.status(response.status);
-				reply.send(response.body);
-			}
-			return reply;
+			const response = await yoga.handleNodeRequestAndResponse(
+				req.raw,
+				reply.raw,
+			);
+			return response;
 		},
 	});
 

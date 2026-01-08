@@ -24,24 +24,21 @@ export class ApiError extends Error {
 
 export class NotFoundError extends ApiError {
 	constructor(resource: string, id: string) {
-		super(
-			ErrorCode.NOT_FOUND,
-			`${resource} with id ${id} not found`,
-		);
+		super(ErrorCode.NOT_FOUND, `${resource} with id ${id} not found`);
 	}
 }
 
 export class ValidationError extends ApiError {
 	constructor(message: string, details?: unknown) {
-		super(
-			ErrorCode.VALIDATION_ERROR,
-			message,
-			details,
-		);
+		super(ErrorCode.VALIDATION_ERROR, message, details);
 	}
 }
 
-export function handleError(error: FastifyError, request: FastifyRequest, reply: FastifyReply) {
+export function handleError(
+	error: FastifyError,
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
 	// Handle CORS and other early errors where reply might not be fully initialized
 	if (typeof reply.code !== "function") {
 		request.log.error(error);

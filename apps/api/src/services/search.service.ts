@@ -1,12 +1,12 @@
 // apps/api/src/services/search.service.ts
 import { contents } from "@intellipick/db";
-import { ilike, or } from "drizzle-orm";
+import type { Database } from "@intellipick/db";
 import type {
 	ContentSearchResult,
 	EntitySearchResult,
 	SearchResult,
 } from "@intellipick/shared";
-import type { Database } from "@intellipick/db";
+import { ilike, or } from "drizzle-orm";
 
 export class SearchService {
 	constructor(private db: Database) {}

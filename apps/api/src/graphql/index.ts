@@ -1,8 +1,8 @@
 // apps/api/src/graphql/index.ts
-import { createYoga, createSchema } from "graphql-yoga";
+import { createSchema, createYoga } from "graphql-yoga";
 import type { ContentsService, EntitiesService } from "../services/index.js";
-import { typeDefs } from "./schema.js";
 import { createResolvers } from "./resolvers.js";
+import { typeDefs } from "./schema.js";
 
 export function createGraphQLServer(
 	contentsService: ContentsService,
@@ -16,6 +16,10 @@ export function createGraphQLServer(
 			resolvers,
 		}),
 		graphqlEndpoint: "/graphql",
+		context: () => ({
+			contentsService,
+			entitiesService,
+		}),
 	});
 
 	return yoga;

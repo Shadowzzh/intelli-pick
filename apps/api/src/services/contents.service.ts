@@ -1,10 +1,7 @@
 // apps/api/src/services/contents.service.ts
 import type { Database } from "@intellipick/db";
-import type {
-	PaginatedResponse,
-	PaginationMeta,
-} from "@intellipick/shared";
-import { ContentsRepository } from "../repositories/contents.repository.js";
+import type { PaginatedResponse, PaginationMeta } from "@intellipick/shared";
+import type { ContentsRepository } from "../repositories/contents.repository.js";
 
 export class ContentsService {
 	constructor(private contentsRepo: ContentsRepository) {}

@@ -1,5 +1,5 @@
 // apps/api/src/graphql/resolvers.ts
-import { ContentsService, EntitiesService } from "../services/index.js";
+import type { ContentsService, EntitiesService } from "../services/index.js";
 
 export function createResolvers(
 	contentsService: ContentsService,
