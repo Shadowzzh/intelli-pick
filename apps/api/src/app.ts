@@ -18,19 +18,19 @@ export async function createApp(): Promise<FastifyInstance> {
 		logger: true,
 	});
 
-	// CORS
+	// CORS (支持环境变量或配置文件)
+	const corsOrigin = process.env.API_CORS_ORIGIN || "*";
 	await app.register(cors, {
 		origin:
-			process.env.API_CORS_ORIGIN === "*"
+			corsOrigin === "*"
 				? true
-				: process.env.API_CORS_ORIGIN
-					? process.env.API_CORS_ORIGIN.split(",")
-					: true, // Default to true if not set (for tests)
+				: corsOrigin.split(","),
 	});
 
-	// Rate limiting
+	// Rate limiting (支持环境变量或配置文件)
+	const rateLimitMax = Number.parseInt(process.env.API_RATE_LIMIT || "100");
 	await app.register(rateLimit, {
-		max: Number.parseInt(process.env.API_RATE_LIMIT || "100"),
+		max: rateLimitMax,
 		timeWindow: "1 minute",
 	});
 

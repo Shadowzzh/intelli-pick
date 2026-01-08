@@ -78,6 +78,16 @@ const QueueConfigSchema = z.object({
 	}),
 });
 
+// API 配置
+const ApiConfigSchema = z.object({
+	corsOrigin: z.union([z.string(), z.array(z.string())]).default("*"),
+	rateLimit: z.number().default(100),
+	graphql: z.object({
+		playground: z.boolean().default(false),
+		introspection: z.boolean().default(true),
+	}),
+});
+
 // 完整配置
 export const ConfigSchema = z.object({
 	ai: AiConfigSchema,
@@ -93,6 +103,7 @@ export const ConfigSchema = z.object({
 		lockTimeout: z.number().default(5 * 60 * 1000), // 5分钟，单位毫秒
 	}),
 	queue: QueueConfigSchema,
+	api: ApiConfigSchema.optional(),
 	network: z
 		.object({
 			httpProxy: z.string().url().optional(),
@@ -107,3 +118,4 @@ export type RssConfig = z.infer<typeof RssConfigSchema>;
 export type V2exConfig = z.infer<typeof V2exConfigSchema>;
 export type AiConfig = z.infer<typeof AiConfigSchema>;
 export type QueueConfig = z.infer<typeof QueueConfigSchema>;
+export type ApiConfig = z.infer<typeof ApiConfigSchema>;

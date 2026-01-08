@@ -41,6 +41,14 @@ export default defineConfig({
 			},
 		},
 	},
+	api: {
+		corsOrigin: "*", // CORS 允许的源，"*" 表示允许所有，或使用数组 ["http://localhost:3000", "https://example.com"]
+		rateLimit: 100, // API 速率限制（每分钟请求数）
+		graphql: {
+			playground: false, // 是否启用 GraphQL Playground
+			introspection: true, // 是否启用 GraphQL 内省
+		},
+	},
 	sources,
 	filter: {
 		hardRules: {

@@ -32,4 +32,5 @@ export type {
 	RssConfig,
 	V2exConfig,
 	AiConfig,
+	ApiConfig,
 } from "./schema";
