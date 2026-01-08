@@ -1,37 +1,30 @@
 // apps/api/src/ai/tools.ts
+import { tool } from "ai";
+import { z } from "zod";
+
 export const aiTools = {
-	queryContents: {
+	queryContents: tool({
 		description: "Query contents with filters like category, tags, date range",
-		parameters: {
-			type: "object",
-			properties: {
-				category: { type: "string", description: "Content category" },
-				tags: { type: "array", items: { type: "string" } },
-				limit: { type: "number", default: 10 },
-			},
-		},
-	},
+		parameters: z.object({
+			category: z.string().optional().describe("Content category"),
+			tags: z.array(z.string()).optional().describe("Array of tags to filter by"),
+			limit: z.number().default(10).describe("Maximum number of results to return"),
+		}),
+	}),
 
-	searchContents: {
+	searchContents: tool({
 		description: "Full-text search across content titles, summaries, and text",
-		parameters: {
-			type: "object",
-			properties: {
-				query: { type: "string", description: "Search query" },
-				limit: { type: "number", default: 10 },
-			},
-			required: ["query"],
-		},
-	},
+		parameters: z.object({
+			query: z.string().describe("Search query string"),
+			limit: z.number().default(10).describe("Maximum number of results to return"),
+		}),
+	}),
 
-	getTrendingEntities: {
+	getTrendingEntities: tool({
 		description:
 			"Get trending entities (people, companies, products) ordered by mention count",
-		parameters: {
-			type: "object",
-			properties: {
-				limit: { type: "number", default: 10 },
-			},
-		},
-	},
+		parameters: z.object({
+			limit: z.number().default(10).describe("Maximum number of results to return"),
+		}),
+	}),
 };
