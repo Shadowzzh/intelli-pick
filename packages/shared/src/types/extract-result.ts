@@ -1,6 +1,19 @@
 // packages/shared/src/types/extract-result.ts
 
 /**
+ * 一级分类枚举
+ */
+export enum PrimaryCategory {
+	Technology = "technology",
+	Business = "business",
+	Product = "product",
+	Career = "career",
+	News = "news",
+	Lifestyle = "lifestyle",
+	Other = "other",
+}
+
+/**
  * AI 提取+分类输出结构
  */
 export interface ExtractResult {
@@ -9,7 +22,8 @@ export interface ExtractResult {
 	keyPoints: string[];
 	dataPoints: string[];
 	entities: ExtractedEntity[];
-	category: string;
+	category: PrimaryCategory;
+	subCategory?: string; // 二级分类，AI 自由生成
 	tags: string[];
 }
 
