@@ -65,14 +65,14 @@ export async function createApp(): Promise<FastifyInstance> {
 		url: yoga.graphqlEndpoint,
 		method: ["GET", "POST", "OPTIONS"],
 		handler: async (req, reply) => {
-			const response = await yoga.handleNodeRequest(req.raw, {
-				res: reply.raw,
-			});
-			response.headers.forEach((value, key) => {
-				reply.header(key, value);
-			});
-			reply.status(response.status);
-			reply.send(response.body);
+			const response = await yoga.handleNodeRequest(req.raw);
+			if (response) {
+				response.headers.forEach((value, key) => {
+					reply.header(key, value);
+				});
+				reply.status(response.status);
+				reply.send(response.body);
+			}
 			return reply;
 		},
 	});

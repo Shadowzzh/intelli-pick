@@ -1,6 +1,6 @@
 // apps/api/src/lib/errors.ts
 import { ErrorCode } from "@intellipick/shared";
-import type { FastifyError, FastifyReply } from "fastify";
+import type { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 
 export class ApiError extends Error {
 	constructor(
@@ -41,10 +41,10 @@ export class ValidationError extends ApiError {
 	}
 }
 
-export function handleError(error: FastifyError, reply: FastifyReply) {
+export function handleError(error: FastifyError, request: FastifyRequest, reply: FastifyReply) {
 	// Handle CORS and other early errors where reply might not be fully initialized
 	if (typeof reply.code !== "function") {
-		reply.log.error(error);
+		request.log.error(error);
 		return;
 	}
 
@@ -61,7 +61,7 @@ export function handleError(error: FastifyError, reply: FastifyReply) {
 		return;
 	}
 
-	reply.log.error(error);
+	request.log.error(error);
 	reply.code(500).send({
 		success: false,
 		error: {

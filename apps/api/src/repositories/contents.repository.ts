@@ -2,11 +2,17 @@
 import { contents } from "@intellipick/db";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { Database } from "@intellipick/db";
-import { BaseRepository } from "./base.repository.js";
 
-export class ContentsRepository extends BaseRepository<typeof contents> {
-	constructor(db: Database) {
-		super(db, contents);
+export class ContentsRepository {
+	constructor(private db: Database) {}
+
+	async findById(id: string) {
+		const [result] = await this.db
+			.select()
+			.from(contents)
+			.where(eq(contents.id, id))
+			.limit(1);
+		return result;
 	}
 
 	async findWithFilters(filters: {
@@ -61,12 +67,13 @@ export class ContentsRepository extends BaseRepository<typeof contents> {
 			orderBySql = desc(contents.publishedAt);
 		}
 
-		return this.findMany({
-			where,
-			limit: filters.limit,
-			offset: filters.offset,
-			orderBy: orderBySql,
-		});
+		return this.db
+			.select()
+			.from(contents)
+			.where(where || sql`1=1`)
+			.orderBy(orderBySql)
+			.limit(filters.limit)
+			.offset(filters.offset);
 	}
 
 	async countWithFilters(filters: {
@@ -94,6 +101,10 @@ export class ContentsRepository extends BaseRepository<typeof contents> {
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-		return this.count(where);
+		const [result] = await this.db
+			.select({ count: sql<number>`count(*)` })
+			.from(contents)
+			.where(where || sql`1=1`);
+		return result.count;
 	}
 }

@@ -48,7 +48,7 @@ export async function aiChatRoutes(
 					{ role: "user", content: message },
 				],
 				tools: aiTools,
-				maxToolRoundtrips: 2,
+				maxSteps: 2,
 			});
 
 			// Execute tool calls

@@ -1,12 +1,18 @@
 // apps/api/src/repositories/entities.repository.ts
 import { entities } from "@intellipick/db";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import type { Database } from "@intellipick/db";
-import { BaseRepository } from "./base.repository.js";
 
-export class EntitiesRepository extends BaseRepository<typeof entities> {
-	constructor(db: Database) {
-		super(db, entities);
+export class EntitiesRepository {
+	constructor(private db: Database) {}
+
+	async findById(id: string) {
+		const [result] = await this.db
+			.select()
+			.from(entities)
+			.where(eq(entities.id, id))
+			.limit(1);
+		return result;
 	}
 
 	async findByType(options: {
@@ -14,23 +20,36 @@ export class EntitiesRepository extends BaseRepository<typeof entities> {
 		limit: number;
 		offset: number;
 	}) {
-		return this.findMany({
-			where: eq(entities.type, options.type as any),
-			limit: options.limit,
-			offset: options.offset,
-			orderBy: desc(entities.mentionCount),
-		});
+		return this.db
+			.select()
+			.from(entities)
+			.where(eq(entities.type, options.type as any))
+			.orderBy(desc(entities.mentionCount))
+			.limit(options.limit)
+			.offset(options.offset);
 	}
 
 	async findTrending(options: { limit: number; offset: number }) {
-		return this.findMany({
-			limit: options.limit,
-			offset: options.offset,
-			orderBy: desc(entities.mentionCount),
-		});
+		return this.db
+			.select()
+			.from(entities)
+			.orderBy(desc(entities.mentionCount))
+			.limit(options.limit)
+			.offset(options.offset);
 	}
 
 	async countByType(type: string): Promise<number> {
-		return this.count(eq(entities.type, type as any));
+		const [result] = await this.db
+			.select({ count: sql<number>`count(*)` })
+			.from(entities)
+			.where(eq(entities.type, type as any));
+		return result.count;
+	}
+
+	async count(): Promise<number> {
+		const [result] = await this.db
+			.select({ count: sql<number>`count(*)` })
+			.from(entities);
+		return result.count;
 	}
 }

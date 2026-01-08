@@ -16,9 +16,6 @@ export function createGraphQLServer(
 			resolvers,
 		}),
 		graphqlEndpoint: "/graphql",
-		// Enable GraphQL Playground in development
-		playground: process.env.GRAPHQL_PLAYGROUND === "true",
-		introspection: process.env.GRAPHQL_INTROSPECTION === "true",
 	});
 
 	return yoga;
