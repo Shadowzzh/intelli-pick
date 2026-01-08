@@ -1,4 +1,5 @@
 // apps/api/src/pipeline/types.ts
+import type { Logger } from "pino";
 import type {
 	ExtractResult,
 	FilterResult,
@@ -25,5 +26,5 @@ export interface StepResult {
 
 export interface PipelineStep {
 	name: string;
-	process(ctx: PipelineContext): Promise<StepResult>;
+	process(ctx: PipelineContext, logger?: Logger): Promise<StepResult>;
 }

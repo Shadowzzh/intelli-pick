@@ -2,7 +2,7 @@ import type { Config } from "@intellipick/config";
 // apps/api/src/pipeline/index.ts
 import type { RawContent } from "@intellipick/shared";
 import type { AiClient } from "../lib/ai";
-import { createLogger } from "../lib/logger";
+import { createLogger, createRequestLogger } from "../lib/logger";
 import { AiExtractStep } from "./ai-extract";
 import { AiFilterStep } from "./ai-filter";
 import { DedupStep } from "./dedup";
@@ -32,17 +32,26 @@ export class Pipeline {
 		];
 	}
 
-	async process(raw: RawContent): Promise<boolean> {
+	async process(raw: RawContent, requestId?: string): Promise<boolean> {
+		// 创建带追踪 ID 的 logger
+		const requestLogger = requestId
+			? createRequestLogger("pipeline", requestId)
+			: logger;
+
 		let ctx: PipelineContext = { raw };
 
 		for (const step of this.steps) {
-			logger.debug({ step: step.name }, "Running pipeline step");
-			const result = await step.process(ctx);
+			requestLogger.debug(
+				{ step: step.name, url: raw.url },
+				"Running pipeline step",
+			);
+			const result = await step.process(ctx, requestLogger);
 
 			if (result.status === StepStatus.Filtered) {
-				logger.debug(
+				requestLogger.debug(
 					{
 						step: step.name,
+						url: raw.url,
 						reason: result.context?.filterResult?.oneLineWhy,
 					},
 					"Content filtered out",
@@ -51,7 +60,10 @@ export class Pipeline {
 			}
 
 			if (result.status === StepStatus.Error) {
-				logger.error({ step: step.name, error: result.error }, "Step failed");
+				requestLogger.error(
+					{ step: step.name, url: raw.url, error: result.error },
+					"Step failed",
+				);
 				return false;
 			}
 
@@ -59,7 +71,10 @@ export class Pipeline {
 				ctx = result.context;
 			} else {
 				// 不应该到达这里，但作为保险
-				logger.warn({ step: step.name, result }, "Unexpected step result");
+				requestLogger.warn(
+					{ step: step.name, url: raw.url, result },
+					"Unexpected step result",
+				);
 				return false;
 			}
 		}
@@ -69,17 +84,22 @@ export class Pipeline {
 
 	async processAll(
 		items: RawContent[],
+		requestId?: string,
 	): Promise<{ processed: number; passed: number }> {
+		const requestLogger = requestId
+			? createRequestLogger("pipeline", requestId)
+			: logger;
+
 		let processed = 0;
 		let passed = 0;
 
 		for (const item of items) {
 			processed++;
-			const success = await this.process(item);
+			const success = await this.process(item, requestId);
 			if (success) passed++;
 		}
 
-		logger.info({ processed, passed }, "Pipeline completed");
+		requestLogger.info({ processed, passed }, "Pipeline batch completed");
 		return { processed, passed };
 	}
 }

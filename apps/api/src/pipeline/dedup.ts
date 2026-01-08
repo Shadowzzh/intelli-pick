@@ -1,6 +1,7 @@
 // apps/api/src/pipeline/dedup.ts
 import { contents, db } from "@intellipick/db";
 import { eq, or } from "drizzle-orm";
+import type { Logger } from "pino";
 import { createLogger } from "../lib/logger";
 import {
 	type PipelineContext,
@@ -14,7 +15,11 @@ const logger = createLogger("dedup");
 export class DedupStep implements PipelineStep {
 	name = "dedup";
 
-	async process(ctx: PipelineContext): Promise<StepResult> {
+	async process(
+		ctx: PipelineContext,
+		stepLogger?: Logger,
+	): Promise<StepResult> {
+		const log = stepLogger || logger;
 		const { raw } = ctx;
 
 		// 检查 URL 或 externalId 是否已存在
@@ -26,7 +31,7 @@ export class DedupStep implements PipelineStep {
 		});
 
 		if (existing) {
-			logger.debug(
+			log.debug(
 				{ url: raw.url, externalId: raw.externalId },
 				"Duplicate found, skipping",
 			);

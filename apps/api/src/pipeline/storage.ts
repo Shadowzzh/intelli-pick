@@ -9,6 +9,7 @@ import {
 } from "@intellipick/db";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
+import type { Logger } from "pino";
 import { createLogger } from "../lib/logger";
 import {
 	type PipelineContext,
@@ -24,7 +25,11 @@ export class StorageStep implements PipelineStep {
 
 	constructor(private config: Config["filter"]) {}
 
-	async process(ctx: PipelineContext): Promise<StepResult> {
+	async process(
+		ctx: PipelineContext,
+		stepLogger?: Logger,
+	): Promise<StepResult> {
+		const log = stepLogger || logger;
 		const { raw, filterResult, extractResult } = ctx;
 
 		// 处理 quarantine
@@ -46,7 +51,10 @@ export class StorageStep implements PipelineStep {
 				expiresAt: dayjs().add(this.config.quarantineTTLDays, "day").toDate(),
 			});
 
-			logger.info({ externalId: raw.externalId }, "Stored in quarantine");
+			log.info(
+				{ url: raw.url, externalId: raw.externalId },
+				"Stored in quarantine",
+			);
 			return {
 				status: StepStatus.Continue,
 				context: ctx,
@@ -76,8 +84,8 @@ export class StorageStep implements PipelineStep {
 			})
 			.returning();
 
-		logger.info(
-			{ contentId: content.id, title: content.title },
+		log.info(
+			{ url: raw.url, contentId: content.id, title: content.title },
 			"Stored content",
 		);
 

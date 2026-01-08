@@ -3,7 +3,7 @@ import type { RawContent } from "@intellipick/shared";
 // apps/api/src/worker.ts
 import { Queue, Worker } from "bullmq";
 import type { AiClient } from "./lib/ai";
-import { createLogger } from "./lib/logger";
+import { createLogger, createRequestLogger } from "./lib/logger";
 import { Pipeline } from "./pipeline/index";
 
 const logger = createLogger("worker");
@@ -26,8 +26,12 @@ export function createWorker(
 	const worker = new Worker<RawContent>(
 		QUEUE_NAME,
 		async (job) => {
-			logger.info({ jobId: job.id, url: job.data.url }, "Processing job");
-			const success = await pipeline.process(job.data);
+			const jobId = job.id as string;
+			const jobLogger = createRequestLogger("worker", jobId);
+
+			jobLogger.info({ jobId, url: job.data.url }, "Processing job");
+
+			const success = await pipeline.process(job.data, jobId);
 			return { success };
 		},
 		{
@@ -49,11 +53,18 @@ export function createWorker(
 	);
 
 	worker.on("completed", (job, result) => {
-		logger.info({ jobId: job.id, success: result.success }, "Job completed");
+		const jobId = job.id as string;
+		const jobLogger = createRequestLogger("worker", jobId);
+		jobLogger.info(
+			{ jobId, url: job.data.url, success: result.success },
+			"Job completed",
+		);
 	});
 
 	worker.on("failed", (job, err) => {
-		logger.error({ jobId: job?.id, err }, "Job failed");
+		const jobId = job?.id as string;
+		const jobLogger = createRequestLogger("worker", jobId || "unknown");
+		jobLogger.error({ jobId, url: job?.data.url, err }, "Job failed");
 	});
 
 	return worker;

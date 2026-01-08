@@ -1,5 +1,6 @@
 // apps/api/src/pipeline/hard-filter.ts
 import type { Config } from "@intellipick/config";
+import type { Logger } from "pino";
 import { createLogger } from "../lib/logger";
 import {
 	type PipelineContext,
@@ -19,7 +20,12 @@ export class HardFilterStep implements PipelineStep {
 
 	constructor(private config: Config["filter"]["hardRules"]) {}
 
-	async process(ctx: PipelineContext): Promise<StepResult> {
+	async process(
+		ctx: PipelineContext,
+		stepLogger?: Logger,
+	): Promise<StepResult> {
+		const log = stepLogger || logger;
+
 		if (!this.config.enabled) {
 			return {
 				status: StepStatus.Continue,
@@ -34,7 +40,7 @@ export class HardFilterStep implements PipelineStep {
 		// 检查黑名单域名
 		for (const domain of this.config.blacklistDomains) {
 			if (url.includes(domain.toLowerCase())) {
-				logger.debug({ url, domain }, "Blocked by blacklist domain");
+				log.debug({ url: raw.url, domain }, "Blocked by blacklist domain");
 				return {
 					status: StepStatus.Filtered,
 					context: ctx,
@@ -45,7 +51,7 @@ export class HardFilterStep implements PipelineStep {
 		// 检查垃圾关键词
 		for (const keyword of this.config.spamKeywords) {
 			if (content.includes(keyword.toLowerCase())) {
-				logger.debug({ keyword }, "Blocked by spam keyword");
+				log.debug({ url: raw.url, keyword }, "Blocked by spam keyword");
 				return {
 					status: StepStatus.Filtered,
 					context: ctx,
@@ -58,8 +64,8 @@ export class HardFilterStep implements PipelineStep {
 
 		// 检查过短且无链接
 		if (trimmed.length < 5 && !raw.url && !content.includes("http")) {
-			logger.debug(
-				{ length: trimmed.length },
+			log.debug(
+				{ url: raw.url, length: trimmed.length },
 				"Blocked: too short without links",
 			);
 			return {

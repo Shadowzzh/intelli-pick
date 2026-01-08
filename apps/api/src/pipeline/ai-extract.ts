@@ -1,6 +1,7 @@
 import type { ExtractResult } from "@intellipick/shared";
 // apps/api/src/pipeline/ai-extract.ts
 import { generateObject } from "ai";
+import type { Logger } from "pino";
 import { z } from "zod";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
@@ -86,7 +87,11 @@ export class AiExtractStep implements PipelineStep {
 
 	constructor(private ai: AiClient) {}
 
-	async process(ctx: PipelineContext): Promise<StepResult> {
+	async process(
+		ctx: PipelineContext,
+		stepLogger?: Logger,
+	): Promise<StepResult> {
+		const log = stepLogger || logger;
 		const { raw } = ctx;
 
 		// 如果是 quarantine，跳过提取
@@ -108,8 +113,9 @@ export class AiExtractStep implements PipelineStep {
 
 			ctx.extractResult = object as ExtractResult;
 
-			logger.info(
+			log.info(
 				{
+					url: raw.url,
 					title: ctx.extractResult.title,
 					category: ctx.extractResult.category,
 					tags: ctx.extractResult.tags,
@@ -123,7 +129,7 @@ export class AiExtractStep implements PipelineStep {
 				context: ctx,
 			};
 		} catch (err) {
-			logger.error({ err }, "AI extract failed");
+			log.error({ url: raw.url, err }, "AI extract failed");
 			return {
 				status: StepStatus.Error,
 				error: err as Error,

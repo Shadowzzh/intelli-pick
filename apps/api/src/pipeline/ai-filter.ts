@@ -2,6 +2,7 @@ import type { Config } from "@intellipick/config";
 import type { FilterResult } from "@intellipick/shared";
 // apps/api/src/pipeline/ai-filter.ts
 import { generateObject } from "ai";
+import type { Logger } from "pino";
 import { z } from "zod";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
@@ -96,7 +97,11 @@ export class AiFilterStep implements PipelineStep {
 		private config: Config["filter"],
 	) {}
 
-	async process(ctx: PipelineContext): Promise<StepResult> {
+	async process(
+		ctx: PipelineContext,
+		stepLogger?: Logger,
+	): Promise<StepResult> {
+		const log = stepLogger || logger;
 		const { raw } = ctx;
 
 		const prompt = FILTER_PROMPT.replace("{{author}}", raw.author || "unknown")
@@ -111,15 +116,16 @@ export class AiFilterStep implements PipelineStep {
 			});
 
 			const result = object as FilterResult;
-			logger.info(
+			log.info(
 				{
+					url: raw.url,
 					decision: result.decision,
 					valueScore: result.valueScore,
 					noiseScore: result.noiseScore,
 				},
 				"AI filter result",
 			);
-			logger.debug({ result }, "AI filter detailed result");
+			log.debug({ url: raw.url, result }, "AI filter detailed result");
 
 			// 应用阈值调整
 			if (
@@ -166,7 +172,7 @@ export class AiFilterStep implements PipelineStep {
 				context: ctx,
 			};
 		} catch (err) {
-			logger.error({ err }, "AI filter failed");
+			log.error({ url: raw.url, err }, "AI filter failed");
 			return {
 				status: StepStatus.Error,
 				error: err as Error,
