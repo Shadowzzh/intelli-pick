@@ -46,4 +46,8 @@ export class EntitiesService {
 			data: entity,
 		};
 	}
+
+	async findByContentId(contentId: string) {
+		return await this.entitiesRepo.findByContentId(contentId);
+	}
 }

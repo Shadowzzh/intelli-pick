@@ -7,7 +7,17 @@ export function createResolvers(
 ) {
 	return {
 		Query: {
-			contents: async (_: unknown, args: { limit: number; offset: number }) => {
+			contents: async (
+				_: unknown,
+				args: {
+					limit: number;
+					offset: number;
+					sources?: string[];
+					minScore?: number;
+					sortBy?: string;
+					searchQuery?: string;
+				},
+			) => {
 				const page = Math.floor(args.offset / args.limit) + 1;
 				const result = await contentsService.findPaginated({
 					page,
@@ -33,6 +43,20 @@ export function createResolvers(
 			entity: async (_: unknown, args: { id: string }) => {
 				const result = await entitiesService.findById(args.id);
 				return result?.data;
+			},
+		},
+
+		Content: {
+			source: async (parent: any, _: unknown, { sourcesService }: any) => {
+				return await sourcesService.findById(parent.sourceId);
+			},
+
+			entities: async (parent: any, _: unknown, { entitiesService }: any) => {
+				return await entitiesService.findByContentId(parent.id);
+			},
+
+			aiScore: (parent: any) => {
+				return parent.filterResult?.valueScore || null;
 			},
 		},
 	};

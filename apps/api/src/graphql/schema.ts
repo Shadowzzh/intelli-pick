@@ -1,20 +1,10 @@
 // apps/api/src/graphql/schema.ts
 
 export const typeDefs = `
-  type Content {
+  type Source {
     id: ID!
-    title: String
-    summary: String
-    rawContent: String!
-    url: String!
-    author: String
-    category: String
-    tags: [String!]!
-    keyPoints: [String!]!
-    dataPoints: [String!]!
-    publishedAt: String
-    collectedAt: String!
-    createdAt: String!
+    name: String!
+    type: String!
   }
 
   type Entity {
@@ -29,10 +19,33 @@ export const typeDefs = `
     lastMentionedAt: String
   }
 
+  type Content {
+    id: ID!
+    title: String
+    summary: String
+    rawContent: String!
+    url: String!
+    author: String
+    category: String
+    tags: [String!]!
+    keyPoints: [String!]!
+    dataPoints: [String!]!
+    publishedAt: String
+    collectedAt: String!
+    createdAt: String!
+    source: Source!
+    entities: [Entity!]!
+    aiScore: Float
+  }
+
   type Query {
     contents(
       limit: Int = 20
       offset: Int = 0
+      sources: [String!]
+      minScore: Float
+      sortBy: String
+      searchQuery: String
     ): [Content!]!
 
     content(id: ID!): Content

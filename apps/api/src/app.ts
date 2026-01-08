@@ -1,5 +1,6 @@
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
+import mercurius from "mercurius";
 import type { Config } from "@intellipick/config";
 import { db } from "@intellipick/db";
 // apps/api/src/app.ts
@@ -9,12 +10,14 @@ import { handleError } from "./lib/errors.js";
 import {
 	ContentsRepository,
 	EntitiesRepository,
+	SourcesRepository,
 } from "./repositories/index.js";
 import { registerV1Routes } from "./routes/v1/index.js";
 import {
 	ContentsService,
 	EntitiesService,
 	SearchService,
+	SourcesService,
 	StatsService,
 } from "./services/index.js";
 
@@ -48,9 +51,11 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 	// Initialize repositories and services
 	const contentsRepo = new ContentsRepository(db);
 	const entitiesRepo = new EntitiesRepository(db);
+	const sourcesRepo = new SourcesRepository(db);
 
 	const contentsService = new ContentsService(contentsRepo);
 	const entitiesService = new EntitiesService(entitiesRepo);
+	const sourcesService = new SourcesService(sourcesRepo);
 	const searchService = new SearchService(db);
 	const statsService = new StatsService();
 
@@ -64,19 +69,25 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 	});
 
 	// GraphQL
-	const yoga = createGraphQLServer(contentsService, entitiesService);
+	const graphqlConfig = createGraphQLServer(
+		contentsService,
+		entitiesService,
+		sourcesService,
+	);
 
-	app.route({
-		url: yoga.graphqlEndpoint,
-		method: ["GET", "POST", "OPTIONS"],
-		handler: async (req, reply) => {
-			const response = await yoga.handleNodeRequestAndResponse(
-				req.raw,
-				reply.raw,
-			);
-			return response;
-		},
+	// 注册 Mercurius GraphQL 插件
+	await app.register(mercurius, {
+		schema: graphqlConfig.typeDefs,
+		resolvers: graphqlConfig.resolvers,
+		context: graphqlConfig.context,
+		graphiql: true, // 开发模式下启用 GraphiQL IDE
+		path: "/graphql",
 	});
+
+	// 允许 GraphQL playground 的 CORS
+	if (process.env.NODE_ENV !== "production") {
+		console.log("🔍 GraphQL Playground: http://localhost:3001/graphql");
+	}
 
 	return app;
 }

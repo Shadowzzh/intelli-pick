@@ -1,4 +1,5 @@
 // apps/api/src/repositories/entities.repository.ts
+import { entityMentions } from "@intellipick/db";
 import { entities } from "@intellipick/db";
 import type { Database } from "@intellipick/db";
 import { desc, eq, sql } from "drizzle-orm";
@@ -51,5 +52,23 @@ export class EntitiesRepository {
 			.select({ count: sql<number>`count(*)` })
 			.from(entities);
 		return result.count;
+	}
+
+	async findByContentId(contentId: string) {
+		return this.db
+			.select({
+				id: entities.id,
+				name: entities.name,
+				type: entities.type,
+				url: entities.url,
+				description: entities.description,
+				mentionCount: entities.mentionCount,
+				metadata: entities.metadata,
+				firstMentionedAt: entities.firstMentionedAt,
+				lastMentionedAt: entities.lastMentionedAt,
+			})
+			.from(entities)
+			.innerJoin(entityMentions, eq(entityMentions.entityId, entities.id))
+			.where(eq(entityMentions.contentId, contentId));
 	}
 }
