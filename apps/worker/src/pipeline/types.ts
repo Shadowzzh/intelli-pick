@@ -1,10 +1,10 @@
-// apps/api/src/pipeline/types.ts
-import type { Logger } from "pino";
 import type {
 	ExtractResult,
 	FilterResult,
 	RawContent,
 } from "@intellipick/shared";
+// apps/api/src/pipeline/types.ts
+import type { Logger } from "pino";
 
 export interface PipelineContext {
 	raw: RawContent;

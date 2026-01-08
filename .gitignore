@@ -8,3 +8,5 @@ dist/
 packages/db/drizzle
 test-data/*.json
 !test-data/.gitkeep
+
+coverage/

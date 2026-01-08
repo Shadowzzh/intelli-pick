@@ -1,10 +1,10 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createAiClient } from "@intellipick/worker/lib/ai";
 import { loadConfig } from "@intellipick/config";
 import type { AiConfig } from "@intellipick/config";
 import type { RawContent } from "@intellipick/shared";
+import { createAiClient } from "@intellipick/worker/lib/ai";
 import type { CoreMessage } from "ai";
 
 const __filename = fileURLToPath(import.meta.url);
