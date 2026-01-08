@@ -6,3 +6,4 @@ export * from "./types/extract-result.js";
 export * from "./types/api.js";
 export * from "./types/pagination.js";
 export * from "./types/search.js";
+export * from "./constants/content-categories.js";

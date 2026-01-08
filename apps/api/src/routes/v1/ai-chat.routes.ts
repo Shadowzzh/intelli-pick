@@ -1,6 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { generateText } from "ai";
 import type { Config } from "@intellipick/config";
+import { generateText } from "ai";
 // apps/api/src/routes/v1/ai-chat.routes.ts
 import type { FastifyInstance } from "fastify";
 import { aiTools } from "../../ai/tools.js";

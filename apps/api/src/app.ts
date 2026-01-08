@@ -1,7 +1,7 @@
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
-import { db } from "@intellipick/db";
 import type { Config } from "@intellipick/config";
+import { db } from "@intellipick/db";
 // apps/api/src/app.ts
 import fastify, { type FastifyInstance } from "fastify";
 import { createGraphQLServer } from "./graphql/index.js";
