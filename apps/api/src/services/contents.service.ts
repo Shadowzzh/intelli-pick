@@ -1,5 +1,5 @@
 // apps/api/src/services/contents.service.ts
-import type { Database } from "@intellipick/db";
+import type { Content, Database } from "@intellipick/db";
 import type { PaginatedResponse, PaginationMeta } from "@intellipick/shared";
 import type { ContentsRepository } from "../repositories/contents.repository.js";
 
@@ -16,7 +16,7 @@ export class ContentsService {
 			publishedAfter?: Date;
 			publishedBefore?: Date;
 		};
-	}): Promise<PaginatedResponse<any>> {
+	}): Promise<PaginatedResponse<Content>> {
 		const offset = (params.page - 1) * params.limit;
 
 		const [items, total] = await Promise.all([

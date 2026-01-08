@@ -1,8 +1,15 @@
+import type { PaginationParams } from "@intellipick/shared";
 // apps/api/src/routes/v1/contents.routes.ts
 import type { FastifyInstance } from "fastify";
 import { NotFoundError } from "../../lib/errors.js";
 import { parsePagination } from "../../lib/validation.js";
 import type { ContentsService } from "../../services/contents.service.js";
+
+interface ContentQueryParams extends PaginationParams {
+	category?: string;
+	tags?: string;
+	sourceId?: string;
+}
 
 export async function contentsRoutes(
 	app: FastifyInstance,
@@ -10,11 +17,11 @@ export async function contentsRoutes(
 ) {
 	// List contents
 	app.get("/contents", async (req, reply) => {
-		const { page, limit } = parsePagination(req.query as any);
+		const { page, limit } = parsePagination(req.query as ContentQueryParams);
 		const filters = {
-			category: (req.query as any).category,
-			tags: (req.query as any).tags,
-			sourceId: (req.query as any).sourceId,
+			category: (req.query as ContentQueryParams).category,
+			tags: (req.query as ContentQueryParams).tags,
+			sourceId: (req.query as ContentQueryParams).sourceId,
 		};
 
 		const result = await service.findPaginated({ page, limit, filters });

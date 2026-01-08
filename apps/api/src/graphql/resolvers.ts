@@ -7,7 +7,7 @@ export function createResolvers(
 ) {
 	return {
 		Query: {
-			contents: async (_: any, args: { limit: number; offset: number }) => {
+			contents: async (_: unknown, args: { limit: number; offset: number }) => {
 				const page = Math.floor(args.offset / args.limit) + 1;
 				const result = await contentsService.findPaginated({
 					page,
@@ -16,12 +16,12 @@ export function createResolvers(
 				return result.data;
 			},
 
-			content: async (_: any, args: { id: string }) => {
+			content: async (_: unknown, args: { id: string }) => {
 				const result = await contentsService.findById(args.id);
 				return result?.data;
 			},
 
-			entities: async (_: any, args: { limit: number; offset: number }) => {
+			entities: async (_: unknown, args: { limit: number; offset: number }) => {
 				const page = Math.floor(args.offset / args.limit) + 1;
 				const result = await entitiesService.findTrending({
 					page,
@@ -30,7 +30,7 @@ export function createResolvers(
 				return result.data;
 			},
 
-			entity: async (_: any, args: { id: string }) => {
+			entity: async (_: unknown, args: { id: string }) => {
 				const result = await entitiesService.findById(args.id);
 				return result?.data;
 			},

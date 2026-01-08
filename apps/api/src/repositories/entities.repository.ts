@@ -23,7 +23,7 @@ export class EntitiesRepository {
 		return this.db
 			.select()
 			.from(entities)
-			.where(eq(entities.type, options.type as any))
+			.where(eq(entities.type, options.type))
 			.orderBy(desc(entities.mentionCount))
 			.limit(options.limit)
 			.offset(options.offset);
@@ -42,7 +42,7 @@ export class EntitiesRepository {
 		const [result] = await this.db
 			.select({ count: sql<number>`count(*)` })
 			.from(entities)
-			.where(eq(entities.type, type as any));
+			.where(eq(entities.type, type));
 		return result.count;
 	}
 

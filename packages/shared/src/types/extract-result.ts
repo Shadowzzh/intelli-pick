@@ -1,6 +1,6 @@
 // packages/shared/src/types/extract-result.ts
 
-import { type ContentCategory } from "../constants/content-categories.js";
+import type { ContentCategory } from "../constants/content-categories.js";
 
 /**
  * AI 提取+分类输出结构

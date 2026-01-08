@@ -1,5 +1,5 @@
 // apps/api/src/services/entities.service.ts
-import type { Database } from "@intellipick/db";
+import type { Database, Entity } from "@intellipick/db";
 import type { PaginatedResponse, PaginationMeta } from "@intellipick/shared";
 import type { EntitiesRepository } from "../repositories/entities.repository.js";
 
@@ -9,7 +9,7 @@ export class EntitiesService {
 	async findTrending(params: {
 		page: number;
 		limit: number;
-	}): Promise<PaginatedResponse<any>> {
+	}): Promise<PaginatedResponse<Entity>> {
 		const offset = (params.page - 1) * params.limit;
 
 		const [items, totalResult] = await Promise.all([

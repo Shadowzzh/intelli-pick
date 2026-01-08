@@ -43,7 +43,7 @@ export const logger = pino(baseConfig);
  * @param name 模块名称
  * @param meta 额外的元数据
  */
-export function createLogger(name: string, meta?: Record<string, any>) {
+export function createLogger(name: string, meta?: Record<string, unknown>) {
 	return logger.child({
 		name,
 		...meta,

@@ -7,7 +7,8 @@
 			"node_modules",
 			"**/*.config.js",
 			"**/*.config.d.ts",
-			"**/drizzle"
+			"**/drizzle",
+			"**/coverage"
 		]
 	},
 	"organizeImports": {

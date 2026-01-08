@@ -1,7 +1,7 @@
 // apps/api/src/repositories/contents.repository.ts
 import { contents } from "@intellipick/db";
 import type { Database } from "@intellipick/db";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, sql } from "drizzle-orm";
 
 export class ContentsRepository {
 	constructor(private db: Database) {}
@@ -53,13 +53,13 @@ export class ContentsRepository {
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-		let orderBySql;
+		let orderBySql: SQL;
 		if (filters.orderBy) {
 			const column = contents[filters.orderBy.column as keyof typeof contents];
 			orderBySql =
 				filters.orderBy.direction === "asc"
-					? asc(column as any)
-					: desc(column as any);
+					? asc(sql`${column}`)
+					: desc(sql`${column}`);
 		} else {
 			orderBySql = desc(contents.publishedAt);
 		}

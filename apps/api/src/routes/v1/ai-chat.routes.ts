@@ -3,12 +3,26 @@ import type { Config } from "@intellipick/config";
 import { generateText } from "ai";
 // apps/api/src/routes/v1/ai-chat.routes.ts
 import type { FastifyInstance } from "fastify";
+import type { z } from "zod";
 import { aiTools } from "../../ai/tools.js";
 import type {
 	ContentsService,
 	EntitiesService,
 	SearchService,
 } from "../../services/index.js";
+
+// 定义工具结果类型
+interface ToolResult {
+	tool: string;
+	data: unknown;
+}
+
+// 定义工具参数类型
+type QueryContentsArgs = z.infer<typeof aiTools.queryContents.parameters>;
+type SearchContentsArgs = z.infer<typeof aiTools.searchContents.parameters>;
+type GetTrendingEntitiesArgs = z.infer<
+	typeof aiTools.getTrendingEntities.parameters
+>;
 
 export async function aiChatRoutes(
 	app: FastifyInstance,
@@ -61,37 +75,40 @@ export async function aiChatRoutes(
 
 			// Execute tool calls
 			if (result.toolCalls && result.toolCalls.length > 0) {
-				const toolResults: any[] = [];
+				const toolResults: ToolResult[] = [];
 
 				for (const toolCall of result.toolCalls) {
-					let data;
+					let data: unknown;
 
 					switch (toolCall.toolName) {
 						case "queryContents": {
+							const args = toolCall.args as QueryContentsArgs;
 							const contentsResult =
 								await services.contentsService.findPaginated({
 									page: 1,
-									limit: (toolCall.args as any).limit || 10,
-									filters: toolCall.args,
+									limit: args.limit || 10,
+									filters: args,
 								});
 							data = contentsResult.data;
 							break;
 						}
 
 						case "searchContents": {
+							const args = toolCall.args as SearchContentsArgs;
 							const searchResult = await services.searchService.searchContents(
-								(toolCall.args as any).query,
-								(toolCall.args as any).limit || 10,
+								args.query,
+								args.limit || 10,
 							);
 							data = searchResult;
 							break;
 						}
 
 						case "getTrendingEntities": {
+							const args = toolCall.args as GetTrendingEntitiesArgs;
 							const entitiesResult =
 								await services.entitiesService.findTrending({
 									page: 1,
-									limit: (toolCall.args as any).limit || 10,
+									limit: args.limit || 10,
 								});
 							data = entitiesResult.data;
 							break;
@@ -132,13 +149,14 @@ export async function aiChatRoutes(
 				success: true,
 				data: { response: result.text },
 			};
-		} catch (error: any) {
+		} catch (error: unknown) {
 			req.log.error(error);
 			reply.status(500).send({
 				success: false,
 				error: {
 					code: "INTERNAL_ERROR",
-					message: error.message || "AI processing failed",
+					message:
+						error instanceof Error ? error.message : "AI processing failed",
 				},
 			});
 			return;

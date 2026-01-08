@@ -1,3 +1,4 @@
+import type { PaginationParams } from "@intellipick/shared";
 // apps/api/src/routes/v1/entities.routes.ts
 import type { FastifyInstance } from "fastify";
 import { NotFoundError } from "../../lib/errors.js";
@@ -10,7 +11,7 @@ export async function entitiesRoutes(
 ) {
 	// List trending entities
 	app.get("/entities", async (req, reply) => {
-		const { page, limit } = parsePagination(req.query as any);
+		const { page, limit } = parsePagination(req.query as PaginationParams);
 		const result = await service.findTrending({ page, limit });
 		return result;
 	});

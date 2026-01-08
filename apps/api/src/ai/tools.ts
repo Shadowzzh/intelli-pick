@@ -34,10 +34,7 @@ export const aiTools = {
 					`标签数组，用于过滤内容。常用标签示例：${COMMON_TAG_EXAMPLES.join(", ")} 等（可以使用推荐标签之外的其他标签）`,
 				),
 
-			limit: z
-				.number()
-				.default(10)
-				.describe("返回结果的最大数量"),
+			limit: z.number().default(10).describe("返回结果的最大数量"),
 		}),
 	}),
 
@@ -46,22 +43,15 @@ export const aiTools = {
 		description: "全文本搜索内容标题、摘要和正文",
 		parameters: z.object({
 			query: z.string().describe("搜索查询字符串"),
-			limit: z
-				.number()
-				.default(10)
-				.describe("返回结果的最大数量"),
+			limit: z.number().default(10).describe("返回结果的最大数量"),
 		}),
 	}),
 
 	getTrendingEntities: tool({
 		// 获取按提及次数排序的热门实体（人、公司、产品）
-		description:
-			"获取热门实体（人、公司、产品等），按提及次数排序",
+		description: "获取热门实体（人、公司、产品等），按提及次数排序",
 		parameters: z.object({
-			limit: z
-				.number()
-				.default(10)
-				.describe("返回结果的最大数量"),
+			limit: z.number().default(10).describe("返回结果的最大数量"),
 		}),
 	}),
 };
