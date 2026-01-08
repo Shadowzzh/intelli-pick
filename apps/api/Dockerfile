@@ -23,6 +23,7 @@ COPY packages/env/package.json ./packages/env/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/config/package.json ./packages/config/
 COPY packages/db/package.json ./packages/db/
+COPY packages/events/package.json ./packages/events/
 COPY apps/api/package.json ./apps/api/
 
 # 只安装生产依赖（不包含 devDependencies）
@@ -34,6 +35,7 @@ COPY packages/env/dist ./packages/env/dist
 COPY packages/shared/dist ./packages/shared/dist
 COPY packages/config/dist ./packages/config/dist
 COPY packages/db/dist ./packages/db/dist
+COPY packages/events/dist ./packages/events/dist
 COPY apps/api/dist ./apps/api/dist
 
 # 复制 workspace 包到 node_modules
@@ -41,7 +43,8 @@ RUN mkdir -p /app/apps/api/node_modules/@intellipick && \
     cp -r ./packages/env/dist/* /app/apps/api/node_modules/@intellipick/env/ && \
     cp -r ./packages/shared/dist/* /app/apps/api/node_modules/@intellipick/shared/ && \
     cp -r ./packages/config/dist/* /app/apps/api/node_modules/@intellipick/config/ && \
-    cp -r ./packages/db/dist/* /app/apps/api/node_modules/@intellipick/db/
+    cp -r ./packages/db/dist/* /app/apps/api/node_modules/@intellipick/db/ && \
+    cp -r ./packages/events/dist/* /app/apps/api/node_modules/@intellipick/events/
 
 # 复制必要的配置文件
 COPY config*.ts ./

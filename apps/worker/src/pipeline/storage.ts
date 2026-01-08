@@ -7,6 +7,11 @@ import {
 	entityMentions,
 	quarantine,
 } from "@intellipick/db";
+import {
+	emitEntityUpdate,
+	emitNewContent,
+	emitStatsUpdate,
+} from "@intellipick/events";
 import dayjs from "dayjs";
 import { and, eq } from "drizzle-orm";
 import type { Logger } from "pino";
@@ -117,6 +122,9 @@ export class StorageStep implements PipelineStep {
 			"Stored content",
 		);
 
+		// 发送新内容事件
+		emitNewContent(content);
+
 		// 存储实体和关联
 		if (extractResult?.entities) {
 			for (const entity of extractResult.entities) {
@@ -134,6 +142,9 @@ export class StorageStep implements PipelineStep {
 							lastMentionedAt: new Date(),
 						})
 						.where(eq(entities.id, existingEntity.id));
+
+					// 发送实体更新事件
+					emitEntityUpdate(existingEntity);
 				} else {
 					// 创建新实体
 					const [newEntity] = await db
@@ -149,6 +160,9 @@ export class StorageStep implements PipelineStep {
 						})
 						.returning();
 					existingEntity = newEntity;
+
+					// 发送实体更新事件
+					emitEntityUpdate(newEntity);
 				}
 
 				// 创建关联
@@ -159,6 +173,26 @@ export class StorageStep implements PipelineStep {
 				});
 			}
 		}
+
+		// 发送统计更新事件
+		const stats = {
+			totalContents: await db
+				.select()
+				.from(contents)
+				.then((rows) => rows.length),
+			todayNew: await db
+				.select()
+				.from(contents)
+				.where(eq(contents.sourceId, raw.sourceId))
+				.then(
+					(rows) =>
+						rows.filter(
+							(r) =>
+								r.publishedAt && dayjs(r.publishedAt).isSame(dayjs(), "day"),
+						).length,
+				),
+		};
+		emitStatsUpdate(stats);
 
 		return {
 			status: StepStatus.Continue,

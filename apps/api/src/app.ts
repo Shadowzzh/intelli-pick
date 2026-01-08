@@ -15,6 +15,7 @@ import {
 	ContentsService,
 	EntitiesService,
 	SearchService,
+	StatsService,
 } from "./services/index.js";
 
 export async function createApp(config?: Config): Promise<FastifyInstance> {
@@ -51,12 +52,14 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 	const contentsService = new ContentsService(contentsRepo);
 	const entitiesService = new EntitiesService(entitiesRepo);
 	const searchService = new SearchService(db);
+	const statsService = new StatsService();
 
 	// Register RESTful routes
 	await registerV1Routes(app, {
 		contentsService,
 		entitiesService,
 		searchService,
+		statsService,
 		config,
 	});
 

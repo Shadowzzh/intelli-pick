@@ -20,6 +20,7 @@
 		"@intellipick/config": "workspace:*",
 		"@intellipick/db": "workspace:*",
 		"@intellipick/env": "workspace:*",
+		"@intellipick/events": "workspace:*",
 		"@intellipick/shared": "workspace:*",
 		"ai": "^4.0.0",
 		"bullmq": "^5.0.0",

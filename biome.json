@@ -8,7 +8,8 @@
 			"**/*.config.js",
 			"**/*.config.d.ts",
 			"**/drizzle",
-			"**/coverage"
+			"**/coverage",
+			"glance"
 		]
 	},
 	"organizeImports": {
