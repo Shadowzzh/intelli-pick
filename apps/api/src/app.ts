@@ -6,6 +6,7 @@ import { handleError } from "./lib/errors.js";
 import { registerV1Routes } from "./routes/v1/index.js";
 import { ContentsService, EntitiesService } from "./services/index.js";
 import { ContentsRepository, EntitiesRepository } from "./repositories/index.js";
+import { createGraphQLServer } from "./graphql/index.js";
 import { db } from "@intellipick/db";
 
 export async function createApp(): Promise<FastifyInstance> {
@@ -43,8 +44,27 @@ export async function createApp(): Promise<FastifyInstance> {
 	const contentsService = new ContentsService(contentsRepo);
 	const entitiesService = new EntitiesService(entitiesRepo);
 
-	// Register routes
+	// Register RESTful routes
 	await registerV1Routes(app, { contentsService, entitiesService });
+
+	// GraphQL
+	const yoga = createGraphQLServer(contentsService, entitiesService);
+
+	app.route({
+		url: yoga.graphqlEndpoint,
+		method: ["GET", "POST", "OPTIONS"],
+		handler: async (req, reply) => {
+			const response = await yoga.handleNodeRequest(req.raw, {
+				res: reply.raw,
+			});
+			response.headers.forEach((value, key) => {
+				reply.header(key, value);
+			});
+			reply.status(response.status);
+			reply.send(response.body);
+			return reply;
+		},
+	});
 
 	return app;
 }
