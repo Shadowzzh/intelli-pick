@@ -6,7 +6,15 @@ import { ConfigSchema } from "./schema.js";
 import type { Config } from "./schema.js";
 
 export function defineConfig(config: Config): Config {
-	return ConfigSchema.parse(config);
+	// 自动从环境变量读取 HTTP_PROXY
+	const mergedConfig = {
+		...config,
+		network: {
+			...config.network,
+			httpProxy: process.env.HTTP_PROXY || config.network?.httpProxy,
+		},
+	};
+	return ConfigSchema.parse(mergedConfig);
 }
 
 export async function loadConfig(path = "config.ts"): Promise<Config> {

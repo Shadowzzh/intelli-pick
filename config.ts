@@ -41,9 +41,6 @@ export default defineConfig({
 			},
 		},
 	},
-	network: {
-		httpProxy: "http://127.0.0.1:7890", // 如果需要通过代理访问外网，请设置此项
-	},
 	sources,
 	filter: {
 		hardRules: {

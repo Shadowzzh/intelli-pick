@@ -1,0 +1,117 @@
+services:
+  # ============================================
+  # 应用服务
+  # ============================================
+  intellipick-app:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: intellipick-api
+    restart: unless-stopped
+    depends_on:
+      intellipick-db:
+        condition: service_healthy
+      intellipick-redis:
+        condition: service_started
+    env_file:
+      - .env.production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - intellipick-network
+    # 日志配置：限制单个日志文件大小和数量
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # 如果需要暴露端口给外部访问，取消下面的注释
+    # ports:
+    #   - "3000:3000"
+
+  # ============================================
+  # PostgreSQL 数据库
+  # ============================================
+  intellipick-db:
+    image: postgres:16-alpine
+    container_name: intellipick-db
+    restart: unless-stopped
+    ports:
+      - "15432:5432"  # 暴露数据库到宿主机 15432 端口
+    environment:
+      POSTGRES_DB: intellipick
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - intellipick-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d intellipick"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Redis 缓存
+  # ============================================
+  intellipick-redis:
+    image: redis:7-alpine
+    container_name: intellipick-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - intellipick-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # RSSHub - RSS 生成服务
+  # ============================================
+  intellipick-rsshub:
+    image: diygod/rsshub:chromium-bundled
+    container_name: intellipick-rsshub
+    restart: unless-stopped
+    depends_on:
+      intellipick-redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      CACHE_TYPE: redis
+      # 使用生产环境的 Redis(在 Docker 网络中通过服务名访问)
+      REDIS_URL: 'redis://intellipick-redis:6379/'
+      # 条件性代理配置(仅在设置了环境变量时启用)
+      HTTP_PROXY: ${RSSHUB_HTTP_PROXY:-}
+      HTTPS_PROXY: ${RSSHUB_HTTPS_PROXY:-}
+      NO_PROXY: 'localhost,127.0.0.1,intellipick-redis,intellipick-db,intellipick-app'
+    networks:
+      - intellipick-network
+    # 不暴露端口,仅在内部网络访问
+    # 应用通过 http://intellipick-rsshub:1200 访问
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:1200/healthz']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ============================================
+# 网络配置
+# ============================================
+networks:
+  intellipick-network:
+    driver: bridge
+
+# ============================================
+# 数据卷
+# ============================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

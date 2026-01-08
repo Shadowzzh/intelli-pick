@@ -4,6 +4,7 @@ dist/
 *.log
 .env
 .env.local
+.env.production
 packages/db/drizzle
 test-data/*.json
 !test-data/.gitkeep

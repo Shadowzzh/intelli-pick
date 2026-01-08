@@ -2,40 +2,27 @@ services:
     rsshub:
         # 使用 chromium-bundled 镜像，包含浏览器支持
         image: diygod/rsshub:chromium-bundled
+        container_name: intellipick-rsshub
         restart: always
         ports:
             - '1200:1200'
         environment:
             NODE_ENV: production
             CACHE_TYPE: redis
-            REDIS_URL: 'redis://redis:6379/'
+            REDIS_URL: 'redis://rsshub-redis:6379/'
             # 代理配置
             HTTP_PROXY: 'http://host.docker.internal:7890'
             HTTPS_PROXY: 'http://host.docker.internal:7890'
-            NO_PROXY: 'localhost,127.0.0.1,redis'
+            NO_PROXY: 'localhost,127.0.0.1,rsshub-redis'
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:1200/healthz']
             interval: 30s
             timeout: 10s
             retries: 3
         depends_on:
-            - redis
+            - rsshub-redis
         extra_hosts:
             - "host.docker.internal:host-gateway"
-
-    # real-browser 和 browserless 已移除（使用 chromium-bundled 镜像）
-
-    redis:
-        image: redis:alpine
-        restart: always
-        volumes:
-            - redis-data:/data
-        healthcheck:
-            test: ['CMD', 'redis-cli', 'ping']
-            interval: 30s
-            timeout: 10s
-            retries: 5
-            start_period: 5s
 
 volumes:
     redis-data:
