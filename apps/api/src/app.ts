@@ -4,7 +4,11 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { handleError } from "./lib/errors.js";
 import { registerV1Routes } from "./routes/v1/index.js";
-import { ContentsService, EntitiesService } from "./services/index.js";
+import {
+	ContentsService,
+	EntitiesService,
+	SearchService,
+} from "./services/index.js";
 import { ContentsRepository, EntitiesRepository } from "./repositories/index.js";
 import { createGraphQLServer } from "./graphql/index.js";
 import { db } from "@intellipick/db";
@@ -43,9 +47,14 @@ export async function createApp(): Promise<FastifyInstance> {
 
 	const contentsService = new ContentsService(contentsRepo);
 	const entitiesService = new EntitiesService(entitiesRepo);
+	const searchService = new SearchService(db);
 
 	// Register RESTful routes
-	await registerV1Routes(app, { contentsService, entitiesService });
+	await registerV1Routes(app, {
+		contentsService,
+		entitiesService,
+		searchService,
+	});
 
 	// GraphQL
 	const yoga = createGraphQLServer(contentsService, entitiesService);
