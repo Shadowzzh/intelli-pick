@@ -5,14 +5,14 @@
 	"type": "module",
 	"exports": {
 		".": {
-			"types": "./src/index.ts",
-			"default": "./src/index.ts"
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		}
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "tsup",
 		"typecheck": "tsc --noEmit",
-		"dev": "tsc --watch",
+		"dev": "tsup --watch",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",

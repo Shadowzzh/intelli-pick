@@ -32,6 +32,20 @@ import { z } from "zod";
 
 export const env = createEnv({
 	server: {
+		// 环境
+		NODE_ENV: z
+			.enum(["development", "production", "test"])
+			.default("development"),
+
+		// 日志配置
+		LOG_LEVEL: z
+			.enum(["trace", "debug", "info", "warn", "error", "fatal"])
+			.default("info"),
+		LOG_PRETTY: z
+			.enum(["true", "false"])
+			.transform((val) => val === "true")
+			.default("true"),
+
 		// 数据库
 		DATABASE_URL: z
 			.string()

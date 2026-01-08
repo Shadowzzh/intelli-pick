@@ -4,22 +4,13 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		"./lib/ai": {
-			"types": "./dist/lib/ai.d.ts",
-			"import": "./dist/lib/ai.js"
-		},
-		"./pipeline": {
-			"types": "./dist/pipeline.d.ts",
-			"import": "./dist/pipeline.js"
-		},
-		"./pipeline/*": {
-			"types": "./dist/pipeline/*.d.ts",
-			"import": "./dist/pipeline/*.js"
-		}
+		"./lib/ai": "./dist/lib/ai.js",
+		"./pipeline": "./dist/pipeline.js",
+		"./pipeline/*": "./dist/pipeline/*.js"
 	},
 	"scripts": {
 		"dev": "tsx watch src/index.ts",
-		"build": "tsc",
+		"build": "tsup",
 		"typecheck": "tsc --noEmit",
 		"start": "node dist/index.js"
 	},

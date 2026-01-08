@@ -5,14 +5,14 @@
 	"type": "module",
 	"exports": {
 		".": {
-			"types": "./src/index.ts",
-			"default": "./src/index.ts"
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		}
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "tsup",
 		"typecheck": "tsc --noEmit",
-		"dev": "tsc --watch"
+		"dev": "tsup --watch"
 	},
 	"devDependencies": {
 		"typescript": "^5.7.0"

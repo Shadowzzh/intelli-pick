@@ -11,9 +11,9 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "tsup",
 		"typecheck": "tsc --noEmit",
-		"dev": "tsc --watch"
+		"dev": "tsup --watch"
 	},
 	"dependencies": {
 		"@intellipick/env": "workspace:*",

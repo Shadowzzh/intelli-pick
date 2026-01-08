@@ -13,9 +13,9 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "tsup",
 		"typecheck": "tsc --noEmit",
-		"dev": "tsc --watch"
+		"dev": "tsup --watch"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "^0.11.1",
