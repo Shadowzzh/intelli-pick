@@ -10,6 +10,7 @@ export interface PipelineContext {
 	raw: RawContent;
 	filterResult?: FilterResult;
 	extractResult?: ExtractResult;
+	sourceNames?: string[];
 }
 
 export enum StepStatus {

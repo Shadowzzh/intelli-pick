@@ -66,6 +66,15 @@ const EXTRACT_PROMPT = `你是一个内容分析器。从以下内容中提取�
 - 只提取明确提到的实体,不要推断
 - type 可以是任何描述实体类型的字符串
 - 常见类型参考: person、company、country、location、organization、product、tool、project、library、article、event
+**重要 - 必须排除的实体**:
+  1. 不要提取内容来源平台本身作为实体
+     - 判断标准：如果实体名称就是内容发布平台的名称（或高度相似），则不提取
+     - 例如：在"36氪"的文章中不要提取"36氪"，在"V2EX"的帖子中不要提取"V2EX"
+     - 例如：在"少数派"的文章中不要提取"少数派"，在"Twitter"的推文中不要提取"Twitter"或"X"
+  2. 特别注意：当前已知的内容来源平台包括（但不仅限于）：
+     {{sourceList}}
+  3. 但可以提取内容中提到的其他公司、产品、人物等实体
+     - 例如：在36氪的文章中提到"字节跳动推出新产品"，应该提取"字节跳动"，但不提取"36氪"
 - 如果没有符合条件的实体,返回空数组 []
 
 ### category (必需)
@@ -85,14 +94,17 @@ const EXTRACT_PROMPT = `你是一个内容分析器。从以下内容中提取�
 export class AiExtractStep implements PipelineStep {
 	name = "ai-extract";
 
-	constructor(private ai: AiClient) {}
+	constructor(
+		private ai: AiClient,
+		private sourceNames: string[] = [],
+	) {}
 
 	async process(
 		ctx: PipelineContext,
 		stepLogger?: Logger,
 	): Promise<StepResult> {
 		const log = stepLogger || logger;
-		const { raw } = ctx;
+		const { raw, sourceNames } = ctx;
 
 		// 如果是 quarantine，跳过提取
 		if (ctx.filterResult?.decision === "quarantine") {
@@ -102,7 +114,20 @@ export class AiExtractStep implements PipelineStep {
 			};
 		}
 
-		const prompt = EXTRACT_PROMPT.replace("{{content}}", raw.content);
+		// 替换占位符
+		let prompt = EXTRACT_PROMPT.replace("{{content}}", raw.content);
+
+		// 动态插入 source 列表
+		if (sourceNames && sourceNames.length > 0) {
+			const sourceList = sourceNames.map((name) => `     - ${name}`).join("\n");
+			prompt = prompt.replace("{{sourceList}}", sourceList);
+		} else {
+			// 如果没有 sourceNames，移除那部分提示
+			prompt = prompt.replace(
+				"  2. 特别注意：当前已知的内容来源平台包括（但不仅限于）：\n     {{sourceList}}\n",
+				"",
+			);
+		}
 
 		try {
 			const { object } = await generateObject({

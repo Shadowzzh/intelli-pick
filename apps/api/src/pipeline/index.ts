@@ -22,12 +22,16 @@ const logger = createLogger("pipeline");
 
 export class Pipeline {
 	private steps: PipelineStep[] = [];
+	private config: Config;
 
 	constructor(config: Config, ai: AiClient) {
+		this.config = config;
+		const sourceNames = config.sources.map((s) => s.name);
+
 		this.steps = [
 			new HardFilterStep(config.filter.hardRules),
 			new AiFilterStep(ai, config.filter),
-			new AiExtractStep(ai),
+			new AiExtractStep(ai, sourceNames),
 			new StorageStep(config.filter),
 		];
 	}
@@ -38,7 +42,8 @@ export class Pipeline {
 			? createRequestLogger("pipeline", requestId)
 			: logger;
 
-		let ctx: PipelineContext = { raw };
+		const sourceNames = this.config.sources.map((s) => s.name);
+		let ctx: PipelineContext = { raw, sourceNames };
 
 		for (const step of this.steps) {
 			requestLogger.debug(

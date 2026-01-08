@@ -7,9 +7,9 @@ import {
 	entityMentions,
 	quarantine,
 } from "@intellipick/db";
-import dayjs from "dayjs";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Logger } from "pino";
+import dayjs from "dayjs";
 import { createLogger } from "../lib/logger";
 import {
 	type PipelineContext,
@@ -34,7 +34,15 @@ export class StorageStep implements PipelineStep {
 
 		// 处理 quarantine
 		if (filterResult?.decision === "quarantine") {
-			await db.insert(quarantine).values({
+			// 检查是否已存在相同的记录
+			const existing = await db.query.quarantine.findFirst({
+				where: and(
+					eq(quarantine.sourceId, raw.sourceId),
+					eq(quarantine.externalId, raw.externalId),
+				),
+			});
+
+			const quarantineData = {
 				sourceId: raw.sourceId,
 				externalId: raw.externalId,
 				url: raw.url,
@@ -49,12 +57,32 @@ export class StorageStep implements PipelineStep {
 				signals: filterResult.signals,
 				oneLineWhy: filterResult.oneLineWhy,
 				expiresAt: dayjs().add(this.config.quarantineTTLDays, "day").toDate(),
-			});
+			};
 
-			log.info(
-				{ url: raw.url, externalId: raw.externalId },
-				"Stored in quarantine",
-			);
+			if (existing) {
+				// 更新已存在的记录
+				await db
+					.update(quarantine)
+					.set({
+						...quarantineData,
+						createdAt: existing.createdAt, // 保持原创建时间
+					})
+					.where(eq(quarantine.id, existing.id));
+
+				log.info(
+					{ url: raw.url, externalId: raw.externalId },
+					"Updated quarantine record",
+				);
+			} else {
+				// 插入新记录
+				await db.insert(quarantine).values(quarantineData);
+
+				log.info(
+					{ url: raw.url, externalId: raw.externalId },
+					"Stored in quarantine",
+				);
+			}
+
 			return {
 				status: StepStatus.Continue,
 				context: ctx,
