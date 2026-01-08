@@ -7,8 +7,18 @@ import type { ContentsService } from "../../services/contents.service.js";
 
 interface ContentQueryParams extends PaginationParams {
 	category?: string;
-	tags?: string;
+	tags?: string | string[];
 	sourceId?: string;
+}
+
+/**
+ * 将 tags 查询参数转换为数组格式
+ * 支持逗号分隔的字符串或数组
+ */
+function parseTags(tags: string | string[] | undefined): string[] | undefined {
+	if (!tags) return undefined;
+	if (Array.isArray(tags)) return tags;
+	return tags.split(",").map((tag) => tag.trim());
 }
 
 export async function contentsRoutes(
@@ -16,12 +26,14 @@ export async function contentsRoutes(
 	service: ContentsService,
 ) {
 	// List contents
-	app.get("/contents", async (req, reply) => {
-		const { page, limit } = parsePagination(req.query as ContentQueryParams);
+	app.get("/contents", async (req) => {
+		const query = req.query as ContentQueryParams;
+		const { page, limit } = parsePagination(query);
+
 		const filters = {
-			category: (req.query as ContentQueryParams).category,
-			tags: (req.query as ContentQueryParams).tags,
-			sourceId: (req.query as ContentQueryParams).sourceId,
+			category: query.category,
+			tags: parseTags(query.tags),
+			sourceId: query.sourceId,
 		};
 
 		const result = await service.findPaginated({ page, limit, filters });
