@@ -6,6 +6,7 @@ import { SearchService } from "../../services/search.service.js";
 import { contentsRoutes } from "./contents.routes.js";
 import { entitiesRoutes } from "./entities.routes.js";
 import { searchRoutes } from "./search.routes.js";
+import { aiChatRoutes } from "./ai-chat.routes.js";
 
 export async function registerV1Routes(
 	app: FastifyInstance,
@@ -19,5 +20,6 @@ export async function registerV1Routes(
 		await contentsRoutes(childApp, services.contentsService);
 		await entitiesRoutes(childApp, services.entitiesService);
 		await searchRoutes(childApp, services.searchService);
+		await aiChatRoutes(childApp, services);
 	}, { prefix: "/api/v1" });
 }
