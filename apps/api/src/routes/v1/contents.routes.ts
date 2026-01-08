@@ -1,0 +1,35 @@
+// apps/api/src/routes/v1/contents.routes.ts
+import type { FastifyInstance } from "fastify";
+import { NotFoundError } from "../../lib/errors.js";
+import { ContentsService } from "../../services/contents.service.js";
+import { parsePagination } from "../../lib/validation.js";
+
+export async function contentsRoutes(
+	app: FastifyInstance,
+	service: ContentsService,
+) {
+	// List contents
+	app.get("/contents", async (req, reply) => {
+		const { page, limit } = parsePagination(req.query as any);
+		const filters = {
+			category: (req.query as any).category,
+			tags: (req.query as any).tags,
+			sourceId: (req.query as any).sourceId,
+		};
+
+		const result = await service.findPaginated({ page, limit, filters });
+		return reply.send(result);
+	});
+
+	// Get single content
+	app.get("/contents/:id", async (req, reply) => {
+		const { id } = req.params as { id: string };
+		const result = await service.findById(id);
+
+		if (!result) {
+			throw new NotFoundError("Content", id);
+		}
+
+		return reply.send(result);
+	});
+}

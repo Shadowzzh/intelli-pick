@@ -3,6 +3,10 @@ import fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { handleError } from "./lib/errors.js";
+import { registerV1Routes } from "./routes/v1/index.js";
+import { ContentsService, EntitiesService } from "./services/index.js";
+import { ContentsRepository, EntitiesRepository } from "./repositories/index.js";
+import { db } from "@intellipick/db";
 
 export async function createApp(): Promise<FastifyInstance> {
 	const app = fastify({
@@ -32,7 +36,15 @@ export async function createApp(): Promise<FastifyInstance> {
 	// Error handler
 	app.setErrorHandler(handleError);
 
-	// Routes will be registered here in later tasks
+	// Initialize repositories and services
+	const contentsRepo = new ContentsRepository(db);
+	const entitiesRepo = new EntitiesRepository(db);
+
+	const contentsService = new ContentsService(contentsRepo);
+	const entitiesService = new EntitiesService(entitiesRepo);
+
+	// Register routes
+	await registerV1Routes(app, { contentsService, entitiesService });
 
 	return app;
 }
