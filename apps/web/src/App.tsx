@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ContentHomePage } from "./pages/ContentHomePage";
 import { ContentList } from "./components/content/ContentList";
 import { EntityList } from "./components/entity/EntityList";
@@ -31,11 +32,20 @@ function Dashboard() {
 
 function App() {
 	return (
-		<Routes>
-			<Route path="/" element={<Dashboard />} />
-			<Route path="/content-home" element={<ContentHomePage />} />
-			<Route path="/test" element={<TestPage />} />
-		</Routes>
+		<ErrorBoundary>
+			<Routes>
+				<Route path="/" element={<Dashboard />} />
+				<Route
+					path="/content-home"
+					element={
+						<ErrorBoundary>
+							<ContentHomePage />
+						</ErrorBoundary>
+					}
+				/>
+				<Route path="/test" element={<TestPage />} />
+			</Routes>
+		</ErrorBoundary>
 	);
 }
 
