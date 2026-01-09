@@ -30,7 +30,7 @@ export function ContentHomePage() {
 					<Column size="small">
 						{/* <CalendarWidget /> */}
 						<DateRangeWidget />
-						<CategoryNavWidget />
+						<CategoryNavWidget contentClassName="max-h-96 overflow-auto" />
 						<TagFilterWidget />
 					</Column>
 

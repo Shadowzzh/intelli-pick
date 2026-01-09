@@ -28,11 +28,25 @@ function isDateRangeEqual(range1: DateRange, range2: DateRange): boolean {
  * 日期范围小组件
  * @returns
  */
-export function DateRangeWidget() {
+export function DateRangeWidget({
+	className,
+	headerClassName,
+	contentClassName,
+}: {
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+}) {
 	const { dateRange, setDateRange } = useContentHomeStore();
 
 	return (
-		<Widget title="日期范围" icon={<CalendarIcon className="h-4 w-4" />}>
+		<Widget
+			title="日期范围"
+			icon={<CalendarIcon className="h-4 w-4" />}
+			className={className}
+			headerClassName={headerClassName}
+			contentClassName={contentClassName}
+		>
 			<div className="space-y-3">
 				{/* Preset buttons */}
 				<div className="grid grid-cols-2 gap-2">

@@ -1,33 +1,30 @@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Widget } from "@/components/widgets/Widget";
+import { contentsApi } from "@/lib/api/contents";
+import { cn } from "@/lib/utils";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { Folder } from "lucide-react";
 
-interface Category {
-	name: string;
-	count: number;
-}
-
-export function CategoryNavWidget() {
+export function CategoryNavWidget({
+	className,
+	headerClassName,
+	contentClassName,
+}: {
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+}) {
 	const { filters, setFilters } = useContentHomeStore();
 
-	// Mock data for now - replace with real API later
-	const { data: categories, isLoading } = useQuery<Category[]>({
-		queryKey: ["categories"],
-		queryFn: async () => {
-			// TODO: Replace with real API call
-			// return await api.get("/api/v1/categories/stats");
-			return [
-				{ name: "技术", count: 1250 },
-				{ name: "产品", count: 856 },
-				{ name: "行业", count: 432 },
-				{ name: "设计", count: 287 },
-				{ name: "创业", count: 195 },
-			];
-		},
+	// Fetch category statistics from API
+	const { data: categoryStats, isLoading } = useQuery({
+		queryKey: contentsApi.queryKeys.categories(),
+		queryFn: () => contentsApi.getCategoryStats(),
 	});
+
+	const categories = categoryStats?.categories || [];
 
 	const handleCategoryClick = (category: string) => {
 		// Toggle category filter
@@ -40,7 +37,13 @@ export function CategoryNavWidget() {
 
 	if (isLoading) {
 		return (
-			<Widget title="分类" icon={<Folder className="h-4 w-4" />}>
+			<Widget
+				title="分类"
+				icon={<Folder className="h-4 w-4" />}
+				className={cn(className)}
+				headerClassName={headerClassName}
+				contentClassName={contentClassName}
+			>
 				<div className="space-y-2">
 					{[...Array(5)].map((_, i) => (
 						<Skeleton key={`skeleton-${i}`} className="h-8 w-full" />
@@ -51,17 +54,23 @@ export function CategoryNavWidget() {
 	}
 
 	return (
-		<Widget title="分类" icon={<Folder className="h-4 w-4" />}>
-			<div className="space-y-1">
+		<Widget
+			title="分类"
+			icon={<Folder className="h-4 w-4" />}
+			contentClassName={cn("p-0", contentClassName)}
+			className={cn(className)}
+			headerClassName={headerClassName}
+		>
+			<div>
 				{categories?.map((category) => (
 					<button
 						key={category.name}
 						type="button"
 						onClick={() => handleCategoryClick(category.name)}
 						className={`
-              w-full flex items-center justify-between px-3 py-2 rounded-md
-              hover:bg-accent transition-colors
-              ${filters.category === category.name ? "bg-accent" : ""}
+              w-full flex items-center justify-between px-4 py-1.5
+              hover:border-l-primary border-l border-l-transparent transition-colors cursor-pointer
+              ${filters.category === category.name ? "bg-secondary" : ""}
             `}
 					>
 						<span className="text-sm">{category.name}</span>

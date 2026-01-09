@@ -1,6 +1,4 @@
-import type {
-	ContentQueryParams,
-} from "@intellipick/shared";
+import type { ContentQueryParams } from "@intellipick/shared";
 // apps/api/src/routes/v1/contents.routes.ts
 import type { FastifyInstance } from "fastify";
 import { NotFoundError } from "../../lib/errors";

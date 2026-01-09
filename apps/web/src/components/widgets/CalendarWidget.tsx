@@ -3,7 +3,15 @@ import { Widget } from "@/components/widgets/Widget";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { CalendarIcon } from "lucide-react";
 
-export function CalendarWidget() {
+export function CalendarWidget({
+	className,
+	headerClassName,
+	contentClassName,
+}: {
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+}) {
 	const { selectedDate, setSelectedDate } = useContentHomeStore();
 
 	const handleSelect = (date: Date | undefined) => {
@@ -13,7 +21,13 @@ export function CalendarWidget() {
 	};
 
 	return (
-		<Widget title="日历" icon={<CalendarIcon className="h-4 w-4" />}>
+		<Widget
+			title="日历"
+			icon={<CalendarIcon className="h-4 w-4" />}
+			className={className}
+			headerClassName={headerClassName}
+			contentClassName={contentClassName}
+		>
 			{/* Single date selection */}
 			<div className="space-y-4">
 				<Calendar

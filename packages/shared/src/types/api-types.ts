@@ -5,8 +5,8 @@
  * 包含所有 REST API 的请求和响应类型定义
  */
 
-import type { PaginationParams } from "./pagination.js";
 import type { PaginatedResponse } from "./api.js";
+import type { PaginationParams } from "./pagination.js";
 
 // ============================================================================
 // Contents API Types

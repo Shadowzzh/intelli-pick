@@ -8,7 +8,15 @@ import { zhCN } from "date-fns/locale";
 import { Clock } from "lucide-react";
 import { ExternalLink } from "lucide-react";
 
-export function LatestContentsWidget() {
+export function LatestContentsWidget({
+	className,
+	headerClassName,
+	contentClassName,
+}: {
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+}) {
 	const { data, isLoading } = useQuery({
 		queryKey: contentsApi.queryKeys.filtered({ limit: 5, page: 1 }),
 		queryFn: () => contentsApi.getContents({ limit: 5, page: 1 }),
@@ -16,7 +24,13 @@ export function LatestContentsWidget() {
 
 	if (isLoading) {
 		return (
-			<Widget title="最新内容" icon={<Clock className="h-4 w-4" />}>
+			<Widget
+				title="最新内容"
+				icon={<Clock className="h-4 w-4" />}
+				className={className}
+				headerClassName={headerClassName}
+				contentClassName={contentClassName}
+			>
 				<div className="space-y-2">
 					{[...Array(5)].map((_, i) => (
 						<Skeleton key={`skeleton-${i}`} className="h-16 w-full" />
@@ -30,14 +44,26 @@ export function LatestContentsWidget() {
 
 	if (items.length === 0) {
 		return (
-			<Widget title="最新内容" icon={<Clock className="h-4 w-4" />}>
+			<Widget
+				title="最新内容"
+				icon={<Clock className="h-4 w-4" />}
+				className={className}
+				headerClassName={headerClassName}
+				contentClassName={contentClassName}
+			>
 				<p className="text-sm text-muted-foreground">暂无内容</p>
 			</Widget>
 		);
 	}
 
 	return (
-		<Widget title="最新内容" icon={<Clock className="h-4 w-4" />}>
+		<Widget
+			title="最新内容"
+			icon={<Clock className="h-4 w-4" />}
+			className={className}
+			headerClassName={headerClassName}
+			contentClassName={contentClassName}
+		>
 			<div className="space-y-3">
 				{items.map((item: Content) => (
 					<div

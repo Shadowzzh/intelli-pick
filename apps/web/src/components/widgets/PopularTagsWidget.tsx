@@ -9,7 +9,15 @@ interface Tag {
 	count: number;
 }
 
-export function PopularTagsWidget() {
+export function PopularTagsWidget({
+	className,
+	headerClassName,
+	contentClassName,
+}: {
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+}) {
 	// Mock data for now - replace with real API later
 	const { data: tags, isLoading } = useQuery<Tag[]>({
 		queryKey: ["tags", "popular"],
@@ -38,7 +46,13 @@ export function PopularTagsWidget() {
 
 	if (isLoading) {
 		return (
-			<Widget title="热门标签" icon={<Hash className="h-4 w-4" />}>
+			<Widget
+				title="热门标签"
+				icon={<Hash className="h-4 w-4" />}
+				className={className}
+				headerClassName={headerClassName}
+				contentClassName={contentClassName}
+			>
 				<div className="flex flex-wrap gap-2">
 					{[...Array(8)].map((_, i) => (
 						<Skeleton key={`skeleton-${i}`} className="h-6 w-16" />
@@ -52,7 +66,13 @@ export function PopularTagsWidget() {
 
 	if (tagList.length === 0) {
 		return (
-			<Widget title="热门标签" icon={<Hash className="h-4 w-4" />}>
+			<Widget
+				title="热门标签"
+				icon={<Hash className="h-4 w-4" />}
+				className={className}
+				headerClassName={headerClassName}
+				contentClassName={contentClassName}
+			>
 				<p className="text-sm text-muted-foreground">暂无数据</p>
 			</Widget>
 		);
@@ -69,7 +89,13 @@ export function PopularTagsWidget() {
 	};
 
 	return (
-		<Widget title="热门标签" icon={<Hash className="h-4 w-4" />}>
+		<Widget
+			title="热门标签"
+			icon={<Hash className="h-4 w-4" />}
+			className={className}
+			headerClassName={headerClassName}
+			contentClassName={contentClassName}
+		>
 			<div className="flex flex-wrap gap-2">
 				{tagList.map((tag) => {
 					const size = getSize(tag.count);

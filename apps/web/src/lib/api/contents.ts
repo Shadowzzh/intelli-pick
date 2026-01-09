@@ -1,15 +1,10 @@
 import { api } from "@/lib/api";
 import type { Content } from "@intellipick/db";
-import type { PaginatedResponse, PaginationParams } from "@intellipick/shared";
-
-interface ContentQueryParams extends PaginationParams {
-	date?: string;
-	from?: string;
-	to?: string;
-	category?: string;
-	tags?: string[];
-	sourceIds?: string[];
-}
+import type {
+	CategoryStatsResponseData,
+	ContentQueryParams,
+	PaginatedResponse,
+} from "@intellipick/shared";
 
 export const contentsApi = {
 	/**
@@ -26,7 +21,12 @@ export const contentsApi = {
 		if (params.from) queryParams.from = params.from;
 		if (params.to) queryParams.to = params.to;
 		if (params.category) queryParams.category = params.category;
-		if (params.tags?.length) queryParams.tags = params.tags.join(",");
+		if (params.tags) {
+			// tags 可能是字符串或数组
+			queryParams.tags = Array.isArray(params.tags)
+				? params.tags.join(",")
+				: params.tags;
+		}
 		if (params.sourceIds?.length)
 			queryParams.sourceId = params.sourceIds.join(",");
 
@@ -41,6 +41,25 @@ export const contentsApi = {
 	},
 
 	/**
+	 * Fetch category statistics
+	 */
+	async getCategoryStats(params?: {
+		from?: string;
+		to?: string;
+	}): Promise<CategoryStatsResponseData> {
+		const queryParams: Record<string, string> = {};
+		if (params?.from) queryParams.from = params.from;
+		if (params?.to) queryParams.to = params.to;
+
+		const queryString = new URLSearchParams(queryParams).toString();
+		const url = queryString
+			? `/api/v1/categories/stats?${queryString}`
+			: "/api/v1/categories/stats";
+
+		return api.get<CategoryStatsResponseData>(url);
+	},
+
+	/**
 	 * Query key factory for contents
 	 */
 	queryKeys: {
@@ -48,5 +67,7 @@ export const contentsApi = {
 		filtered: (params: ContentQueryParams) =>
 			["contents", "filtered", params] as const,
 		detail: (id: string) => ["contents", "detail", id] as const,
+		categories: (params?: { from?: string; to?: string }) =>
+			["categories", "stats", params] as const,
 	},
 };

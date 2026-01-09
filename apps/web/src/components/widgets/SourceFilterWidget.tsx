@@ -19,7 +19,15 @@ const sourceTypeIcons = {
 	v2ex: MessageCircle,
 };
 
-export function SourceFilterWidget() {
+export function SourceFilterWidget({
+	className,
+	headerClassName,
+	contentClassName,
+}: {
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+}) {
 	const { filters, setFilters } = useContentHomeStore();
 
 	// Mock data for now
@@ -47,7 +55,12 @@ export function SourceFilterWidget() {
 
 	if (isLoading) {
 		return (
-			<Widget title="数据源">
+			<Widget
+				title="数据源"
+				className={className}
+				headerClassName={headerClassName}
+				contentClassName={contentClassName}
+			>
 				<div className="space-y-3">
 					{[...Array(4)].map((_, i) => (
 						<Skeleton key={`skeleton-${i}`} className="h-8 w-full" />
@@ -58,7 +71,12 @@ export function SourceFilterWidget() {
 	}
 
 	return (
-		<Widget title="数据源">
+		<Widget
+			title="数据源"
+			className={className}
+			headerClassName={headerClassName}
+			contentClassName={contentClassName}
+		>
 			<div className="space-y-2">
 				{sources?.map((source) => {
 					const Icon = sourceTypeIcons[source.type];

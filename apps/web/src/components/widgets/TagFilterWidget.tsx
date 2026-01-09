@@ -11,7 +11,15 @@ interface TagItem {
 	count: number;
 }
 
-export function TagFilterWidget() {
+export function TagFilterWidget({
+	className,
+	headerClassName,
+	contentClassName,
+}: {
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+}) {
 	const { filters, setFilters } = useContentHomeStore();
 
 	// Mock data for now
@@ -48,7 +56,13 @@ export function TagFilterWidget() {
 
 	if (isLoading) {
 		return (
-			<Widget title="标签" icon={<TagIcon className="h-4 w-4" />}>
+			<Widget
+				title="标签"
+				icon={<TagIcon className="h-4 w-4" />}
+				className={className}
+				headerClassName={headerClassName}
+				contentClassName={contentClassName}
+			>
 				<div className="space-y-2">
 					{[...Array(6)].map((_, i) => (
 						<Skeleton key={`skeleton-${i}`} className="h-6 w-full" />
@@ -62,6 +76,9 @@ export function TagFilterWidget() {
 		<Widget
 			title="标签"
 			icon={<TagIcon className="h-4 w-4" />}
+			className={className}
+			headerClassName={headerClassName}
+			contentClassName={contentClassName}
 			actions={
 				selectedTags.length > 0 ? (
 					<button
