@@ -9,3 +9,4 @@ export { SourceFilterWidget } from "./SourceFilterWidget";
 export { TagFilterWidget } from "./TagFilterWidget";
 export { TrendingEntitiesWidget } from "./TrendingEntitiesWidget";
 export { LatestContentsWidget } from "./LatestContentsWidget";
+export { PopularTagsWidget } from "./PopularTagsWidget";

@@ -5,6 +5,7 @@ import { SourceFilterWidget } from "@/components/widgets/SourceFilterWidget";
 import { TagFilterWidget } from "@/components/widgets/TagFilterWidget";
 import { TrendingEntitiesWidget } from "@/components/widgets/TrendingEntitiesWidget";
 import { LatestContentsWidget } from "@/components/widgets/LatestContentsWidget";
+import { PopularTagsWidget } from "@/components/widgets/PopularTagsWidget";
 import { ContentListNew } from "@/components/content/ContentListNew";
 import { Column } from "@/components/layout";
 import { List, Grid3x3 } from "lucide-react";
@@ -67,6 +68,7 @@ export function ContentHomePage() {
           <Column size="small">
             <TrendingEntitiesWidget />
             <LatestContentsWidget />
+            <PopularTagsWidget />
           </Column>
         </div>
       </div>
