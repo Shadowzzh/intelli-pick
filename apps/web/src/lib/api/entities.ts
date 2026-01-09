@@ -30,9 +30,7 @@ export const entitiesApi = {
 		if (params?.from) queryParams.from = params.from;
 		if (params?.to) queryParams.to = params.to;
 
-		return api.get<PaginatedResponse<Entity>>("/api/v1/entities", {
-			params: queryParams,
-		});
+		return api.getPaginated<Entity>("/api/v1/entities", queryParams);
 	},
 
 	/**

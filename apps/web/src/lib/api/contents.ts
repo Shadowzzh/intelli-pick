@@ -30,9 +30,7 @@ export const contentsApi = {
 		if (params.sourceIds?.length)
 			queryParams.sourceId = params.sourceIds.join(",");
 
-		return api.get<PaginatedResponse<Content>>("/api/v1/contents", {
-			params: queryParams,
-		});
+		return api.getPaginated<Content>("/api/v1/contents", queryParams);
 	},
 
 	/**

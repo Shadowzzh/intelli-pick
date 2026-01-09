@@ -28,7 +28,7 @@ export class EntitiesService {
 		]);
 
 		const meta: PaginationMeta = {
-			total: totalResult,
+			total: String(totalResult),
 			page: params.page,
 			limit: params.limit,
 			totalPages: Math.ceil(totalResult / params.limit),

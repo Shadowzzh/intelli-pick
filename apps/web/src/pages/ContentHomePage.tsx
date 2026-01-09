@@ -1,7 +1,7 @@
 import { ContentListNew } from "@/components/content/ContentListNew";
 import { Column } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { CalendarWidget } from "@/components/widgets/CalendarWidget";
+// import { CalendarWidget } from "@/components/widgets/CalendarWidget";
 import { CategoryNavWidget } from "@/components/widgets/CategoryNavWidget";
 import { DateRangeWidget } from "@/components/widgets/DateRangeWidget";
 import { LatestContentsWidget } from "@/components/widgets/LatestContentsWidget";
@@ -52,7 +52,7 @@ export function ContentHomePage() {
 				<div className="flex flex-col lg:flex-row gap-5">
 					{/* Left Column - Filters */}
 					<Column size="small">
-						<CalendarWidget />
+						{/* <CalendarWidget /> */}
 						<DateRangeWidget />
 						<CategoryNavWidget />
 						<SourceFilterWidget />

@@ -30,7 +30,7 @@ export class ContentsService {
 		]);
 
 		const meta: PaginationMeta = {
-			total,
+			total: String(total),
 			page: params.page,
 			limit: params.limit,
 			totalPages: Math.ceil(total / params.limit),

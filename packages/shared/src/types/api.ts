@@ -15,7 +15,7 @@ export interface PaginatedResponse<T> {
 
 /** 分页元数据 */
 export interface PaginationMeta {
-	total: number;
+	total: string;
 	page: number;
 	limit: number;
 	totalPages: number;

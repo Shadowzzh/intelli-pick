@@ -58,7 +58,7 @@ export function ContentListNew({ className }: ContentListProps) {
 	}
 
 	const items = data?.data || [];
-	const total = data?.meta?.total || 0;
+	const total = data?.meta?.total || "0";
 
 	if (items.length === 0) {
 		return (
@@ -97,7 +97,7 @@ export function ContentListNew({ className }: ContentListProps) {
 			))}
 
 			{/* Pagination placeholder */}
-			{total > items.length && (
+			{Number.parseInt(total, 10) > items.length && (
 				<div className="pt-4 text-center">
 					<p className="text-sm text-muted-foreground">
 						显示 {items.length} / {total} 条

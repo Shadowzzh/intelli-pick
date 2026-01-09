@@ -21,7 +21,6 @@ export function CalendarWidget() {
 					selected={selectedDate}
 					onSelect={handleSelect}
 					className="rounded-md border"
-					captionLayout="dropdown"
 				/>
 
 				{/* Show selected date info */}
