@@ -1,10 +1,6 @@
+import type { DateRange } from "@/lib/date-utils";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-interface DateRange {
-	from: Date | undefined;
-	to: Date | undefined;
-}
 
 interface ContentFilters {
 	category?: string;
@@ -25,11 +21,15 @@ interface ContentHomeState {
 	// View mode
 	viewMode: ViewMode;
 
+	// Page state
+	currentPage: number;
+
 	// Actions
 	setSelectedDate: (date: Date) => void;
 	setDateRange: (range: DateRange) => void;
 	setFilters: (filters: Partial<ContentFilters>) => void;
 	setViewMode: (mode: ViewMode) => void;
+	setCurrentPage: (page: number) => void;
 	resetFilters: () => void;
 }
 
@@ -46,6 +46,9 @@ export const useContentHomeStore = create<ContentHomeState>()(
 			// Default view mode
 			viewMode: "compact",
 
+			// Default page
+			currentPage: 1,
+
 			// Actions
 			setSelectedDate: (date) => set({ selectedDate: date }),
 
@@ -58,6 +61,8 @@ export const useContentHomeStore = create<ContentHomeState>()(
 
 			setViewMode: (mode) => set({ viewMode: mode }),
 
+			setCurrentPage: (page) => set({ currentPage: page }),
+
 			resetFilters: () =>
 				set({
 					filters: {},
@@ -65,18 +70,20 @@ export const useContentHomeStore = create<ContentHomeState>()(
 		}),
 		{
 			name: "intellipick-content-home-storage",
-			// Only persist filters, not date objects or view mode
+			// Only persist filters and currentPage, not date objects or view mode
 			// Date objects can't be properly serialized by localStorage
 			partialize: (state) => ({
 				filters: state.filters,
+				currentPage: state.currentPage,
 			}),
 			// Handle migration - clear old data that might contain serialized dates
-			version: 1,
+			version: 2,
 			migrate: (persistedState) => {
 				// Return only filters, discard any old date data
 				const state = persistedState as Record<string, unknown> | undefined;
 				return {
 					filters: (state?.filters as ContentFilters | undefined) || {},
+					currentPage: (state?.currentPage as number | undefined) || 1,
 				};
 			},
 		},

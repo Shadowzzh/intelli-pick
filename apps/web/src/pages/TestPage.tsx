@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { useState } from "react";
 
 // 类型定义
@@ -507,38 +507,11 @@ export function TestPage() {
 		<div className="min-h-screen bg-background text-foreground p-6">
 			<div className="w-full">
 				{/* 页面导航 */}
-				<div className="widget mb-6">
-					<div className="flex items-center gap-6">
-						{/* Logo */}
-						<div className="flex items-center gap-2">
-							<div className="text-2xl font-bold text-primary">I</div>
-							<span className="text-lg font-bold">IntelliPick</span>
-						</div>
-
-						{/* Page 导航 */}
-						<div className="flex items-center gap-2">
-							{pages.map((page) => (
-								<button
-									key={page}
-									type="button"
-									className={`px-3 py-1.5 text-sm transition-colors border-b-2 ${
-										currentPage === page
-											? "border-primary text-foreground font-medium"
-											: "border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground"
-									}`}
-									onClick={() => setCurrentPage(page)}
-								>
-									Page {page}
-								</button>
-							))}
-						</div>
-
-						{/* 主题切换 */}
-						<div className="ml-auto">
-							<ThemeToggle />
-						</div>
-					</div>
-				</div>
+				<PageHeader
+					pages={pages}
+					currentPage={currentPage}
+					onPageChange={setCurrentPage}
+				/>
 
 				{/* 多栏布局 */}
 				<div className="flex gap-5">

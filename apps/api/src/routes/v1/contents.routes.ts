@@ -5,7 +5,7 @@ import { NotFoundError } from "../../lib/errors";
 import { parsePagination } from "../../lib/validation";
 import type { ContentsService } from "../../services/contents.service";
 
-interface ContentQueryParams extends PaginationParams {
+interface ContentQueryParams extends PaginationParams, DatesQueryParams {
 	category?: string;
 	tags?: string | string[];
 	sourceId?: string;
@@ -75,11 +75,14 @@ export async function contentsRoutes(
 	app.get("/contents", async (req) => {
 		const query = req.query as ContentQueryParams;
 		const { page, limit } = parsePagination(query);
+		const dateRange = parseDateRange(query);
 
 		const filters = {
 			category: query.category,
 			tags: parseTags(query.tags),
 			sourceId: query.sourceId,
+			publishedAfter: dateRange.from,
+			publishedBefore: dateRange.to,
 		};
 
 		const result = await service.findPaginated({ page, limit, filters });

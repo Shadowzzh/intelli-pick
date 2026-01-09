@@ -3,6 +3,19 @@ import { contents } from "@intellipick/db";
 import type { Database } from "@intellipick/db";
 import { type SQL, and, asc, desc, eq, sql } from "drizzle-orm";
 
+/**
+ * 将 Date 对象转换为本地时间字符串，匹配数据库的 timestamp without time zone
+ */
+function dateToLocalString(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	const hours = String(date.getHours()).padStart(2, "0");
+	const minutes = String(date.getMinutes()).padStart(2, "0");
+	const seconds = String(date.getSeconds()).padStart(2, "0");
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 export class ContentsRepository {
 	constructor(private db: Database) {}
 
@@ -40,15 +53,13 @@ export class ContentsRepository {
 		}
 
 		if (filters.publishedAfter) {
-			conditions.push(
-				sql`${contents.publishedAt} >= ${filters.publishedAfter}`,
-			);
+			const dateStr = dateToLocalString(filters.publishedAfter);
+			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
 		}
 
 		if (filters.publishedBefore) {
-			conditions.push(
-				sql`${contents.publishedAt} <= ${filters.publishedBefore}`,
-			);
+			const dateStr = dateToLocalString(filters.publishedBefore);
+			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -94,6 +105,16 @@ export class ContentsRepository {
 			conditions.push(eq(contents.sourceId, filters.sourceId));
 		}
 
+		if (filters.publishedAfter) {
+			const dateStr = dateToLocalString(filters.publishedAfter);
+			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
+		}
+
+		if (filters.publishedBefore) {
+			const dateStr = dateToLocalString(filters.publishedBefore);
+			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
+		}
+
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
 		const [result] = await this.db
@@ -110,14 +131,16 @@ export class ContentsRepository {
 		const conditions = [];
 
 		if (params.from) {
-			conditions.push(sql`${contents.publishedAt} >= ${params.from}`);
+			const dateStr = dateToLocalString(params.from);
+			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
 		}
 
 		if (params.to) {
 			// Include the entire end day
 			const endOfDay = new Date(params.to);
 			endOfDay.setHours(23, 59, 59, 999);
-			conditions.push(sql`${contents.publishedAt} <= ${endOfDay}`);
+			const dateStr = dateToLocalString(endOfDay);
+			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -142,14 +165,16 @@ export class ContentsRepository {
 		const conditions = [];
 
 		if (params.from) {
-			conditions.push(sql`${contents.publishedAt} >= ${params.from}`);
+			const dateStr = dateToLocalString(params.from);
+			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
 		}
 
 		if (params.to) {
 			// Include the entire end day
 			const endOfDay = new Date(params.to);
 			endOfDay.setHours(23, 59, 59, 999);
-			conditions.push(sql`${contents.publishedAt} <= ${endOfDay}`);
+			const dateStr = dateToLocalString(endOfDay);
+			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -182,14 +207,16 @@ export class ContentsRepository {
 		const conditions = [];
 
 		if (params.from) {
-			conditions.push(sql`${contents.publishedAt} >= ${params.from}`);
+			const dateStr = dateToLocalString(params.from);
+			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
 		}
 
 		if (params.to) {
 			// Include the entire end day
 			const endOfDay = new Date(params.to);
 			endOfDay.setHours(23, 59, 59, 999);
-			conditions.push(sql`${contents.publishedAt} <= ${endOfDay}`);
+			const dateStr = dateToLocalString(endOfDay);
+			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;

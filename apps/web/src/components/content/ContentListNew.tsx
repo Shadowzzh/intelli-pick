@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useContentHomeStore } from "@/store/content-home-store";
 import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { ExternalLink, Loader2 } from "lucide-react";
 
@@ -12,13 +12,15 @@ interface ContentListProps {
 }
 
 export function ContentListNew({ className }: ContentListProps) {
-	const { selectedDate, dateRange, filters, viewMode } = useContentHomeStore();
+	const { dateRange, filters, viewMode } = useContentHomeStore();
 
 	// Build query params from store
+	// 将 Date 对象转换为本地时间字符串，以匹配数据库的 timestamp without time zone
 	const queryParams = {
-		date: dateRange.from ? undefined : selectedDate.toISOString().split("T")[0],
-		from: dateRange.from?.toISOString().split("T")[0],
-		to: dateRange.to?.toISOString().split("T")[0],
+		from: dateRange.from
+			? format(dateRange.from, "yyyy-MM-dd HH:mm:ss")
+			: undefined,
+		to: dateRange.to ? format(dateRange.to, "yyyy-MM-dd HH:mm:ss") : undefined,
 		category: filters.category,
 		tags: filters.tags,
 		sourceIds: filters.sourceIds,
