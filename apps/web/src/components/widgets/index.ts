@@ -6,3 +6,4 @@ export { CalendarWidget } from "./CalendarWidget";
 export { DateRangeWidget } from "./DateRangeWidget";
 export { CategoryNavWidget } from "./CategoryNavWidget";
 export { SourceFilterWidget } from "./SourceFilterWidget";
+export { TagFilterWidget } from "./TagFilterWidget";

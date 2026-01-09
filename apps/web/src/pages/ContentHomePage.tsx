@@ -2,6 +2,7 @@ import { CalendarWidget } from "@/components/widgets/CalendarWidget";
 import { DateRangeWidget } from "@/components/widgets/DateRangeWidget";
 import { CategoryNavWidget } from "@/components/widgets/CategoryNavWidget";
 import { SourceFilterWidget } from "@/components/widgets/SourceFilterWidget";
+import { TagFilterWidget } from "@/components/widgets/TagFilterWidget";
 import { Column } from "@/components/layout";
 
 export function ContentHomePage() {
@@ -15,12 +16,13 @@ export function ContentHomePage() {
 
         {/* 3-column widget layout */}
         <div className="flex gap-5">
-          {/* Left Column */}
+          {/* Left Column - Filters */}
           <Column size="small">
             <CalendarWidget />
             <DateRangeWidget />
             <CategoryNavWidget />
             <SourceFilterWidget />
+            <TagFilterWidget />
           </Column>
 
           {/* Middle Column */}
