@@ -65,12 +65,20 @@ export const useContentHomeStore = create<ContentHomeState>()(
 		}),
 		{
 			name: "intellipick-content-home-storage",
-			// Only persist selected date and filters, not view mode
+			// Only persist filters, not date objects or view mode
+			// Date objects can't be properly serialized by localStorage
 			partialize: (state) => ({
-				selectedDate: state.selectedDate,
-				dateRange: state.dateRange,
 				filters: state.filters,
 			}),
+			// Handle migration - clear old data that might contain serialized dates
+			version: 1,
+			migrate: (persistedState) => {
+				// Return only filters, discard any old date data
+				const state = persistedState as Record<string, unknown> | undefined;
+				return {
+					filters: (state?.filters as ContentFilters | undefined) || {},
+				};
+			},
 		},
 	),
 );

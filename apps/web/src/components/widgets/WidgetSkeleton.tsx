@@ -17,7 +17,7 @@ export function WidgetSkeleton({ className, lines = 3 }: WidgetSkeletonProps) {
 			{/* Content skeleton */}
 			<div className="p-4 space-y-3">
 				{Array.from({ length: lines }).map((_, i) => (
-					<div key={i} className="space-y-2">
+					<div key={`skeleton-${i}`} className="space-y-2">
 						<div className="h-3 bg-muted animate-pulse rounded" />
 						<div className="h-3 w-3/4 bg-muted animate-pulse rounded" />
 					</div>

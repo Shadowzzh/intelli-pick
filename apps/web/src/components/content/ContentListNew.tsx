@@ -1,28 +1,11 @@
 import { contentsApi } from "@/lib/api/contents";
 import { cn } from "@/lib/utils";
 import { useContentHomeStore } from "@/store/content-home-store";
+import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { ExternalLink, Loader2 } from "lucide-react";
-
-export interface ContentItem {
-	id: string;
-	title: string;
-	summary: string;
-	url: string;
-	author?: string;
-	publishedAt: string;
-	category?: string;
-	tags?: string[];
-	source?: {
-		name: string;
-		type: string;
-	};
-	filterResult?: {
-		score: number;
-	};
-}
 
 interface ContentListProps {
 	className?: string;
@@ -109,7 +92,7 @@ export function ContentListNew({ className }: ContentListProps) {
 			)}
 
 			{/* Content items */}
-			{items.map((item: any) => (
+			{items.map((item: Content) => (
 				<ContentListItem key={item.id} item={item} viewMode={viewMode} />
 			))}
 
@@ -126,7 +109,7 @@ export function ContentListNew({ className }: ContentListProps) {
 }
 
 interface ContentListItemProps {
-	item: ContentItem;
+	item: Content;
 	viewMode: "compact" | "detailed";
 }
 
@@ -138,18 +121,18 @@ function ContentListItem({ item, viewMode }: ContentListItemProps) {
 	return <ContentCompactCard item={item} />;
 }
 
-function ContentCompactCard({ item }: { item: ContentItem }) {
+function ContentCompactCard({ item }: { item: Content }) {
 	return (
 		<div className="group p-4 border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer">
 			{/* Title with link */}
 			<div className="flex items-start justify-between gap-2 mb-2">
 				<a
-					href={item.url}
+					href={item.url || "#"}
 					target="_blank"
 					rel="noopener noreferrer"
 					className="font-medium line-clamp-2 group-hover:text-primary transition-colors flex-1"
 				>
-					{item.title}
+					{item.title || "无标题"}
 				</a>
 				<ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
 			</div>
@@ -163,16 +146,10 @@ function ContentCompactCard({ item }: { item: ContentItem }) {
 
 			{/* Meta info */}
 			<div className="flex items-center gap-3 text-xs text-muted-foreground">
-				{item.source && <span className="font-medium">{item.source.name}</span>}
-				{item.category && (
-					<>
-						<span>·</span>
-						<span>{item.category}</span>
-					</>
-				)}
+				{item.category && <span>{item.category}</span>}
 				{item.publishedAt && (
 					<>
-						<span>·</span>
+						{item.category && <span>·</span>}
 						<span>
 							{formatDistanceToNow(new Date(item.publishedAt), {
 								addSuffix: true,
@@ -197,18 +174,18 @@ function ContentCompactCard({ item }: { item: ContentItem }) {
 	);
 }
 
-function ContentDetailedCard({ item }: { item: ContentItem }) {
+function ContentDetailedCard({ item }: { item: Content }) {
 	return (
 		<div className="group p-5 border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all">
 			{/* Title with link */}
 			<div className="flex items-start justify-between gap-3 mb-3">
 				<a
-					href={item.url}
+					href={item.url || "#"}
 					target="_blank"
 					rel="noopener noreferrer"
 					className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors flex-1"
 				>
-					{item.title}
+					{item.title || "无标题"}
 				</a>
 				<ExternalLink className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
 			</div>
@@ -219,11 +196,16 @@ function ContentDetailedCard({ item }: { item: ContentItem }) {
 			)}
 
 			{/* Key points - if available */}
-			{/* TODO: Add when API returns keyPoints */}
+			{item.keyPoints && item.keyPoints.length > 0 && (
+				<ul className="list-disc list-inside text-sm text-muted-foreground mb-3 space-y-1">
+					{item.keyPoints.slice(0, 3).map((point, idx) => (
+						<li key={idx}>{point}</li>
+					))}
+				</ul>
+			)}
 
 			{/* Meta info */}
 			<div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-				{item.source && <span className="font-medium">{item.source.name}</span>}
 				{item.author && <span>by {item.author}</span>}
 				{item.category && <span>· {item.category}</span>}
 				{item.publishedAt && (
@@ -245,13 +227,6 @@ function ContentDetailedCard({ item }: { item: ContentItem }) {
 							{tag}
 						</span>
 					))}
-				</div>
-			)}
-
-			{/* AI Score - if available */}
-			{item.filterResult?.score && (
-				<div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
-					AI 评分: {Math.round(item.filterResult.score * 100)}%
 				</div>
 			)}
 		</div>

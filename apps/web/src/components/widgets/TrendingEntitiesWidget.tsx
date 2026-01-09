@@ -16,7 +16,7 @@ export function TrendingEntitiesWidget() {
 			<Widget title="趋势实体" icon={<TrendingUp className="h-4 w-4" />}>
 				<div className="space-y-2">
 					{[...Array(5)].map((_, i) => (
-						<Skeleton key={i} className="h-8 w-full" />
+						<Skeleton key={`skeleton-${i}`} className="h-8 w-full" />
 					))}
 				</div>
 			</Widget>

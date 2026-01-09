@@ -334,13 +334,3 @@
 .widget {
 	transition: all 0.2s ease-in-out;
 }
-
-.widget:hover {
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-	.widget:hover {
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	}
-}

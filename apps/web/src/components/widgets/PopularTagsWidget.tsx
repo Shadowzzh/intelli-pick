@@ -41,7 +41,7 @@ export function PopularTagsWidget() {
 			<Widget title="热门标签" icon={<Hash className="h-4 w-4" />}>
 				<div className="flex flex-wrap gap-2">
 					{[...Array(8)].map((_, i) => (
-						<Skeleton key={i} className="h-6 w-16" />
+						<Skeleton key={`skeleton-${i}`} className="h-6 w-16" />
 					))}
 				</div>
 			</Widget>

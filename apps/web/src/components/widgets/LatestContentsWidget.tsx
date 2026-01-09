@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Widget } from "@/components/widgets/Widget";
 import { contentsApi } from "@/lib/api/contents";
+import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
@@ -18,7 +19,7 @@ export function LatestContentsWidget() {
 			<Widget title="最新内容" icon={<Clock className="h-4 w-4" />}>
 				<div className="space-y-2">
 					{[...Array(5)].map((_, i) => (
-						<Skeleton key={i} className="h-16 w-full" />
+						<Skeleton key={`skeleton-${i}`} className="h-16 w-full" />
 					))}
 				</div>
 			</Widget>
@@ -38,7 +39,7 @@ export function LatestContentsWidget() {
 	return (
 		<Widget title="最新内容" icon={<Clock className="h-4 w-4" />}>
 			<div className="space-y-3">
-				{items.map((item: any) => (
+				{items.map((item: Content) => (
 					<div
 						key={item.id}
 						className="group p-3 border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer"

@@ -3,10 +3,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Widget } from "@/components/widgets/Widget";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
-import { Tag } from "lucide-react";
+import { Tag as TagIcon } from "lucide-react";
 import { X } from "lucide-react";
 
-interface Tag {
+interface TagItem {
 	name: string;
 	count: number;
 }
@@ -15,7 +15,7 @@ export function TagFilterWidget() {
 	const { filters, setFilters } = useContentHomeStore();
 
 	// Mock data for now
-	const { data: tags, isLoading } = useQuery<Tag[]>({
+	const { data: tags, isLoading } = useQuery<TagItem[]>({
 		queryKey: ["tags", "popular"],
 		queryFn: async () => {
 			// TODO: Replace with real API call
@@ -48,10 +48,10 @@ export function TagFilterWidget() {
 
 	if (isLoading) {
 		return (
-			<Widget title="标签" icon={<Tag className="h-4 w-4" />}>
+			<Widget title="标签" icon={<TagIcon className="h-4 w-4" />}>
 				<div className="space-y-2">
 					{[...Array(6)].map((_, i) => (
-						<Skeleton key={i} className="h-6 w-full" />
+						<Skeleton key={`skeleton-${i}`} className="h-6 w-full" />
 					))}
 				</div>
 			</Widget>
@@ -61,7 +61,7 @@ export function TagFilterWidget() {
 	return (
 		<Widget
 			title="标签"
-			icon={<Tag className="h-4 w-4" />}
+			icon={<TagIcon className="h-4 w-4" />}
 			actions={
 				selectedTags.length > 0 ? (
 					<button
