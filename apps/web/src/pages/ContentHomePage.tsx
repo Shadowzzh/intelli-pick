@@ -1,4 +1,5 @@
 import { CalendarWidget } from "@/components/widgets/CalendarWidget";
+import { DateRangeWidget } from "@/components/widgets/DateRangeWidget";
 import { Column } from "@/components/layout";
 
 export function ContentHomePage() {
@@ -15,6 +16,7 @@ export function ContentHomePage() {
           {/* Left Column */}
           <Column size="small">
             <CalendarWidget />
+            <DateRangeWidget />
           </Column>
 
           {/* Middle Column */}
