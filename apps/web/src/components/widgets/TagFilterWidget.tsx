@@ -1,15 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Widget } from "@/components/widgets/Widget";
+import { contentsApi } from "@/lib/api/contents";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { Tag as TagIcon } from "lucide-react";
 import { X } from "lucide-react";
-
-interface TagItem {
-	name: string;
-	count: number;
-}
 
 export function TagFilterWidget({
 	className,
@@ -20,25 +16,23 @@ export function TagFilterWidget({
 	headerClassName?: string;
 	contentClassName?: string;
 }) {
-	const { filters, setFilters } = useContentHomeStore();
+	const { filters, setFilters, dateRange } = useContentHomeStore();
 
-	// Mock data for now
-	const { data: tags, isLoading } = useQuery<TagItem[]>({
-		queryKey: ["tags", "popular"],
-		queryFn: async () => {
-			// TODO: Replace with real API call
-			return [
-				{ name: "react", count: 342 },
-				{ name: "ai", count: 285 },
-				{ name: "typescript", count: 231 },
-				{ name: "nextjs", count: 187 },
-				{ name: "rust", count: 156 },
-				{ name: "python", count: 142 },
-				{ name: "machine-learning", count: 128 },
-				{ name: "web3", count: 95 },
-			];
-		},
+	// Fetch popular tags from API
+	const { data: tagsData, isLoading } = useQuery({
+		queryKey: contentsApi.queryKeys.tags({
+			from: dateRange.from?.toISOString(),
+			to: dateRange.to?.toISOString(),
+		}),
+		queryFn: () =>
+			contentsApi.getPopularTags({
+				limit: 50,
+				from: dateRange.from?.toISOString(),
+				to: dateRange.to?.toISOString(),
+			}),
 	});
+
+	const tags = tagsData?.tags || [];
 
 	const selectedTags = filters.tags || [];
 
@@ -117,8 +111,9 @@ export function TagFilterWidget({
 					return (
 						<Badge
 							key={tag.name}
-							variant={isSelected ? "default" : "outline"}
+							variant={isSelected ? "default" : "secondary"}
 							className={`
+								py-3 leading-0 flex items-center justify-center
                 cursor-pointer transition-colors
                 ${isSelected ? "bg-primary text-primary-foreground" : "hover:bg-accent"}
               `}

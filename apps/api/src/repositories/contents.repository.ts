@@ -32,7 +32,18 @@ export class ContentsRepository {
 		}
 
 		if (filters.tags && filters.tags.length > 0) {
-			conditions.push(sql`${contents.tags} && ${JSON.stringify(filters.tags)}`);
+			// For jsonb array, check if any of the filter tags exist in the content's tags
+			// Build an IN clause with the tags
+			const tagsList = filters.tags
+				.map((tag) => `'${tag.replace(/'/g, "''")}'`)
+				.join(", ");
+			conditions.push(
+				sql`EXISTS (
+					SELECT 1
+					FROM jsonb_array_elements_text(${contents.tags}) AS tag
+					WHERE tag IN (${sql.raw(tagsList)})
+				)`,
+			);
 		}
 
 		if (filters.sourceId) {
@@ -85,7 +96,18 @@ export class ContentsRepository {
 		}
 
 		if (filters.tags && filters.tags.length > 0) {
-			conditions.push(sql`${contents.tags} && ${JSON.stringify(filters.tags)}`);
+			// For jsonb array, check if any of the filter tags exist in the content's tags
+			// Build an IN clause with the tags
+			const tagsList = filters.tags
+				.map((tag) => `'${tag.replace(/'/g, "''")}'`)
+				.join(", ");
+			conditions.push(
+				sql`EXISTS (
+					SELECT 1
+					FROM jsonb_array_elements_text(${contents.tags}) AS tag
+					WHERE tag IN (${sql.raw(tagsList)})
+				)`,
+			);
 		}
 
 		if (filters.sourceId) {
@@ -208,15 +230,15 @@ export class ContentsRepository {
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-		// Use PostgreSQL's jsonb_array_elements_text to unpack tags array
+		// Use PostgreSQL's jsonb_array_elements_text to unpack jsonb tags array
 		const results = await this.db
 			.select({
-				name: sql<string>`unnest(${contents.tags})`,
+				name: sql<string>`jsonb_array_elements_text(${contents.tags})`,
 				count: sql<number>`count(*)`,
 			})
 			.from(contents)
 			.where(where || sql`1=1`)
-			.groupBy(sql`unnest(${contents.tags})`)
+			.groupBy(sql`jsonb_array_elements_text(${contents.tags})`)
 			.orderBy(desc(sql`count(*)`))
 			.limit(params.limit || 50);
 

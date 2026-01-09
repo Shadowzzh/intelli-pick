@@ -4,6 +4,8 @@ import type {
 	CategoryStatsResponseData,
 	ContentQueryParams,
 	PaginatedResponse,
+	PopularTagsQueryParams,
+	PopularTagsResponseData,
 } from "@intellipick/shared";
 
 export const contentsApi = {
@@ -60,6 +62,25 @@ export const contentsApi = {
 	},
 
 	/**
+	 * Fetch popular tags
+	 */
+	async getPopularTags(
+		params?: PopularTagsQueryParams,
+	): Promise<PopularTagsResponseData> {
+		const queryParams: Record<string, string> = {};
+		if (params?.from) queryParams.from = params.from;
+		if (params?.to) queryParams.to = params.to;
+		if (params?.limit) queryParams.limit = params.limit.toString();
+
+		const queryString = new URLSearchParams(queryParams).toString();
+		const url = queryString
+			? `/api/v1/tags/popular?${queryString}`
+			: "/api/v1/tags/popular";
+
+		return api.get<PopularTagsResponseData>(url);
+	},
+
+	/**
 	 * Query key factory for contents
 	 */
 	queryKeys: {
@@ -69,5 +90,7 @@ export const contentsApi = {
 		detail: (id: string) => ["contents", "detail", id] as const,
 		categories: (params?: { from?: string; to?: string }) =>
 			["categories", "stats", params] as const,
+		tags: (params?: PopularTagsQueryParams) =>
+			["tags", "popular", params] as const,
 	},
 };
