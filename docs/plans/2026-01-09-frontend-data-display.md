@@ -37,6 +37,7 @@
 | 按分类 | `contents.category` | 只看特定领域的内容 |
 | 按数据源 | `contents.source_id` | 只看特定来源的内容 |
 | 按标签 | `contents.tags[]` | 按技术栈或主题筛选 |
+| 按实体 | `entities[].id` | 只看提及特定公司、产品、人物的内容 |
 | 按时间 | `contents.publishedAt` | 只看最新内容 |
 
 ---
@@ -212,7 +213,7 @@
 | 按分类筛选 | `contents.category` | 缩小搜索范围到特定领域 |
 | 按时间筛选 | `contents.publishedAt` | 只看最近的内容 |
 | 按来源筛选 | `contents.source_id` | 只看可信来源 |
-| 按实体筛选 | `entities[]` | 只看涉及特定实体的内容 |
+| 按实体筛选 | `entities[].id` | 只看提及特定公司、产品、人物的内容 |
 
 ### 数据来源
 
