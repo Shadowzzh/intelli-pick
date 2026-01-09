@@ -13,7 +13,11 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
-		<ThemeProvider defaultTheme="dark" storageKey="intellipick-theme" attribute="class">
+		<ThemeProvider
+			defaultTheme="dark"
+			storageKey="intellipick-theme"
+			attribute="class"
+		>
 			<QueryProvider>
 				<BrowserRouter>
 					<App />

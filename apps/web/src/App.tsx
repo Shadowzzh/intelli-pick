@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
+import { ContentHomePage } from "./pages/ContentHomePage";
 import { ContentList } from "./components/content/ContentList";
 import { EntityList } from "./components/entity/EntityList";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -32,6 +33,7 @@ function App() {
 	return (
 		<Routes>
 			<Route path="/" element={<Dashboard />} />
+			<Route path="/content-home" element={<ContentHomePage />} />
 			<Route path="/test" element={<TestPage />} />
 		</Routes>
 	);
