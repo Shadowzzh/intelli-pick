@@ -4,12 +4,12 @@ import { generateText } from "ai";
 // apps/api/src/routes/v1/ai-chat.routes.ts
 import type { FastifyInstance } from "fastify";
 import type { z } from "zod";
-import { aiTools } from "../../ai/tools.js";
+import { aiTools } from "../../ai/tools";
 import type {
 	ContentsService,
 	EntitiesService,
 	SearchService,
-} from "../../services/index.js";
+} from "../../services/index";
 
 // 定义工具结果类型
 interface ToolResult {

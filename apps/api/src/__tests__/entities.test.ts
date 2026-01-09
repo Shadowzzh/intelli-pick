@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 // apps/api/src/__tests__/entities.test.ts
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createApp } from "../app.js";
+import { createApp } from "../app";
 
 describe("Entities API", () => {
 	let app: FastifyInstance;

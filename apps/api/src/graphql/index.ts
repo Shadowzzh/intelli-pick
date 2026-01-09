@@ -8,9 +8,9 @@ import type {
 	ContentsService,
 	EntitiesService,
 	SourcesService,
-} from "../services/index.js";
-import { createResolvers } from "./resolvers.js";
-import { typeDefs } from "./schema.js";
+} from "../services/index";
+import { createResolvers } from "./resolvers";
+import { typeDefs } from "./schema";
 
 /**
  * 创建 GraphQL 服务器配置

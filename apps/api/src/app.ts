@@ -5,14 +5,14 @@ import { db } from "@intellipick/db";
 // apps/api/src/app.ts
 import fastify, { type FastifyInstance } from "fastify";
 import mercurius from "mercurius";
-import { createGraphQLServer } from "./graphql/index.js";
-import { handleError } from "./lib/errors.js";
+import { createGraphQLServer } from "./graphql/index";
+import { handleError } from "./lib/errors";
 import {
 	ContentsRepository,
 	EntitiesRepository,
 	SourcesRepository,
-} from "./repositories/index.js";
-import { registerV1Routes } from "./routes/v1/index.js";
+} from "./repositories/index";
+import { registerV1Routes } from "./routes/v1/index";
 import {
 	ContentsService,
 	EntitiesService,
@@ -20,7 +20,7 @@ import {
 	SearchService,
 	SourcesService,
 	StatsService,
-} from "./services/index.js";
+} from "./services/index";
 
 export async function createApp(config?: Config): Promise<FastifyInstance> {
 	const app = fastify({

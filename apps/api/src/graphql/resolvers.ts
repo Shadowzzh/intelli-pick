@@ -9,7 +9,7 @@ import type {
 	ContentsService,
 	EntitiesService,
 	SourcesService,
-} from "../services/index.js";
+} from "../services/index";
 
 /**
  * Content 类型的父对象类型

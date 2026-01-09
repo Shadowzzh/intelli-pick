@@ -1,7 +1,7 @@
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 interface AppLayoutProps {
 	children: ReactNode;
@@ -22,7 +22,10 @@ export function AppLayout({ children }: AppLayoutProps) {
 				<div className="container mx-auto px-4 py-3">
 					<div className="flex items-center justify-between">
 						{/* Logo */}
-						<Link to="/" className="text-xl font-bold hover:opacity-80 transition-opacity">
+						<Link
+							to="/"
+							className="text-xl font-bold hover:opacity-80 transition-opacity"
+						>
 							IntelliPick
 						</Link>
 

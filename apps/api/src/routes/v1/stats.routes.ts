@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { StatsService } from "../../services/stats.service.js";
+import type { StatsService } from "../../services/stats.service";
 
 export async function statsRoutes(app: FastifyInstance, service: StatsService) {
 	app.get("/stats", async () => {

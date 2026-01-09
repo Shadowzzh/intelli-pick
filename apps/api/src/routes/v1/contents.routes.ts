@@ -1,9 +1,9 @@
 import type { PaginationParams } from "@intellipick/shared";
 // apps/api/src/routes/v1/contents.routes.ts
 import type { FastifyInstance } from "fastify";
-import { NotFoundError } from "../../lib/errors.js";
-import { parsePagination } from "../../lib/validation.js";
-import type { ContentsService } from "../../services/contents.service.js";
+import { NotFoundError } from "../../lib/errors";
+import { parsePagination } from "../../lib/validation";
+import type { ContentsService } from "../../services/contents.service";
 
 interface ContentQueryParams extends PaginationParams {
 	category?: string;

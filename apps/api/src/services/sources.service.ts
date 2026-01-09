@@ -1,7 +1,7 @@
 // apps/api/src/services/sources.service.ts
 import type { Source } from "@intellipick/db";
 import type { SourceHealthStatus, SourceStatus } from "@intellipick/shared";
-import type { SourcesRepository } from "../repositories/sources.repository.js";
+import type { SourcesRepository } from "../repositories/sources.repository";
 
 export class SourcesService {
 	constructor(private sourcesRepo: SourcesRepository) {}

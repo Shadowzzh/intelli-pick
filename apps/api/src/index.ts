@@ -1,7 +1,7 @@
 // apps/api/src/index.ts
 import { loadConfig } from "@intellipick/config";
-import { createApp } from "./app.js";
-import { initSocket } from "./lib/socket.js";
+import { createApp } from "./app";
+import { initSocket } from "./lib/socket";
 
 async function main() {
 	// Load configuration

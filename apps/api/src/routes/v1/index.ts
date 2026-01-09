@@ -1,19 +1,19 @@
 // apps/api/src/routes/v1/index.ts
 import type { Config } from "@intellipick/config";
 import type { FastifyInstance } from "fastify";
-import type { ContentsService } from "../../services/contents.service.js";
-import type { EntitiesService } from "../../services/entities.service.js";
-import type { QueueService } from "../../services/queue.service.js";
-import type { SearchService } from "../../services/search.service.js";
-import type { SourcesService } from "../../services/sources.service.js";
-import type { StatsService } from "../../services/stats.service.js";
-import { aiChatRoutes } from "./ai-chat.routes.js";
-import { contentsRoutes } from "./contents.routes.js";
-import { entitiesRoutes } from "./entities.routes.js";
-import { queueRoutes } from "./queue.routes.js";
-import { searchRoutes } from "./search.routes.js";
-import { sourcesRoutes } from "./sources.routes.js";
-import { statsRoutes } from "./stats.routes.js";
+import type { ContentsService } from "../../services/contents.service";
+import type { EntitiesService } from "../../services/entities.service";
+import type { QueueService } from "../../services/queue.service";
+import type { SearchService } from "../../services/search.service";
+import type { SourcesService } from "../../services/sources.service";
+import type { StatsService } from "../../services/stats.service";
+import { aiChatRoutes } from "./ai-chat.routes";
+import { contentsRoutes } from "./contents.routes";
+import { entitiesRoutes } from "./entities.routes";
+import { queueRoutes } from "./queue.routes";
+import { searchRoutes } from "./search.routes";
+import { sourcesRoutes } from "./sources.routes";
+import { statsRoutes } from "./stats.routes";
 
 export async function registerV1Routes(
 	app: FastifyInstance,
