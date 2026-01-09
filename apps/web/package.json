@@ -15,6 +15,7 @@
 	"dependencies": {
 		"@intellipick/db": "workspace:*",
 		"@intellipick/shared": "workspace:*",
+		"@radix-ui/react-popover": "^1.1.15",
 		"@tailwindcss/vite": "^4.1.18",
 		"@tanstack/react-query": "^5.17.0",
 		"@tanstack/react-query-devtools": "^5.17.0",
@@ -25,6 +26,7 @@
 		"lucide-react": "^0.400.0",
 		"next-themes": "^0.3.0",
 		"react": "^18.3.0",
+		"react-day-picker": "^9.13.0",
 		"react-dom": "^18.3.0",
 		"react-router-dom": "^6.22.0",
 		"socket.io-client": "^4.7.0",
