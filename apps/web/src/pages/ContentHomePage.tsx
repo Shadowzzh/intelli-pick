@@ -4,6 +4,7 @@ import { CategoryNavWidget } from "@/components/widgets/CategoryNavWidget";
 import { SourceFilterWidget } from "@/components/widgets/SourceFilterWidget";
 import { TagFilterWidget } from "@/components/widgets/TagFilterWidget";
 import { TrendingEntitiesWidget } from "@/components/widgets/TrendingEntitiesWidget";
+import { LatestContentsWidget } from "@/components/widgets/LatestContentsWidget";
 import { ContentListNew } from "@/components/content/ContentListNew";
 import { Column } from "@/components/layout";
 import { List, Grid3x3 } from "lucide-react";
@@ -65,6 +66,7 @@ export function ContentHomePage() {
           {/* Right Column */}
           <Column size="small">
             <TrendingEntitiesWidget />
+            <LatestContentsWidget />
           </Column>
         </div>
       </div>
