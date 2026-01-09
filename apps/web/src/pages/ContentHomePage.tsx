@@ -3,6 +3,7 @@ import { DateRangeWidget } from "@/components/widgets/DateRangeWidget";
 import { CategoryNavWidget } from "@/components/widgets/CategoryNavWidget";
 import { SourceFilterWidget } from "@/components/widgets/SourceFilterWidget";
 import { TagFilterWidget } from "@/components/widgets/TagFilterWidget";
+import { TrendingEntitiesWidget } from "@/components/widgets/TrendingEntitiesWidget";
 import { ContentListNew } from "@/components/content/ContentListNew";
 import { Column } from "@/components/layout";
 import { List, Grid3x3 } from "lucide-react";
@@ -63,9 +64,7 @@ export function ContentHomePage() {
 
           {/* Right Column */}
           <Column size="small">
-            <div className="p-4 border rounded-lg bg-muted/50">
-              <p className="text-sm text-muted-foreground">右栏 - 热门</p>
-            </div>
+            <TrendingEntitiesWidget />
           </Column>
         </div>
       </div>
