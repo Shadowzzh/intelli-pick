@@ -1,11 +1,11 @@
+import { Widget } from "@/components/widgets/Widget";
 import { contentsApi } from "@/lib/api/contents";
-import { cn } from "@/lib/utils";
 import { useContentHomeStore } from "@/store/content-home-store";
 import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2, Newspaper } from "lucide-react";
 
 interface ContentListProps {
 	className?: string;
@@ -15,12 +15,10 @@ export function ContentListNew({ className }: ContentListProps) {
 	const { dateRange, filters, viewMode } = useContentHomeStore();
 
 	// Build query params from store
-	// 将 Date 对象转换为本地时间字符串，以匹配数据库的 timestamp without time zone
+	// 将 Date 对象转换为 UTC ISO 字符串，以匹配数据库的 timestamp with time zone
 	const queryParams = {
-		from: dateRange.from
-			? format(dateRange.from, "yyyy-MM-dd HH:mm:ss")
-			: undefined,
-		to: dateRange.to ? format(dateRange.to, "yyyy-MM-dd HH:mm:ss") : undefined,
+		from: dateRange.from?.toISOString(),
+		to: dateRange.to?.toISOString(),
 		category: filters.category,
 		tags: filters.tags,
 		sourceIds: filters.sourceIds,
@@ -33,80 +31,84 @@ export function ContentListNew({ className }: ContentListProps) {
 		queryFn: () => contentsApi.getContents(queryParams),
 	});
 
-	if (isLoading) {
-		return (
-			<div className={cn("flex justify-center py-12", className)}>
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className={cn("text-center py-12", className)}>
-				<p className="text-destructive mb-2">加载失败</p>
-				<p className="text-sm text-muted-foreground mb-4">
-					{(error as Error).message}
-				</p>
-				<button
-					type="button"
-					onClick={() => refetch()}
-					className="text-sm text-primary hover:underline"
-				>
-					重试
-				</button>
-			</div>
-		);
-	}
-
 	const items = data?.data || [];
 	const total = data?.meta?.total || "0";
 
-	if (items.length === 0) {
-		return (
-			<div className={cn("text-center py-12", className)}>
-				<p className="text-muted-foreground">没有找到内容</p>
-				<p className="text-sm text-muted-foreground mt-2">
-					试试调整筛选条件或选择其他日期
-				</p>
-			</div>
-		);
-	}
-
 	return (
-		<div className={cn("space-y-3", className)}>
-			{/* Show filter summary */}
-			{(filters.category ||
-				filters.tags?.length ||
-				filters.sourceIds?.length) && (
-				<div className="flex items-center gap-2 text-sm text-muted-foreground pb-2 border-b">
-					<span>筛选:</span>
-					{filters.category && (
-						<span className="badge">{filters.category}</span>
-					)}
-					{filters.sourceIds?.length && (
-						<span className="badge">{filters.sourceIds.length} 个数据源</span>
-					)}
-					{filters.tags?.length && (
-						<span className="badge">{filters.tags.length} 个标签</span>
-					)}
+		<Widget
+			title="内容列表"
+			icon={<Newspaper className="h-4 w-4" />}
+			className={className}
+		>
+			{isLoading && (
+				<div className="flex justify-center py-12">
+					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			)}
 
-			{/* Content items */}
-			{items.map((item: Content) => (
-				<ContentListItem key={item.id} item={item} viewMode={viewMode} />
-			))}
+			{error && (
+				<div className="text-center py-12">
+					<p className="text-destructive mb-2">加载失败</p>
+					<p className="text-sm text-muted-foreground mb-4">
+						{(error as Error).message}
+					</p>
+					<button
+						type="button"
+						onClick={() => refetch()}
+						className="text-sm text-primary hover:underline"
+					>
+						重试
+					</button>
+				</div>
+			)}
 
-			{/* Pagination placeholder */}
-			{Number.parseInt(total, 10) > items.length && (
-				<div className="pt-4 text-center">
-					<p className="text-sm text-muted-foreground">
-						显示 {items.length} / {total} 条
+			{!isLoading && !error && items.length === 0 && (
+				<div className="text-center py-12">
+					<p className="text-muted-foreground">没有找到内容</p>
+					<p className="text-sm text-muted-foreground mt-2">
+						试试调整筛选条件或选择其他日期
 					</p>
 				</div>
 			)}
-		</div>
+
+			{!isLoading && !error && items.length > 0 && (
+				<div className="space-y-3">
+					{/* Show filter summary */}
+					{(filters.category ||
+						filters.tags?.length ||
+						filters.sourceIds?.length) && (
+						<div className="flex items-center gap-2 text-sm text-muted-foreground pb-2 border-b">
+							<span>筛选:</span>
+							{filters.category && (
+								<span className="badge">{filters.category}</span>
+							)}
+							{filters.sourceIds?.length && (
+								<span className="badge">
+									{filters.sourceIds.length} 个数据源
+								</span>
+							)}
+							{filters.tags?.length && (
+								<span className="badge">{filters.tags.length} 个标签</span>
+							)}
+						</div>
+					)}
+
+					{/* Content items */}
+					{items.map((item: Content) => (
+						<ContentListItem key={item.id} item={item} viewMode={viewMode} />
+					))}
+
+					{/* Pagination placeholder */}
+					{Number.parseInt(total, 10) > items.length && (
+						<div className="pt-4 text-center">
+							<p className="text-sm text-muted-foreground">
+								显示 {items.length} / {total} 条
+							</p>
+						</div>
+					)}
+				</div>
+			)}
+		</Widget>
 	);
 }
 
@@ -124,19 +126,27 @@ function ContentListItem({ item, viewMode }: ContentListItemProps) {
 }
 
 function ContentCompactCard({ item }: { item: Content }) {
+	const handleClick = () => {
+		if (item.url) {
+			window.open(item.url, "_blank", "noopener,noreferrer");
+		}
+	};
+
 	return (
-		<div className="group p-4 border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer">
-			{/* Title with link */}
+		<div
+			className="group p-4 border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer"
+			onClick={handleClick}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" && item.url) {
+					window.open(item.url, "_blank", "noopener,noreferrer");
+				}
+			}}
+		>
+			{/* Title */}
 			<div className="flex items-start justify-between gap-2 mb-2">
-				<a
-					href={item.url || "#"}
-					target="_blank"
-					rel="noopener noreferrer"
-					className="font-medium line-clamp-2 group-hover:text-primary transition-colors flex-1"
-				>
+				<div className="font-medium line-clamp-2 group-hover:text-primary transition-colors flex-1">
 					{item.title || "无标题"}
-				</a>
-				<ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+				</div>
 			</div>
 
 			{/* Summary */}
@@ -177,19 +187,28 @@ function ContentCompactCard({ item }: { item: Content }) {
 }
 
 function ContentDetailedCard({ item }: { item: Content }) {
+	const handleClick = () => {
+		if (item.url) {
+			window.open(item.url, "_blank", "noopener,noreferrer");
+		}
+	};
+
 	return (
-		<div className="group p-5 border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all">
-			{/* Title with link */}
+		<div
+			className="group p-5 border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer"
+			onClick={handleClick}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" && item.url) {
+					window.open(item.url, "_blank", "noopener,noreferrer");
+				}
+			}}
+		>
+			{/* Title */}
 			<div className="flex items-start justify-between gap-3 mb-3">
-				<a
-					href={item.url || "#"}
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors flex-1"
-				>
+				<div className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors flex-1">
 					{item.title || "无标题"}
-				</a>
-				<ExternalLink className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+				</div>
+				<ExternalLink className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
 			</div>
 
 			{/* Summary */}

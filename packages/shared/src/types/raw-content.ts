@@ -16,8 +16,8 @@ export interface RawContent {
 	author: string | null; // 作者
 
 	// 时间
-	publishedAt: Date | null; // 发布时间
-	collectedAt: Date; // 采集时间
+	publishedAt: string | null; // 发布时间（UTC ISO 8601 格式）
+	collectedAt: string; // 采集时间（UTC ISO 8601 格式）
 
 	// 原始数据（可选，调试用）
 	raw?: unknown;

@@ -98,14 +98,14 @@ export const contents = pgTable(
 
 		// ========== 时间信息 ==========
 
-		/** 内容在原始平台的发布时间 */
-		publishedAt: timestamp("published_at"),
+		/** 内容在原始平台的发布时间（存储为 UTC） */
+		publishedAt: timestamp("published_at", { withTimezone: true }),
 
-		/** 内容被采集到系统的时间 */
-		collectedAt: timestamp("collected_at").defaultNow(),
+		/** 内容被采集到系统的时间（存储为 UTC） */
+		collectedAt: timestamp("collected_at", { withTimezone: true }).defaultNow(),
 
-		/** 内容通过所有过滤步骤并存储到数据库的时间 */
-		createdAt: timestamp("created_at").defaultNow(),
+		/** 内容通过所有过滤步骤并存储到数据库的时间（存储为 UTC） */
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 	},
 	(table) => ({
 		// Indexes for performance optimization

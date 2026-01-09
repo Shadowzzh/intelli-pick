@@ -93,14 +93,14 @@ export const quarantine = pgTable("quarantine", {
 
 	// ========== 生命周期 ==========
 
-	/** 内容被过滤并放入隔离区的时间 */
-	createdAt: timestamp("created_at").defaultNow(),
+	/** 内容被过滤并放入隔离区的时间（存储为 UTC） */
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 
-	/** 过期时间
+	/** 过期时间（存储为 UTC）
 	 * TTL 之后的记录会被自动清理
 	 * 默认保留一段时间用于审计和调试
 	 */
-	expiresAt: timestamp("expires_at"),
+	expiresAt: timestamp("expires_at", { withTimezone: true }),
 });
 
 export type Quarantine = typeof quarantine.$inferSelect;

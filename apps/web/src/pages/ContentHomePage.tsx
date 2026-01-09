@@ -31,7 +31,6 @@ export function ContentHomePage() {
 						{/* <CalendarWidget /> */}
 						<DateRangeWidget />
 						<CategoryNavWidget />
-						<SourceFilterWidget />
 						<TagFilterWidget />
 					</Column>
 
@@ -42,9 +41,13 @@ export function ContentHomePage() {
 
 					{/* Right Column */}
 					<Column size="small">
-						<TrendingEntitiesWidget />
 						<LatestContentsWidget />
 						<PopularTagsWidget />
+					</Column>
+
+					<Column size="small">
+						<SourceFilterWidget />
+						<TrendingEntitiesWidget />
 					</Column>
 				</div>
 			</div>

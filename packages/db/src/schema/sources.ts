@@ -44,14 +44,14 @@ export const sources = pgTable("sources", {
 	/** 采集间隔时间（秒），默认 3600 秒（1 小时） */
 	fetchInterval: integer("fetch_interval").default(3600),
 
-	/** 上次成功采集的时间，用于调度器判断是否需要再次采集 */
-	lastFetchedAt: timestamp("last_fetched_at"),
+	/** 上次成功采集的时间（存储为 UTC），用于调度器判断是否需要再次采集 */
+	lastFetchedAt: timestamp("last_fetched_at", { withTimezone: true }),
 
-	/** 创建时间，数据源首次添加到系统的时间 */
-	createdAt: timestamp("created_at").defaultNow(),
+	/** 创建时间，数据源首次添加到系统的时间（存储为 UTC） */
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 
-	/** 更新时间，配置最后修改的时间 */
-	updatedAt: timestamp("updated_at").defaultNow(),
+	/** 更新时间，配置最后修改的时间（存储为 UTC） */
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export type Source = typeof sources.$inferSelect;

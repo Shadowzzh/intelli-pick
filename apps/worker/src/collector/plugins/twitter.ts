@@ -1,5 +1,6 @@
 import type { SourceConfig, TwitterConfig } from "@intellipick/config";
 import { env } from "@intellipick/env";
+import { toUTCISOString } from "@intellipick/shared";
 import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/twitter.ts
 import { TwitterApi } from "twitter-api-v2";
@@ -69,8 +70,8 @@ export const twitterPlugin: CollectorPlugin = {
 							content: tweet.text,
 							url: `https://twitter.com/i/web/status/${tweet.id}`,
 							author: tweet.author_id || null,
-							publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
-							collectedAt: new Date(),
+							publishedAt: tweet.created_at ? tweet.created_at : null,
+							collectedAt: toUTCISOString(new Date()),
 							raw: tweet,
 						});
 					}
@@ -110,10 +111,8 @@ export const twitterPlugin: CollectorPlugin = {
 								content: tweet.text,
 								url: `https://twitter.com/${username}/status/${tweet.id}`,
 								author: username,
-								publishedAt: tweet.created_at
-									? new Date(tweet.created_at)
-									: null,
-								collectedAt: new Date(),
+								publishedAt: tweet.created_at ? tweet.created_at : null,
+								collectedAt: toUTCISOString(new Date()),
 								raw: tweet,
 							});
 						}
@@ -145,8 +144,8 @@ export const twitterPlugin: CollectorPlugin = {
 							content: tweet.text,
 							url: `https://twitter.com/i/web/status/${tweet.id}`,
 							author: tweet.author_id || null,
-							publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
-							collectedAt: new Date(),
+							publishedAt: tweet.created_at ? tweet.created_at : null,
+							collectedAt: toUTCISOString(new Date()),
 							raw: tweet,
 						});
 					}

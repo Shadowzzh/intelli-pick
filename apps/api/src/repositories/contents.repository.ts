@@ -1,20 +1,7 @@
 // apps/api/src/repositories/contents.repository.ts
 import { contents } from "@intellipick/db";
 import type { Database } from "@intellipick/db";
-import { type SQL, and, asc, desc, eq, sql } from "drizzle-orm";
-
-/**
- * 将 Date 对象转换为本地时间字符串，匹配数据库的 timestamp without time zone
- */
-function dateToLocalString(date: Date): string {
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
-	const hours = String(date.getHours()).padStart(2, "0");
-	const minutes = String(date.getMinutes()).padStart(2, "0");
-	const seconds = String(date.getSeconds()).padStart(2, "0");
-	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+import { type SQL, and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 
 export class ContentsRepository {
 	constructor(private db: Database) {}
@@ -53,13 +40,13 @@ export class ContentsRepository {
 		}
 
 		if (filters.publishedAfter) {
-			const dateStr = dateToLocalString(filters.publishedAfter);
-			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(gte(contents.publishedAt, filters.publishedAfter));
 		}
 
 		if (filters.publishedBefore) {
-			const dateStr = dateToLocalString(filters.publishedBefore);
-			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(lte(contents.publishedAt, filters.publishedBefore));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -106,13 +93,13 @@ export class ContentsRepository {
 		}
 
 		if (filters.publishedAfter) {
-			const dateStr = dateToLocalString(filters.publishedAfter);
-			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(gte(contents.publishedAt, filters.publishedAfter));
 		}
 
 		if (filters.publishedBefore) {
-			const dateStr = dateToLocalString(filters.publishedBefore);
-			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(lte(contents.publishedAt, filters.publishedBefore));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -131,16 +118,16 @@ export class ContentsRepository {
 		const conditions = [];
 
 		if (params.from) {
-			const dateStr = dateToLocalString(params.from);
-			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(gte(contents.publishedAt, params.from));
 		}
 
 		if (params.to) {
 			// Include the entire end day
 			const endOfDay = new Date(params.to);
 			endOfDay.setHours(23, 59, 59, 999);
-			const dateStr = dateToLocalString(endOfDay);
-			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(lte(contents.publishedAt, endOfDay));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -165,16 +152,16 @@ export class ContentsRepository {
 		const conditions = [];
 
 		if (params.from) {
-			const dateStr = dateToLocalString(params.from);
-			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(gte(contents.publishedAt, params.from));
 		}
 
 		if (params.to) {
 			// Include the entire end day
 			const endOfDay = new Date(params.to);
 			endOfDay.setHours(23, 59, 59, 999);
-			const dateStr = dateToLocalString(endOfDay);
-			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(lte(contents.publishedAt, endOfDay));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -207,16 +194,16 @@ export class ContentsRepository {
 		const conditions = [];
 
 		if (params.from) {
-			const dateStr = dateToLocalString(params.from);
-			conditions.push(sql`${contents.publishedAt} >= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(gte(contents.publishedAt, params.from));
 		}
 
 		if (params.to) {
 			// Include the entire end day
 			const endOfDay = new Date(params.to);
 			endOfDay.setHours(23, 59, 59, 999);
-			const dateStr = dateToLocalString(endOfDay);
-			conditions.push(sql`${contents.publishedAt} <= ${dateStr}`);
+			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
+			conditions.push(lte(contents.publishedAt, endOfDay));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;

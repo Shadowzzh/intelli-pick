@@ -32,8 +32,8 @@ export const tags = pgTable("tags", {
 	 */
 	description: text("description"),
 
-	/** 标签创建时间 */
-	createdAt: timestamp("created_at").defaultNow(),
+	/** 标签创建时间（存储为 UTC） */
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 export type Tag = typeof tags.$inferSelect;

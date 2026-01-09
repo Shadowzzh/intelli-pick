@@ -1,4 +1,5 @@
 import type { SourceConfig, V2exConfig } from "@intellipick/config";
+import { toUTCISOString } from "@intellipick/shared";
 import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/v2ex.ts
 import { fetch } from "undici";
@@ -40,8 +41,10 @@ export const v2exPlugin: CollectorPlugin = {
 			content: topic.content || topic.content_rendered || "",
 			url: topic.url || `https://www.v2ex.com/t/${topic.id}`,
 			author: topic.member?.username || null,
-			publishedAt: topic.created ? new Date(topic.created * 1000) : null,
-			collectedAt: new Date(),
+			publishedAt: topic.created
+				? toUTCISOString(new Date(topic.created * 1000))
+				: null,
+			collectedAt: toUTCISOString(new Date()),
 			raw: topic,
 		}));
 	},

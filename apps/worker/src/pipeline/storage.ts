@@ -12,6 +12,7 @@ import {
 	emitNewContent,
 	emitStatsUpdate,
 } from "@intellipick/events";
+import { toUTCISOString } from "@intellipick/shared";
 import dayjs from "dayjs";
 import { and, eq } from "drizzle-orm";
 import type { Logger } from "pino";
@@ -112,7 +113,7 @@ export class StorageStep implements PipelineStep {
 				tags: extractResult?.tags,
 				filterVersion: this.config.promptVersion,
 				filterResult: filterResult,
-				// BullMQ 序列化后 Date 变成字符串，需要转换回来
+				// publishedAt 是 UTC ISO 字符串，需要转换为 Date 对象
 				publishedAt: raw.publishedAt ? new Date(raw.publishedAt) : null,
 			})
 			.returning();

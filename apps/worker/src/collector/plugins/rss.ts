@@ -1,4 +1,5 @@
 import type { RssConfig, SourceConfig } from "@intellipick/config";
+import { toUTCISOString } from "@intellipick/shared";
 import type { RawContent } from "@intellipick/shared";
 // apps/api/src/collector/plugins/rss.ts
 import Parser from "rss-parser";
@@ -40,8 +41,8 @@ export const rssPlugin: CollectorPlugin = {
 			content: item.contentSnippet || item.content || "",
 			url: item.link || "",
 			author: item.creator || item.author || null,
-			publishedAt: item.pubDate ? new Date(item.pubDate) : null,
-			collectedAt: new Date(),
+			publishedAt: item.pubDate ? toUTCISOString(item.pubDate) : null,
+			collectedAt: toUTCISOString(new Date()),
 			raw: item,
 		}));
 	},

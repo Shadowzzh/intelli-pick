@@ -57,15 +57,15 @@ export const entities = pgTable(
 		 */
 		mentionCount: integer("mention_count").default(1),
 
-		/** 首次被提及的时间
+		/** 首次被提及的时间（存储为 UTC）
 		 * 用于追踪实体首次出现的时机
 		 */
-		firstMentionedAt: timestamp("first_mentioned_at"),
+		firstMentionedAt: timestamp("first_mentioned_at", { withTimezone: true }),
 
-		/** 最后一次被提及的时间
+		/** 最后一次被提及的时间（存储为 UTC）
 		 * 用于判断实体是否仍在活跃讨论中
 		 */
-		lastMentionedAt: timestamp("last_mentioned_at"),
+		lastMentionedAt: timestamp("last_mentioned_at", { withTimezone: true }),
 
 		/** 额外的元数据信息
 		 * JSON 格式，可存储实体的附加属性
@@ -73,8 +73,8 @@ export const entities = pgTable(
 		 */
 		metadata: jsonb("metadata"),
 
-		/** 实体首次被提取并创建的时间 */
-		createdAt: timestamp("created_at").defaultNow(),
+		/** 实体首次被提取并创建的时间（存储为 UTC） */
+		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 	},
 	(table) => ({
 		// Indexes for performance optimization

@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type TwitterConfig, loadConfig } from "@intellipick/config";
 import { env } from "@intellipick/env";
-import type { RawContent } from "@intellipick/shared";
+import { type RawContent, toUTCISOString } from "@intellipick/shared";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { TwitterApi } from "twitter-api-v2";
 
@@ -129,8 +129,10 @@ async function main() {
 					content: tweet.text,
 					url: `https://twitter.com/i/web/status/${tweet.id}`,
 					author: tweet.author_id || null,
-					publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
-					collectedAt: new Date(),
+					publishedAt: tweet.created_at
+						? toUTCISOString(tweet.created_at)
+						: null,
+					collectedAt: toUTCISOString(new Date()),
 					raw: tweet,
 				});
 			}
@@ -157,8 +159,10 @@ async function main() {
 							content: tweet.text,
 							url: `https://twitter.com/${username}/status/${tweet.id}`,
 							author: username,
-							publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
-							collectedAt: new Date(),
+							publishedAt: tweet.created_at
+								? toUTCISOString(tweet.created_at)
+								: null,
+							collectedAt: toUTCISOString(new Date()),
 							raw: tweet,
 						});
 					}
@@ -187,8 +191,10 @@ async function main() {
 					content: tweet.text,
 					url: `https://twitter.com/i/web/status/${tweet.id}`,
 					author: tweet.author_id || null,
-					publishedAt: tweet.created_at ? new Date(tweet.created_at) : null,
-					collectedAt: new Date(),
+					publishedAt: tweet.created_at
+						? toUTCISOString(tweet.created_at)
+						: null,
+					collectedAt: toUTCISOString(new Date()),
 					raw: tweet,
 				});
 			}

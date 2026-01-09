@@ -40,10 +40,10 @@ export const entityMentions = pgTable(
 		 */
 		context: text("context"),
 
-		/** 提及发生的时间
+		/** 提及发生的时间（存储为 UTC）
 		 * 通常使用内容的发布时间或采集时间
 		 */
-		mentionedAt: timestamp("mentioned_at").defaultNow(),
+		mentionedAt: timestamp("mentioned_at", { withTimezone: true }).defaultNow(),
 	},
 	(table) => ({
 		// Indexes for performance optimization

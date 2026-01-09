@@ -14,7 +14,7 @@ export function PageHeader({
 	themeToggle = <ThemeToggle />,
 }: PageHeaderProps) {
 	return (
-		<div className="widget mb-6">
+		<div className="widget mb-6 p-2">
 			<div className="flex items-center gap-6">
 				{/* Logo */}
 				<div className="flex items-center gap-2">
@@ -28,9 +28,9 @@ export function PageHeader({
 						<button
 							key={page}
 							type="button"
-							className={`px-3 py-1.5 text-sm transition-colors border-b-2 ${
+							className={`cursor-pointer px-3 py-1.5 text-sm transition-colors border-b-2 ${
 								currentPage === page
-									? "border-primary text-foreground font-medium"
+									? "border-primary text-foreground"
 									: "border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground"
 							}`}
 							onClick={() => onPageChange(page)}
