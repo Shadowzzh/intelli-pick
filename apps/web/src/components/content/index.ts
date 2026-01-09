@@ -1,0 +1,1 @@
+export { ContentListNew } from "./ContentListNew";
