@@ -1,6 +1,65 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* ============================================================================
+   Tailwind v4 Theme Configuration
+   ============================================================================ */
+
+@theme {
+	/* Custom Colors */
+	--color-border: hsl(var(--border));
+	--color-input: hsl(var(--input));
+	--color-ring: hsl(var(--ring));
+	--color-background: hsl(var(--background));
+	--color-foreground: hsl(var(--foreground));
+	--color-primary: hsl(var(--primary));
+	--color-primary-foreground: hsl(var(--primary-foreground));
+	--color-secondary: hsl(var(--secondary));
+	--color-secondary-foreground: hsl(var(--secondary-foreground));
+	--color-destructive: hsl(var(--destructive));
+	--color-destructive-foreground: hsl(var(--destructive-foreground));
+	--color-muted: hsl(var(--muted));
+	--color-muted-foreground: hsl(var(--muted-foreground));
+	--color-accent: hsl(var(--accent));
+	--color-accent-foreground: hsl(var(--accent-foreground));
+	--color-popover: hsl(var(--popover));
+	--color-popover-foreground: hsl(var(--popover-foreground));
+	--color-card: hsl(var(--card));
+	--color-card-foreground: hsl(var(--card-foreground));
+
+	/* Border Radius */
+	--radius-lg: var(--radius);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-sm: calc(var(--radius) - 4px);
+
+	/* Custom Keyframes */
+	--animate-accordion-down: accordion-down 0.2s ease-out;
+	--animate-accordion-up: accordion-up 0.2s ease-out;
+
+	/* Keyframe Definitions */
+	@keyframes accordion-down {
+		from {
+			height: 0;
+		}
+
+		to {
+			height: var(--radix-accordion-content-height);
+		}
+	}
+
+	@keyframes accordion-up {
+		from {
+			height: var(--radix-accordion-content-height);
+		}
+
+		to {
+			height: 0;
+		}
+	}
+}
+
+/* ============================================================================
+   CSS Variables - Theme Definitions
+   ============================================================================ */
 
 @layer base {
 	:root {
@@ -28,50 +87,242 @@
 	}
 
 	.dark {
-		/* Kanagawa Dark Theme */
-		--background: 240 13 14;
-		--foreground: 240 13 85;
-		--card: 240 13 15;
-		--card-foreground: 240 13 85;
-		--popover: 240 13 16;
-		--popover-foreground: 240 13 85;
-		--primary: 51 33 68;
-		--primary-foreground: 240 13 10;
-		--secondary: 240 13 20;
-		--secondary-foreground: 240 13 75;
-		--muted: 240 13 18;
-		--muted-foreground: 240 13 52;
-		--accent: 240 13 22;
-		--accent-foreground: 240 13 73;
-		--destructive: 358 100 68;
-		--destructive-foreground: 240 13 98;
-		--border: 240 13 22;
-		--input: 240 13 22;
-		--ring: 51 33 68;
+		/* Custom Dark Theme */
+		--background: 229 19 23;
+		--foreground: 229 10 88;
+		--card: 229 19 25;
+		--card-foreground: 229 10 88;
+		--popover: 229 19 26;
+		--popover-foreground: 229 10 88;
+		--primary: 222 74 74;
+		--primary-foreground: 229 20 10;
+		--secondary: 229 15 30;
+		--secondary-foreground: 229 10 80;
+		--muted: 229 15 28;
+		--muted-foreground: 229 10 55;
+		--accent: 229 20 32;
+		--accent-foreground: 229 10 85;
+		--destructive: 359 68 71;
+		--destructive-foreground: 229 10 98;
+		--border: 229 15 30;
+		--input: 229 15 30;
+		--ring: 222 74 74;
 	}
 }
 
+/* ============================================================================
+   Base Styles
+   ============================================================================ */
+
 @layer base {
 	* {
-		@apply border-border;
+		border-color: hsl(var(--border));
 	}
+
+	html {
+		font-size: 12px;
+	}
+
 	body {
-		@apply bg-background text-foreground;
+		background-color: hsl(var(--background));
+		color: hsl(var(--foreground));
 		font-feature-settings: "rlig" 1, "calt" 1;
 	}
 }
 
+/* ============================================================================
+   Custom Components
+   ============================================================================ */
+
 @layer components {
 	.widget {
-		@apply bg-card text-card-foreground rounded-lg border;
-		box-shadow: 0px 3px 0px 0px hsl(var(--border));
+		@apply bg-card text-card-foreground rounded-lg border border-secondary;
 	}
 
 	.widget-header {
-		@apply px-4 pt-4 pb-2 text-sm font-semibold flex items-center gap-3;
+		@apply px-4 pt-4 pb-2 text-sm font-semibold flex items-center gap-3 text-foreground/70;
 	}
 
 	.widget-content {
 		@apply px-4 pb-4;
+	}
+
+	/* Calendar Widget Styles */
+	.calendar-grid {
+		@apply grid grid-cols-7 gap-0.5;
+	}
+
+	.calendar-day-header {
+		@apply text-xs text-muted-foreground text-center py-1;
+	}
+
+	.calendar-day {
+		@apply text-xs text-center py-1 rounded cursor-pointer transition-colors;
+	}
+
+	.calendar-day:hover {
+		@apply bg-accent;
+	}
+
+	.calendar-day-today {
+		@apply bg-primary text-primary-foreground font-semibold;
+	}
+
+	/* Feed List Styles */
+	.feed-list,
+	.news-list,
+	.twitch-list,
+	.stocks-list {
+		@apply flex flex-col gap-3;
+	}
+
+	.feed-item,
+	.news-item,
+	.twitch-item,
+	.stock-item {
+		@apply flex gap-1;
+	}
+
+	.feed-title,
+	.news-title {
+		@apply text-sm font-medium transition-colors text-primary;
+	}
+
+	.feed-title:hover,
+	.news-title:hover {
+		@apply underline;
+	}
+
+	.feed-meta,
+	.news-meta {
+		@apply flex gap-2 text-xs;
+	}
+
+	.show-more-btn {
+		@apply w-full mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground transition-colors py-2;
+	}
+
+	.show-more-btn:hover {
+		@apply text-foreground;
+	}
+
+	/* Twitch Channel Styles */
+	.twitch-item {
+		@apply flex-row gap-3 items-start;
+	}
+
+	.twitch-avatar {
+		@apply flex-shrink-0;
+	}
+
+	.twitch-info {
+		@apply flex-1 min-w-0;
+	}
+
+	.twitch-name {
+		@apply text-sm font-semibold;
+	}
+
+	.twitch-stats {
+		@apply flex items-center gap-2 mt-1;
+	}
+
+	.live-badge {
+		@apply text-xs font-semibold bg-red-500 text-white px-1.5 py-0.5 rounded;
+	}
+
+	/* Videos Grid */
+	.videos-grid {
+		@apply grid gap-3;
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	}
+
+	.video-card {
+		@apply flex flex-col gap-2;
+	}
+
+	.video-thumbnail {
+		@apply aspect-video rounded overflow-hidden bg-muted;
+	}
+
+	.video-info {
+		@apply flex flex-col gap-1;
+	}
+
+	.video-title {
+		@apply line-clamp-2 transition-colors text-primary;
+	}
+
+	.video-title:hover {
+		@apply underline;
+	}
+
+	/* Reddit Content */
+	.reddit-content {
+		@apply flex flex-col gap-2;
+	}
+
+	.reddit-meta {
+		@apply flex gap-2;
+	}
+
+	/* Weather Widget */
+	.weather-info {
+		@apply flex flex-col gap-3;
+	}
+
+	.weather-temp-chart {
+		@apply w-full;
+	}
+
+	.temp-values {
+		@apply flex items-end justify-between gap-2 h-20;
+	}
+
+	.temp-bar {
+		@apply flex-1 flex flex-col items-center gap-1;
+	}
+
+	.temp-fill {
+		@apply w-full bg-primary rounded-t duration-300;
+		min-height: 20%;
+		transition-property: height;
+	}
+
+	/* Stocks Widget */
+	.stock-item {
+		@apply flex-row gap-3 items-center;
+	}
+
+	.stock-info {
+		@apply flex-1 min-w-0;
+	}
+
+	.stock-symbol {
+		@apply text-sm font-semibold;
+	}
+
+	.stock-values {
+		@apply flex flex-col items-end gap-1 min-w-20;
+	}
+
+	.stock-change {
+		@apply text-sm font-medium;
+	}
+
+	.stock-positive {
+		@apply text-green-500;
+	}
+
+	.stock-negative {
+		@apply text-red-500;
+	}
+
+	.stock-price {
+		@apply text-sm font-semibold;
+	}
+
+	.stock-chart {
+		@apply flex-shrink-0;
 	}
 }

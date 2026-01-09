@@ -1,3 +1,5 @@
+import path from "node:path";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-plugin-tsconfig-paths";
@@ -8,10 +10,15 @@ export default defineConfig(({ mode }) => {
 
 	// 代理目标：开发环境使用实际的后端地址
 	// 优先使用 VITE_API_PROXY_TARGET，否则使用 API_PORT 构建地址
-	const proxyTarget = env.VITE_API_PROXY_TARGET ;
+	const proxyTarget = env.VITE_API_PROXY_TARGET;
 
 	return {
-		plugins: [react(), tsconfigPaths()],
+		plugins: [react(), tsconfigPaths(), tailwindcss()],
+		resolve: {
+			alias: {
+				"@": path.resolve(__dirname, "./src"),
+			},
+		},
 		server: {
 			port: 5173,
 			host: "0.0.0.0",
