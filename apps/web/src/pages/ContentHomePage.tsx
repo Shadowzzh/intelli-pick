@@ -16,10 +16,10 @@ export function ContentHomePage() {
   const { viewMode, setViewMode } = useContentHomeStore();
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6">
       <div className="w-full">
         {/* Page header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">内容主页</h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -35,7 +35,7 @@ export function ContentHomePage() {
               onClick={() => setViewMode("compact")}
             >
               <List className="h-4 w-4" />
-              紧凑
+              <span className="hidden sm:inline">紧凑</span>
             </Button>
             <Button
               variant={viewMode === "detailed" ? "default" : "outline"}
@@ -43,13 +43,13 @@ export function ContentHomePage() {
               onClick={() => setViewMode("detailed")}
             >
               <Grid3x3 className="h-4 w-4" />
-              详细
+              <span className="hidden sm:inline">详细</span>
             </Button>
           </div>
         </div>
 
-        {/* 3-column widget layout */}
-        <div className="flex gap-5">
+        {/* 3-column widget layout - responsive */}
+        <div className="flex flex-col lg:flex-row gap-5">
           {/* Left Column - Filters */}
           <Column size="small">
             <CalendarWidget />

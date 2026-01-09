@@ -9,9 +9,9 @@ export interface ColumnProps {
 
 export function Column({ children, size = "medium", className }: ColumnProps) {
   const sizeClasses = {
-    small: "w-1/5 min-w-[200px]",
-    medium: "w-2/5 min-w-[400px]",
-    large: "w-3/5 min-w-[600px]",
+    small: "lg:w-1/5 w-full",
+    medium: "lg:w-2/5 w-full lg:min-w-[400px]",
+    large: "lg:w-3/5 w-full lg:min-w-[600px]",
   };
 
   return (
