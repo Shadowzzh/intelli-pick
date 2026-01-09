@@ -55,4 +55,65 @@ export class ContentsService {
 			data: content,
 		};
 	}
+
+	async getDates(params: { from?: Date; to?: Date }) {
+		// Default to current month if no range provided
+		if (!params.from && !params.to) {
+			const now = new Date();
+			const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+			const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+			params.from = firstDay;
+			params.to = lastDay;
+		}
+
+		const results = await this.contentsRepo.findDatesWithCount(params);
+
+		// Convert to the expected format
+		const dates = results.map((r) => r.date);
+		const counts: Record<string, number> = {};
+		for (const result of results) {
+			counts[result.date] = result.count;
+		}
+
+		return {
+			success: true,
+			data: {
+				dates,
+				counts,
+			},
+		};
+	}
+
+	async getCategoryStats(params: { from?: Date; to?: Date }) {
+		const results = await this.contentsRepo.findCategoryStats(params);
+
+		const total = results.reduce((sum, r) => sum + r.count, 0);
+
+		return {
+			success: true,
+			data: {
+				categories: results,
+				total,
+			},
+		};
+	}
+
+	async getPopularTags(params: {
+		from?: Date;
+		to?: Date;
+		limit?: number;
+	}) {
+		const results = await this.contentsRepo.findPopularTags(params);
+
+		const total = results.reduce((sum, r) => sum + r.count, 0);
+
+		return {
+			success: true,
+			data: {
+				tags: results,
+				total,
+			},
+		};
+	}
 }

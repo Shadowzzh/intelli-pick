@@ -5,14 +5,77 @@ import { NotFoundError } from "../../lib/errors.js";
 import { parsePagination } from "../../lib/validation.js";
 import type { EntitiesService } from "../../services/entities.service.js";
 
+interface EntitiesQueryParams extends PaginationParams {
+	from?: string;
+	to?: string;
+}
+
+interface EntityContentsQueryParams extends PaginationParams {
+	from?: string;
+	to?: string;
+}
+
+/**
+ * 解析日期查询参数
+ */
+function parseEntityDateRange(params: EntitiesQueryParams): {
+	lastMentionedAfter?: Date;
+	lastMentionedBefore?: Date;
+} {
+	const result: {
+		lastMentionedAfter?: Date;
+		lastMentionedBefore?: Date;
+	} = {};
+
+	if (params.from) {
+		result.lastMentionedAfter = new Date(params.from);
+	}
+
+	if (params.to) {
+		result.lastMentionedBefore = new Date(params.to);
+	}
+
+	return result;
+}
+
+/**
+ * 解析实体内容日期查询参数
+ */
+function parseEntityContentsDateRange(params: EntityContentsQueryParams): {
+	publishedAfter?: Date;
+	publishedBefore?: Date;
+} {
+	const result: {
+		publishedAfter?: Date;
+		publishedBefore?: Date;
+	} = {};
+
+	if (params.from) {
+		result.publishedAfter = new Date(params.from);
+	}
+
+	if (params.to) {
+		result.publishedBefore = new Date(params.to);
+	}
+
+	return result;
+}
+
 export async function entitiesRoutes(
 	app: FastifyInstance,
 	service: EntitiesService,
 ) {
 	// List trending entities
 	app.get("/entities", async (req, reply) => {
-		const { page, limit } = parsePagination(req.query as PaginationParams);
-		const result = await service.findTrending({ page, limit });
+		const query = req.query as EntitiesQueryParams;
+		const { page, limit } = parsePagination(query);
+		const dateRange = parseEntityDateRange(query);
+
+		const result = await service.findTrending({
+			page,
+			limit,
+			...dateRange,
+		});
 		return result;
 	});
 
@@ -31,6 +94,23 @@ export async function entitiesRoutes(
 			});
 			return;
 		}
+
+		return result;
+	});
+
+	// Get contents for an entity
+	app.get("/entities/:id/contents", async (req, reply) => {
+		const { id } = req.params as { id: string };
+		const query = req.query as EntityContentsQueryParams;
+		const { page, limit } = parsePagination(query);
+		const dateRange = parseEntityContentsDateRange(query);
+
+		const result = await service.findContentsByEntityId({
+			entityId: id,
+			page,
+			limit,
+			...dateRange,
+		});
 
 		return result;
 	});

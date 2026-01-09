@@ -1,10 +1,10 @@
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
-import mercurius from "mercurius";
 import type { Config } from "@intellipick/config";
 import { db } from "@intellipick/db";
 // apps/api/src/app.ts
 import fastify, { type FastifyInstance } from "fastify";
+import mercurius from "mercurius";
 import { createGraphQLServer } from "./graphql/index.js";
 import { handleError } from "./lib/errors.js";
 import {
@@ -16,6 +16,7 @@ import { registerV1Routes } from "./routes/v1/index.js";
 import {
 	ContentsService,
 	EntitiesService,
+	QueueService,
 	SearchService,
 	SourcesService,
 	StatsService,
@@ -59,12 +60,19 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 	const searchService = new SearchService(db);
 	const statsService = new StatsService();
 
+	// Initialize queue service (optional, depends on REDIS_URL)
+	const queueService = process.env.REDIS_URL
+		? new QueueService(process.env.REDIS_URL)
+		: null;
+
 	// Register RESTful routes
 	await registerV1Routes(app, {
 		contentsService,
 		entitiesService,
 		searchService,
+		sourcesService,
 		statsService,
+		queueService: queueService ?? undefined,
 		config,
 	});
 
@@ -76,10 +84,12 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 	);
 
 	// 注册 Mercurius GraphQL 插件
+	// 类型断言: Mercurius 的类型系统不支持直接扩展上下文类型
+	// 我们的 AppContext 扩展了 MercuriusContext，添加了自定义服务
 	await app.register(mercurius, {
 		schema: graphqlConfig.typeDefs,
-		resolvers: graphqlConfig.resolvers,
-		context: graphqlConfig.context,
+		resolvers: graphqlConfig.resolvers as any,
+		context: graphqlConfig.context as any,
 		graphiql: true, // 开发模式下启用 GraphiQL IDE
 		path: "/graphql",
 	});

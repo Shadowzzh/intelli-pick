@@ -102,4 +102,110 @@ export class ContentsRepository {
 			.where(where || sql`1=1`);
 		return result.count;
 	}
+
+	async findDatesWithCount(params: {
+		from?: Date;
+		to?: Date;
+	}): Promise<{ date: string; count: number }[]> {
+		const conditions = [];
+
+		if (params.from) {
+			conditions.push(sql`${contents.publishedAt} >= ${params.from}`);
+		}
+
+		if (params.to) {
+			// Include the entire end day
+			const endOfDay = new Date(params.to);
+			endOfDay.setHours(23, 59, 59, 999);
+			conditions.push(sql`${contents.publishedAt} <= ${endOfDay}`);
+		}
+
+		const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+		const results = await this.db
+			.select({
+				date: sql<string>`date(${contents.publishedAt})`,
+				count: sql<number>`count(*)`,
+			})
+			.from(contents)
+			.where(where || sql`1=1`)
+			.groupBy(sql`date(${contents.publishedAt})`)
+			.orderBy(asc(sql`date(${contents.publishedAt})`));
+
+		return results;
+	}
+
+	async findCategoryStats(params: {
+		from?: Date;
+		to?: Date;
+	}): Promise<{ name: string; count: number; latestUpdate: Date }[]> {
+		const conditions = [];
+
+		if (params.from) {
+			conditions.push(sql`${contents.publishedAt} >= ${params.from}`);
+		}
+
+		if (params.to) {
+			// Include the entire end day
+			const endOfDay = new Date(params.to);
+			endOfDay.setHours(23, 59, 59, 999);
+			conditions.push(sql`${contents.publishedAt} <= ${endOfDay}`);
+		}
+
+		const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+		const results = await this.db
+			.select({
+				name: contents.category,
+				count: sql<number>`count(*)`,
+				latestUpdate: sql<Date>`max(${contents.publishedAt})`,
+			})
+			.from(contents)
+			.where(where || sql`1=1`)
+			.groupBy(contents.category)
+			.orderBy(desc(sql`count(*)`));
+
+		// Filter out null categories and convert to string type
+		return results
+			.filter((r) => r.name !== null)
+			.map((r) => ({
+				...r,
+				name: r.name as string,
+			}));
+	}
+
+	async findPopularTags(params: {
+		from?: Date;
+		to?: Date;
+		limit?: number;
+	}): Promise<{ name: string; count: number }[]> {
+		const conditions = [];
+
+		if (params.from) {
+			conditions.push(sql`${contents.publishedAt} >= ${params.from}`);
+		}
+
+		if (params.to) {
+			// Include the entire end day
+			const endOfDay = new Date(params.to);
+			endOfDay.setHours(23, 59, 59, 999);
+			conditions.push(sql`${contents.publishedAt} <= ${endOfDay}`);
+		}
+
+		const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+		// Use PostgreSQL's jsonb_array_elements_text to unpack tags array
+		const results = await this.db
+			.select({
+				name: sql<string>`unnest(${contents.tags})`,
+				count: sql<number>`count(*)`,
+			})
+			.from(contents)
+			.where(where || sql`1=1`)
+			.groupBy(sql`unnest(${contents.tags})`)
+			.orderBy(desc(sql`count(*)`))
+			.limit(params.limit || 50);
+
+		return results;
+	}
 }

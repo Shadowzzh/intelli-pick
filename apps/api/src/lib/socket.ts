@@ -10,6 +10,8 @@ interface ContentData {
 	summary?: string | null;
 	url?: string | null;
 	publishedAt?: Date | string | null;
+	category?: string | null;
+	tags?: string[] | null;
 	[key: string]: unknown;
 }
 
@@ -31,6 +33,7 @@ interface StatsData {
 
 export interface ServerToClientEvents {
 	"content:new": (data: ContentData) => void;
+	"content:created": (data: ContentData) => void;
 	"entity:updated": (data: EntityData) => void;
 	"stats:updated": (data: StatsData) => void;
 }
@@ -83,6 +86,10 @@ export async function initSocket(app: FastifyInstance) {
 	// Listen for events from worker and broadcast to Socket.IO clients
 	eventEmitter.on("content:new", (content) => {
 		io?.emit("content:new", content);
+	});
+
+	eventEmitter.on("content:created", (content) => {
+		io?.emit("content:created", content);
 	});
 
 	eventEmitter.on("entity:updated", (entity) => {

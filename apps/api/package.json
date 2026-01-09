@@ -9,7 +9,10 @@
 		"typecheck": "tsc --noEmit",
 		"start": "node dist/index.js",
 		"test": "vitest",
-		"test:coverage": "vitest --coverage"
+		"test:coverage": "vitest --coverage",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write ."
 	},
 	"dependencies": {
 		"@ai-sdk/openai": "^1.0.0",
@@ -21,6 +24,7 @@
 		"@intellipick/events": "workspace:*",
 		"@intellipick/shared": "workspace:*",
 		"ai": "^4.0.0",
+		"bullmq": "^5.0.0",
 		"dayjs": "^1.11.0",
 		"drizzle-orm": "^0.38.0",
 		"fastify": "^5.6.2",

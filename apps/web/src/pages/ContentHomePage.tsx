@@ -1,6 +1,7 @@
 import { CalendarWidget } from "@/components/widgets/CalendarWidget";
 import { DateRangeWidget } from "@/components/widgets/DateRangeWidget";
 import { CategoryNavWidget } from "@/components/widgets/CategoryNavWidget";
+import { SourceFilterWidget } from "@/components/widgets/SourceFilterWidget";
 import { Column } from "@/components/layout";
 
 export function ContentHomePage() {
@@ -19,6 +20,7 @@ export function ContentHomePage() {
             <CalendarWidget />
             <DateRangeWidget />
             <CategoryNavWidget />
+            <SourceFilterWidget />
           </Column>
 
           {/* Middle Column */}

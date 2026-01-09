@@ -7,6 +7,8 @@ interface ContentData {
 	summary?: string | null;
 	url?: string | null;
 	publishedAt?: Date | string | null;
+	category?: string | null;
+	tags?: string[] | null;
 	[key: string]: unknown;
 }
 
@@ -59,7 +61,9 @@ export const eventEmitter = new EventEmitter();
 
 // Helper functions for worker to emit events
 export function emitNewContent(content: ContentData) {
+	// Emit both old and new event names for backward compatibility
 	eventEmitter.emit("content:new", content);
+	eventEmitter.emit("content:created", content);
 }
 
 export function emitEntityUpdate(entity: EntityData) {
