@@ -4,8 +4,7 @@
  *
  * 定义 GraphQL 查询和类型解析器
  */
-import type { Content } from "@intellipick/db";
-import type { IResolvers, MercuriusContext } from "mercurius";
+import type { IFieldResolver, IResolvers, MercuriusContext } from "mercurius";
 import type {
 	ContentsService,
 	EntitiesService,
@@ -25,13 +24,15 @@ interface ContentParent {
 }
 
 /**
- * 应用上下文类型
- * 扩展 Mercurius 上下文，添加自定义服务
+ * 扩展 Mercurius 上下文类型
+ * 添加自定义服务到全局 MercuriusContext
  */
-export interface AppContext extends MercuriusContext {
-	contentsService: ContentsService;
-	entitiesService: EntitiesService;
-	sourcesService: SourcesService;
+declare module "mercurius" {
+	interface MercuriusContext {
+		contentsService: ContentsService;
+		entitiesService: EntitiesService;
+		sourcesService: SourcesService;
+	}
 }
 
 /**
@@ -46,7 +47,7 @@ export function createResolvers(
 	contentsService: ContentsService,
 	entitiesService: EntitiesService,
 	sourcesService?: SourcesService,
-): IResolvers<any, AppContext> {
+): IResolvers {
 	return {
 		// ========== 查询解析器 ==========
 
@@ -112,7 +113,7 @@ export function createResolvers(
 			source: async (
 				parent: ContentParent,
 				__: unknown,
-				context: AppContext,
+				context: MercuriusContext,
 			) => {
 				if (!context?.sourcesService) {
 					return null;
@@ -126,7 +127,7 @@ export function createResolvers(
 			entities: async (
 				parent: ContentParent,
 				__: unknown,
-				context: AppContext,
+				context: MercuriusContext,
 			) => {
 				return await context.entitiesService.findByContentId(parent.id);
 			},

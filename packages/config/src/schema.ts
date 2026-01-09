@@ -65,6 +65,7 @@ const ThresholdsSchema = z.object({
 
 // 队列配置
 const QueueConfigSchema = z.object({
+	name: z.string().default("intellipick-pipeline"),
 	concurrency: z.number().default(3),
 	rateLimit: z.object({
 		max: z.number().default(5),

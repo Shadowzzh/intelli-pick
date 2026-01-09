@@ -4,16 +4,16 @@ import type {
 	WorkerStats,
 } from "@intellipick/shared";
 // apps/api/src/services/queue.service.ts
-import { Queue, Worker } from "bullmq";
-
-const QUEUE_NAME = "ai-filter-pipeline";
+import { Queue } from "bullmq";
 
 export class QueueService {
 	private queue: Queue<unknown> | null = null;
+	private queueName: string;
 
-	constructor(redisUrl?: string) {
+	constructor(redisUrl?: string, queueName = "ai-filter-pipeline") {
+		this.queueName = queueName;
 		if (redisUrl) {
-			this.queue = new Queue<unknown>(QUEUE_NAME, {
+			this.queue = new Queue<unknown>(queueName, {
 				connection: { url: redisUrl },
 			});
 		}
@@ -66,7 +66,7 @@ export class QueueService {
 
 		return [
 			{
-				name: QUEUE_NAME,
+				name: this.queueName,
 				waiting: counts.waiting,
 				active: counts.active,
 				completed: counts.completed,

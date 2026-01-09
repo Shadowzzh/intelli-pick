@@ -8,10 +8,8 @@ import { Pipeline } from "./pipeline/index";
 
 const logger = createLogger("worker");
 
-const QUEUE_NAME = "ai-filter-pipeline";
-
-export function createQueue(redisUrl: string) {
-	return new Queue<RawContent>(QUEUE_NAME, {
+export function createQueue(redisUrl: string, queueName: string) {
+	return new Queue<RawContent>(queueName, {
 		connection: { url: redisUrl },
 	});
 }
@@ -24,7 +22,7 @@ export function createWorker(
 	const pipeline = new Pipeline(config, ai);
 
 	const worker = new Worker<RawContent>(
-		QUEUE_NAME,
+		config.queue.name,
 		async (job) => {
 			const jobId = job.id as string;
 			const jobLogger = createRequestLogger("worker", jobId);

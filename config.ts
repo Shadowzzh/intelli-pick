@@ -32,6 +32,7 @@ export default defineConfig({
 		lockTimeout: 5 * 60 * 1000, // 5分钟，单位毫秒
 	},
 	queue: {
+		name: "intellipick-pipeline", // 队列名称
 		concurrency: 5, // 同时处理
 		rateLimit: {
 			max: 10, // 每个时间窗口的最大任务数

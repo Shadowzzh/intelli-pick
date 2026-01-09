@@ -27,7 +27,7 @@ async function main() {
 	// 初始化
 	const ai = createAiClient(config.ai);
 	const collector = createCollectorManager(sourceMap);
-	const queue = createQueue(env.REDIS_URL);
+	const queue = createQueue(env.REDIS_URL, config.queue.name);
 
 	// 清空启动前的旧任务（避免 source_id 等配置变更导致的不一致）
 	await queue.drain();

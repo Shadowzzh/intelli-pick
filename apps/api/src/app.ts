@@ -62,7 +62,7 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 
 	// Initialize queue service (optional, depends on REDIS_URL)
 	const queueService = process.env.REDIS_URL
-		? new QueueService(process.env.REDIS_URL)
+		? new QueueService(process.env.REDIS_URL, config?.queue.name)
 		: null;
 
 	// Register RESTful routes
@@ -84,12 +84,11 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 	);
 
 	// 注册 Mercurius GraphQL 插件
-	// 类型断言: Mercurius 的类型系统不支持直接扩展上下文类型
-	// 我们的 AppContext 扩展了 MercuriusContext，添加了自定义服务
+	// 我们通过 declare module 扩展了 MercuriusContext，添加了自定义服务
 	await app.register(mercurius, {
 		schema: graphqlConfig.typeDefs,
-		resolvers: graphqlConfig.resolvers as any,
-		context: graphqlConfig.context as any,
+		resolvers: graphqlConfig.resolvers,
+		context: graphqlConfig.context,
 		graphiql: true, // 开发模式下启用 GraphiQL IDE
 		path: "/graphql",
 	});

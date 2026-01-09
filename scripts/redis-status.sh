@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # 队列名称
-QUEUE_NAME="ai-filter-pipeline"
+QUEUE_NAME="intellipick-pipeline"
 
 echo -e "${BOLD}${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BOLD}${CYAN}  IntelliPick - Redis 状态检查${NC}"
