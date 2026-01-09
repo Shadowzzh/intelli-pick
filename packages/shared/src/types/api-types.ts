@@ -5,11 +5,23 @@
  * 包含所有 REST API 的请求和响应类型定义
  */
 
+import type { PaginationParams } from "./pagination.js";
 import type { PaginatedResponse } from "./api.js";
 
 // ============================================================================
 // Contents API Types
 // ============================================================================
+
+/** 内容查询参数 */
+export interface ContentQueryParams extends PaginationParams {
+	date?: string;
+	from?: string;
+	to?: string;
+	category?: string;
+	tags?: string | string[];
+	sourceIds?: string[];
+	sourceId?: string;
+}
 
 /** 日期列表查询参数 */
 export interface DatesQueryParams {
