@@ -1,0 +1,100 @@
+import { Widget } from "@/components/widgets/Widget";
+import { WidgetEmptyState } from "@/components/widgets/WidgetEmptyState";
+import { WidgetErrorState } from "@/components/widgets/WidgetErrorState";
+import { WidgetLoadingState } from "@/components/widgets/WidgetLoadingState";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { isValidElement } from "react";
+
+export interface WidgetWithStatesProps<TData> {
+	// Widget 基础属性
+	title: string;
+	icon?: ReactNode;
+	actions?: ReactNode;
+	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
+
+	// 数据查询
+	query: UseQueryResult<TData>;
+
+	// 状态配置（可选）
+	loading?: boolean | ReactNode;
+	empty?: boolean | { message?: string; icon?: ReactNode; iconType?: "default" | "tags" | "entities" | "contents" };
+	error?: boolean | { message?: string; showDetails?: boolean };
+
+	// 成功状态渲染
+	children: (data: TData) => ReactNode;
+}
+
+export function WidgetWithStates<TData>({
+	query,
+	loading,
+	empty,
+	error,
+	children,
+	...widgetProps
+}: WidgetWithStatesProps<TData>) {
+	// 1. Loading 状态
+	if (query.isLoading) {
+		if (loading === false) {
+			// 允许禁用默认 loading
+			return <Widget {...widgetProps}>{children(null as TData)}</Widget>;
+		}
+		if (isValidElement(loading)) {
+			return <Widget {...widgetProps}>{loading}</Widget>;
+		}
+		// 默认：使用骨架屏
+		return (
+			<Widget {...widgetProps}>
+				<WidgetLoadingState />
+			</Widget>
+		);
+	}
+
+	// 2. Error 状态
+	if (query.error) {
+		if (error === false) {
+			return <Widget {...widgetProps}>{children(null as TData)}</Widget>;
+		}
+		if (isValidElement(error)) {
+			return <Widget {...widgetProps}>{error}</Widget>;
+		}
+		// 默认：使用错误状态组件
+		const errorConfig = typeof error === "object" ? error : {};
+		return (
+			<Widget {...widgetProps}>
+				<WidgetErrorState
+					error={query.error as Error}
+					onRetry={() => query.refetch()}
+					message={errorConfig.message}
+					showDetails={errorConfig.showDetails}
+				/>
+			</Widget>
+		);
+	}
+
+	// 3. Empty 状态
+	const data = query.data;
+	const isEmpty = Array.isArray(data) ? data.length === 0 : !data;
+
+	if (isEmpty && empty !== false) {
+		if (isValidElement(empty)) {
+			return <Widget {...widgetProps}>{empty}</Widget>;
+		}
+		// 默认：使用空状态组件
+		const emptyConfig = typeof empty === "object" ? empty : {};
+		return (
+			<Widget {...widgetProps}>
+				<WidgetEmptyState
+					message={emptyConfig.message}
+					icon={emptyConfig.icon}
+					iconType={emptyConfig.iconType}
+				/>
+			</Widget>
+		);
+	}
+
+	// 4. 成功状态
+	return <Widget {...widgetProps}>{children(data as TData)}</Widget>;
+}

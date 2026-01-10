@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Widget } from "@/components/widgets/Widget";
+import {
+	WidgetLoadingState,
+	WidgetWithStates,
+} from "@/components/widgets";
 import { type Entity, entitiesApi } from "@/lib/api/entities";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp } from "lucide-react";
@@ -14,59 +16,30 @@ export function TrendingEntitiesWidget({
 	headerClassName?: string;
 	contentClassName?: string;
 }) {
-	const { data, isLoading } = useQuery({
+	const query = useQuery({
 		queryKey: entitiesApi.queryKeys.trending({ limit: 10 }),
 		queryFn: () => entitiesApi.getTrending({ limit: 10 }),
 	});
 
-	if (isLoading) {
-		return (
-			<Widget
-				title="趋势实体"
-				icon={<TrendingUp className="h-4 w-4" />}
-				className={className}
-				headerClassName={headerClassName}
-				contentClassName={contentClassName}
-			>
-				<div className="space-y-2">
-					{[...Array(5)].map((_, i) => (
-						<Skeleton key={`skeleton-${i}`} className="h-8 w-full" />
-					))}
-				</div>
-			</Widget>
-		);
-	}
-
-	const entities = data?.data || [];
-
-	if (entities.length === 0) {
-		return (
-			<Widget
-				title="趋势实体"
-				icon={<TrendingUp className="h-4 w-4" />}
-				className={className}
-				headerClassName={headerClassName}
-				contentClassName={contentClassName}
-			>
-				<p className="text-sm text-muted-foreground">暂无数据</p>
-			</Widget>
-		);
-	}
-
 	return (
-		<Widget
+		<WidgetWithStates
+			query={query}
 			title="趋势实体"
 			icon={<TrendingUp className="h-4 w-4" />}
 			className={className}
 			headerClassName={headerClassName}
 			contentClassName={contentClassName}
+			loading={<WidgetLoadingState lines={5} />}
+			empty={{ message: "暂无趋势实体", iconType: "entities" }}
 		>
-			<div className="space-y-2">
-				{entities.map((entity, index) => (
-					<EntityListItem key={entity.id} entity={entity} rank={index + 1} />
-				))}
-			</div>
-		</Widget>
+			{({ data: entities }) => (
+				<div className="space-y-2">
+					{entities.map((entity, index) => (
+						<EntityListItem key={entity.id} entity={entity} rank={index + 1} />
+					))}
+				</div>
+			)}
+		</WidgetWithStates>
 	);
 }
 
