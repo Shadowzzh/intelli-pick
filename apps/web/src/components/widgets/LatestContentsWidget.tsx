@@ -21,6 +21,12 @@ export function LatestContentsWidget({
 		queryFn: () => contentsApi.getContents({ limit: 5, page: 1 }),
 	});
 
+	const handleClick = (item: Content) => {
+		if (item.url) {
+			window.open(item.url, "_blank", "noopener,noreferrer");
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<Widget
@@ -67,18 +73,13 @@ export function LatestContentsWidget({
 				{items.map((item: Content) => (
 					<div
 						key={item.id}
+						onClick={() => handleClick(item)}
+						onKeyDown={() => handleClick(item)}
 						className="group p-3 border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer"
 					>
 						{/* Title */}
 						<div className="flex items-start justify-between gap-2 mb-1">
-							<a
-								href={item.url || "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors flex-1"
-							>
-								{item.title || "无标题"}
-							</a>
+							{item.title || "无标题"}
 						</div>
 
 						{/* Meta info */}

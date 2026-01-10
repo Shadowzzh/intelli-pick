@@ -106,7 +106,7 @@ export function Pagination({
 						onClick={() => handlePageClick(page)}
 						disabled={isEllipsis}
 						className={cn(
-							"h-8 min-w-[2rem] px-2 flex items-center justify-center rounded-md text-sm transition-colors",
+							"h-8 min-w-8 px-2 flex items-center justify-center rounded-md text-sm transition-colors",
 							isCurrentPage && "bg-primary text-primary-foreground",
 							!isCurrentPage && !isEllipsis && "hover:bg-muted",
 							isEllipsis && "cursor-default",
