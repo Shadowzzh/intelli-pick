@@ -36,7 +36,7 @@ export function ContentHomePage() {
 
 					{/* Middle Column - Content List */}
 					<Column size="medium">
-						<ContentListNew />
+						<ContentListNew contentClassName="max-h-[80vh] overflow-auto" />
 					</Column>
 
 					{/* Right Column */}

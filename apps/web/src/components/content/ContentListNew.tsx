@@ -1,4 +1,5 @@
 import { FilterDisplay } from "@/components/content/FilterDisplay";
+import { ViewModeToggle } from "@/components/content/ViewModeToggle";
 import { Widget } from "@/components/widgets/Widget";
 import { contentsApi } from "@/lib/api/contents";
 import { useContentHomeStore } from "@/store/content-home-store";
@@ -6,13 +7,19 @@ import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { ExternalLink, Loader2, Newspaper } from "lucide-react";
+import { Loader2, Newspaper } from "lucide-react";
 
 interface ContentListProps {
 	className?: string;
+	headerClassName?: string;
+	contentClassName?: string;
 }
 
-export function ContentListNew({ className }: ContentListProps) {
+export function ContentListNew({
+	className,
+	headerClassName,
+	contentClassName,
+}: ContentListProps) {
 	const {
 		dateRange,
 		filters,
@@ -47,7 +54,10 @@ export function ContentListNew({ className }: ContentListProps) {
 		<Widget
 			title="内容列表"
 			icon={<Newspaper className="h-4 w-4" />}
+			actions={<ViewModeToggle />}
 			className={className}
+			headerClassName={headerClassName}
+			contentClassName={contentClassName}
 		>
 			{/* Show filter summary */}
 			<FilterDisplay
@@ -154,33 +164,6 @@ function ContentCompactCard({ item }: { item: Content }) {
 					{item.summary}
 				</p>
 			)}
-
-			{/* Meta info */}
-			<div className="flex items-center gap-3 text-xs text-muted-foreground">
-				{item.category && <span>{item.category}</span>}
-				{item.publishedAt && (
-					<>
-						{item.category && <span>·</span>}
-						<span>
-							{formatDistanceToNow(new Date(item.publishedAt), {
-								addSuffix: true,
-								locale: zhCN,
-							})}
-						</span>
-					</>
-				)}
-			</div>
-
-			{/* Tags */}
-			{item.tags && item.tags.length > 0 && (
-				<div className="flex flex-wrap gap-1 mt-2">
-					{item.tags.slice(0, 3).map((tag) => (
-						<span key={tag} className="px-2 py-0.5 text-xs bg-muted rounded-md">
-							{tag}
-						</span>
-					))}
-				</div>
-			)}
 		</div>
 	);
 }
@@ -207,7 +190,6 @@ function ContentDetailedCard({ item }: { item: Content }) {
 				<div className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors flex-1">
 					{item.title || "无标题"}
 				</div>
-				<ExternalLink className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
 			</div>
 
 			{/* Summary */}

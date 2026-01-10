@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { Clock } from "lucide-react";
-import { ExternalLink } from "lucide-react";
 
 export function LatestContentsWidget({
 	className,
@@ -80,7 +79,6 @@ export function LatestContentsWidget({
 							>
 								{item.title || "无标题"}
 							</a>
-							<ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-1" />
 						</div>
 
 						{/* Meta info */}
