@@ -1,7 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Widget } from "@/components/widgets/Widget";
+import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle, Rss } from "lucide-react";
@@ -30,8 +29,7 @@ export function SourceFilterWidget({
 }) {
 	const { filters, setFilters } = useContentHomeStore();
 
-	// Mock data for now
-	const { data: sources, isLoading } = useQuery<Source[]>({
+	const query = useQuery<Source[]>({
 		queryKey: ["sources"],
 		queryFn: async () => {
 			// TODO: Replace with real API call
@@ -53,56 +51,44 @@ export function SourceFilterWidget({
 		setFilters({ sourceIds: updated.length > 0 ? updated : undefined });
 	};
 
-	if (isLoading) {
-		return (
-			<Widget
-				title="数据源"
-				className={className}
-				headerClassName={headerClassName}
-				contentClassName={contentClassName}
-			>
-				<div className="space-y-3">
-					{[...Array(4)].map((_, i) => (
-						<Skeleton key={`skeleton-${i}`} className="h-8 w-full" />
-					))}
-				</div>
-			</Widget>
-		);
-	}
-
 	return (
-		<Widget
+		<WidgetWithStates
+			query={query}
 			title="数据源"
 			className={className}
 			headerClassName={headerClassName}
 			contentClassName={contentClassName}
+			loading={<WidgetLoadingState lines={4} />}
+			empty={{ message: "暂无数据源" }}
 		>
-			<div className="space-y-2">
-				{sources?.map((source) => {
-					const Icon = sourceTypeIcons[source.type];
-					const isChecked = filters.sourceIds?.includes(source.id);
+			{(sources) => (
+				<div className="space-y-2">
+					{sources?.map((source) => {
+						const Icon = sourceTypeIcons[source.type];
+						const isChecked = filters.sourceIds?.includes(source.id);
 
-					return (
-						<div
-							key={source.id}
-							className="flex items-center space-x-2 px-2 py-1"
-						>
-							<Checkbox
-								id={`source-${source.id}`}
-								checked={isChecked}
-								onCheckedChange={() => handleSourceToggle(source.id)}
-							/>
-							<Label
-								htmlFor={`source-${source.id}`}
-								className="flex items-center gap-2 text-sm cursor-pointer flex-1"
+						return (
+							<div
+								key={source.id}
+								className="flex items-center space-x-2 px-2 py-1"
 							>
-								<Icon className="h-3 w-3 text-muted-foreground" />
-								<span className="truncate">{source.name}</span>
-							</Label>
-						</div>
-					);
-				})}
-			</div>
-		</Widget>
+								<Checkbox
+									id={`source-${source.id}`}
+									checked={isChecked}
+									onCheckedChange={() => handleSourceToggle(source.id)}
+								/>
+								<Label
+									htmlFor={`source-${source.id}`}
+									className="flex items-center gap-2 text-sm cursor-pointer flex-1"
+								>
+									<Icon className="h-3 w-3 text-muted-foreground" />
+									<span className="truncate">{source.name}</span>
+								</Label>
+							</div>
+						);
+					})}
+				</div>
+			)}
+		</WidgetWithStates>
 	);
 }

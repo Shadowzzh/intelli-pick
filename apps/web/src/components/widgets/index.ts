@@ -1,7 +1,5 @@
 export { Widget } from "./Widget";
 export type { WidgetProps } from "./Widget";
-export { WidgetSkeleton } from "./WidgetSkeleton";
-export type { WidgetSkeletonProps } from "./WidgetSkeleton";
 
 // 新状态管理系统
 export { WidgetWithStates } from "./WidgetWithStates";
