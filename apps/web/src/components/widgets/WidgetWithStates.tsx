@@ -82,7 +82,25 @@ export function WidgetWithStates<TData>({
 
 	// 3. Empty 状态
 	const data = query.data;
-	const isEmpty = Array.isArray(data) ? data.length === 0 : !data;
+	const isEmpty = (() => {
+		// 处理 null/undefined
+		if (!data) return true;
+
+		// 处理数组
+		if (Array.isArray(data)) return data.length === 0;
+
+		// 处理对象：检查所有值是否为空数组
+		if (typeof data === "object") {
+			const values = Object.values(data);
+			// 如果所有值都是空数组，视为空
+			return (
+				values.length > 0 &&
+				values.every((v) => Array.isArray(v) && v.length === 0)
+			);
+		}
+
+		return false;
+	})();
 
 	if (isEmpty && empty !== false) {
 		if (isValidElement(empty)) {
