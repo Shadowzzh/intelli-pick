@@ -58,6 +58,15 @@ export function ContentListNew({
 			className={className}
 			headerClassName={headerClassName}
 			contentClassName={contentClassName}
+			footer={
+				Number.parseInt(total, 10) > items.length ? (
+					<div className="text-center">
+						<p className="text-sm text-muted-foreground">
+							显示 {items.length} / {total} 条
+						</p>
+					</div>
+				) : null
+			}
 		>
 			{/* Show filter summary */}
 			<FilterDisplay
@@ -106,15 +115,6 @@ export function ContentListNew({
 					{items.map((item: Content) => (
 						<ContentListItem key={item.id} item={item} viewMode={viewMode} />
 					))}
-
-					{/* Pagination placeholder */}
-					{Number.parseInt(total, 10) > items.length && (
-						<div className="pt-4 text-center">
-							<p className="text-sm text-muted-foreground">
-								显示 {items.length} / {total} 条
-							</p>
-						</div>
-					)}
 				</div>
 			)}
 		</Widget>

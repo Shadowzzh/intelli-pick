@@ -1,3 +1,4 @@
+import { Divider } from "@/components/ui/Divider";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -8,7 +9,9 @@ export interface WidgetProps {
 	className?: string;
 	headerClassName?: string;
 	contentClassName?: string;
+	footerClassName?: string;
 	children: ReactNode;
+	footer?: ReactNode;
 }
 
 export function Widget({
@@ -18,12 +21,15 @@ export function Widget({
 	className,
 	headerClassName,
 	contentClassName,
+	footerClassName,
 	children,
+	footer,
 }: WidgetProps) {
 	return (
 		<div
 			className={cn(
 				"widget rounded-lg border bg-card text-card-foreground overflow-hidden",
+				"flex flex-col",
 				className,
 			)}
 		>
@@ -31,6 +37,7 @@ export function Widget({
 			<div
 				className={cn(
 					"widget-header flex items-center justify-between gap-2 px-4 py-3 border-b",
+					"shrink-0",
 					headerClassName,
 				)}
 			>
@@ -42,9 +49,29 @@ export function Widget({
 			</div>
 
 			{/* Widget Content */}
-			<div className={cn("widget-content p-4 overflow-auto", contentClassName)}>
+			<div
+				className={cn(
+					"widget-content p-4 overflow-auto",
+					"flex-1",
+					contentClassName,
+				)}
+			>
 				{children}
 			</div>
+
+			{/* Widget Footer */}
+			{footer && (
+				<div
+					className={cn(
+						"widget-footer px-4 py-3 bg-card",
+						"shrink-0",
+						footerClassName,
+					)}
+				>
+					<Divider className="mb-3" />
+					{footer}
+				</div>
+			)}
 		</div>
 	);
 }

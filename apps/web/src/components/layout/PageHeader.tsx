@@ -14,21 +14,21 @@ export function PageHeader({
 	themeToggle = <ThemeToggle />,
 }: PageHeaderProps) {
 	return (
-		<div className="widget mb-6 p-2">
+		<div className="widget mb-6 px-4 py-2">
 			<div className="flex items-center gap-6">
 				{/* Logo */}
 				<div className="flex items-center gap-2">
-					<div className="text-2xl font-bold text-primary">I</div>
-					<span className="text-lg font-bold">IntelliPick</span>
+					<div className="text-xl font-bold text-primary">I</div>
+					<span className="text-base font-bold">IntelliPick</span>
 				</div>
 
 				{/* Page 导航 */}
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-1">
 					{pages.map((page) => (
 						<button
 							key={page}
 							type="button"
-							className={`cursor-pointer px-3 py-1.5 text-sm transition-colors border-b-2 ${
+							className={`cursor-pointer px-3 py-1 text-sm transition-colors border-b-2 ${
 								currentPage === page
 									? "border-primary text-foreground"
 									: "border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground"
