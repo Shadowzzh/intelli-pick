@@ -21,6 +21,7 @@ export class ContentsRepository {
 		sourceId?: string;
 		publishedAfter?: Date;
 		publishedBefore?: Date;
+		search?: string;
 		limit: number;
 		offset: number;
 		orderBy?: { column: string; direction: "asc" | "desc" };
@@ -60,6 +61,18 @@ export class ContentsRepository {
 			conditions.push(lte(contents.publishedAt, filters.publishedBefore));
 		}
 
+		if (filters.search) {
+			// 使用 ILIKE 进行不区分大小写的搜索
+			// 搜索 title 和 summary 字段
+			const searchPattern = `%${filters.search}%`;
+			conditions.push(
+				sql`(
+					${contents.title} ILIKE ${searchPattern}
+					OR ${contents.summary} ILIKE ${searchPattern}
+				)`,
+			);
+		}
+
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
 		let orderBySql: SQL;
@@ -88,6 +101,7 @@ export class ContentsRepository {
 		sourceId?: string;
 		publishedAfter?: Date;
 		publishedBefore?: Date;
+		search?: string;
 	}): Promise<number> {
 		const conditions = [];
 
@@ -122,6 +136,18 @@ export class ContentsRepository {
 		if (filters.publishedBefore) {
 			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
 			conditions.push(lte(contents.publishedAt, filters.publishedBefore));
+		}
+
+		if (filters.search) {
+			// 使用 ILIKE 进行不区分大小写的搜索
+			// 搜索 title 和 summary 字段
+			const searchPattern = `%${filters.search}%`;
+			conditions.push(
+				sql`(
+					${contents.title} ILIKE ${searchPattern}
+					OR ${contents.summary} ILIKE ${searchPattern}
+				)`,
+			);
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;

@@ -24,12 +24,16 @@ interface ContentHomeState {
 	// Page state
 	currentPage: number;
 
+	// Search state
+	searchQuery: string;
+
 	// Actions
 	setSelectedDate: (date: Date) => void;
 	setDateRange: (range: DateRange) => void;
 	setFilters: (filters: Partial<ContentFilters>) => void;
 	setViewMode: (mode: ViewMode) => void;
 	setCurrentPage: (page: number) => void;
+	setSearchQuery: (query: string) => void;
 	resetFilters: () => void;
 	removeCategory: () => void;
 	removeTag: (tag: string) => void;
@@ -52,6 +56,9 @@ export const useContentHomeStore = create<ContentHomeState>()(
 			// Default page
 			currentPage: 1,
 
+			// Default search query
+			searchQuery: "",
+
 			// Actions
 			setSelectedDate: (date) => set({ selectedDate: date }),
 
@@ -65,6 +72,8 @@ export const useContentHomeStore = create<ContentHomeState>()(
 			setViewMode: (mode) => set({ viewMode: mode }),
 
 			setCurrentPage: (page) => set({ currentPage: page }),
+
+			setSearchQuery: (query) => set({ searchQuery: query }),
 
 			resetFilters: () =>
 				set({

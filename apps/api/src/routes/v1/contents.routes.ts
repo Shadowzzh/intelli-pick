@@ -67,7 +67,7 @@ export async function contentsRoutes(
 ) {
 	// List contents
 	app.get("/contents", async (req) => {
-		const query = req.query as ContentQueryParams;
+		const query = req.query as ContentQueryParams & { search?: string };
 		const { page, limit } = parsePagination(query);
 		const dateRange = parseDateRange(query);
 
@@ -77,6 +77,7 @@ export async function contentsRoutes(
 			sourceId: query.sourceId,
 			publishedAfter: dateRange.from,
 			publishedBefore: dateRange.to,
+			search: query.search,
 		};
 
 		const result = await service.findPaginated({ page, limit, filters });

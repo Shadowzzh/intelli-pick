@@ -15,6 +15,7 @@ export class ContentsService {
 			sourceId?: string;
 			publishedAfter?: Date;
 			publishedBefore?: Date;
+			search?: string;
 		};
 	}): Promise<PaginatedResponse<Content>> {
 		const offset = (params.page - 1) * params.limit;

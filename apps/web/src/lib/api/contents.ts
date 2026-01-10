@@ -13,7 +13,7 @@ export const contentsApi = {
 	 * Fetch contents with filters
 	 */
 	async getContents(
-		params: ContentQueryParams,
+		params: ContentQueryParams & { search?: string },
 	): Promise<PaginatedResponse<Content>> {
 		const queryParams: Record<string, string> = {};
 
@@ -23,6 +23,7 @@ export const contentsApi = {
 		if (params.from) queryParams.from = params.from;
 		if (params.to) queryParams.to = params.to;
 		if (params.category) queryParams.category = params.category;
+		if (params.search) queryParams.search = params.search;
 		if (params.tags) {
 			// tags 可能是字符串或数组
 			queryParams.tags = Array.isArray(params.tags)
