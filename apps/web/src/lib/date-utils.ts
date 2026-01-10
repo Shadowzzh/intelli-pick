@@ -115,6 +115,10 @@ export function getLastMonthRange(): DateRange {
  */
 export const DATE_RANGE_PRESETS: DateRangePreset[] = [
 	{
+		label: "全部",
+		range: () => ({ from: undefined, to: undefined }),
+	},
+	{
 		label: "今天",
 		range: getTodayRange,
 	},

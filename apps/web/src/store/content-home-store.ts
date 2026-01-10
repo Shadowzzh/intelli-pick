@@ -2,7 +2,7 @@ import type { DateRange } from "@/lib/date-utils";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface ContentFilters {
+export interface ContentFilters {
 	category?: string;
 	sourceIds?: string[];
 	tags?: string[];
@@ -31,6 +31,9 @@ interface ContentHomeState {
 	setViewMode: (mode: ViewMode) => void;
 	setCurrentPage: (page: number) => void;
 	resetFilters: () => void;
+	removeCategory: () => void;
+	removeTag: (tag: string) => void;
+	removeSourceId: (sourceId: string) => void;
 }
 
 export const useContentHomeStore = create<ContentHomeState>()(
@@ -67,6 +70,31 @@ export const useContentHomeStore = create<ContentHomeState>()(
 				set({
 					filters: {},
 				}),
+
+			removeCategory: () =>
+				set((state) => ({
+					filters: { ...state.filters, category: undefined },
+				})),
+
+			removeTag: (tagToRemove) =>
+				set((state) => ({
+					filters: {
+						...state.filters,
+						tags:
+							state.filters.tags?.filter((tag) => tag !== tagToRemove) || [],
+					},
+				})),
+
+			removeSourceId: (sourceIdToRemove) =>
+				set((state) => ({
+					filters: {
+						...state.filters,
+						sourceIds:
+							state.filters.sourceIds?.filter(
+								(id) => id !== sourceIdToRemove,
+							) || [],
+					},
+				})),
 		}),
 		{
 			name: "intellipick-content-home-storage",

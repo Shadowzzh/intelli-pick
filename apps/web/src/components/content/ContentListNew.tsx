@@ -1,3 +1,4 @@
+import { FilterDisplay } from "@/components/content/FilterDisplay";
 import { Widget } from "@/components/widgets/Widget";
 import { contentsApi } from "@/lib/api/contents";
 import { useContentHomeStore } from "@/store/content-home-store";
@@ -12,7 +13,15 @@ interface ContentListProps {
 }
 
 export function ContentListNew({ className }: ContentListProps) {
-	const { dateRange, filters, viewMode } = useContentHomeStore();
+	const {
+		dateRange,
+		filters,
+		viewMode,
+		removeCategory,
+		removeTag,
+		removeSourceId,
+		resetFilters,
+	} = useContentHomeStore();
 
 	// Build query params from store
 	// 将 Date 对象转换为 UTC ISO 字符串，以匹配数据库的 timestamp with time zone
@@ -40,6 +49,16 @@ export function ContentListNew({ className }: ContentListProps) {
 			icon={<Newspaper className="h-4 w-4" />}
 			className={className}
 		>
+			{/* Show filter summary */}
+			<FilterDisplay
+				className="mb-4"
+				filters={filters}
+				onRemoveCategory={removeCategory}
+				onRemoveTag={removeTag}
+				onRemoveSourceId={removeSourceId}
+				onClearAll={resetFilters}
+			/>
+
 			{isLoading && (
 				<div className="flex justify-center py-12">
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -73,26 +92,6 @@ export function ContentListNew({ className }: ContentListProps) {
 
 			{!isLoading && !error && items.length > 0 && (
 				<div className="space-y-3">
-					{/* Show filter summary */}
-					{(filters.category ||
-						filters.tags?.length ||
-						filters.sourceIds?.length) && (
-						<div className="flex items-center gap-2 text-sm text-muted-foreground pb-2 border-b">
-							<span>筛选:</span>
-							{filters.category && (
-								<span className="badge">{filters.category}</span>
-							)}
-							{filters.sourceIds?.length && (
-								<span className="badge">
-									{filters.sourceIds.length} 个数据源
-								</span>
-							)}
-							{filters.tags?.length && (
-								<span className="badge">{filters.tags.length} 个标签</span>
-							)}
-						</div>
-					)}
-
 					{/* Content items */}
 					{items.map((item: Content) => (
 						<ContentListItem key={item.id} item={item} viewMode={viewMode} />
