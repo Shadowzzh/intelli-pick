@@ -1,11 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
-import {
-	FileTextIcon,
-	HashIcon,
-	InboxIcon,
-	UsersIcon,
-} from "lucide-react";
+import { FileTextIcon, HashIcon, InboxIcon, UsersIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 type DefaultIconType = "default" | "tags" | "entities" | "contents";

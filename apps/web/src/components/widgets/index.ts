@@ -7,7 +7,10 @@ export type { WidgetSkeletonProps } from "./WidgetSkeleton";
 export { WidgetWithStates } from "./WidgetWithStates";
 export type { WidgetWithStatesProps } from "./WidgetWithStates";
 export { WidgetLoadingState } from "./WidgetLoadingState";
-export type { WidgetLoadingStateProps, WidgetLoadingStateVariant } from "./WidgetLoadingState";
+export type {
+	WidgetLoadingStateProps,
+	WidgetLoadingStateVariant,
+} from "./WidgetLoadingState";
 export { WidgetEmptyState } from "./WidgetEmptyState";
 export type { WidgetEmptyStateProps } from "./WidgetEmptyState";
 export { WidgetErrorState } from "./WidgetErrorState";

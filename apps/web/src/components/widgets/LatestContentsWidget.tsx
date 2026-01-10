@@ -1,7 +1,4 @@
-import {
-	WidgetLoadingState,
-	WidgetWithStates,
-} from "@/components/widgets";
+import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
 import { contentsApi } from "@/lib/api/contents";
 import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";

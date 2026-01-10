@@ -1,8 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import {
-	WidgetLoadingState,
-	WidgetWithStates,
-} from "@/components/widgets";
+import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
 import { type Entity, entitiesApi } from "@/lib/api/entities";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp } from "lucide-react";

@@ -20,7 +20,13 @@ export interface WidgetWithStatesProps<TData> {
 
 	// 状态配置（可选）
 	loading?: boolean | ReactNode;
-	empty?: boolean | { message?: string; icon?: ReactNode; iconType?: "default" | "tags" | "entities" | "contents" };
+	empty?:
+		| boolean
+		| {
+				message?: string;
+				icon?: ReactNode;
+				iconType?: "default" | "tags" | "entities" | "contents";
+		  };
 	error?: boolean | { message?: string; showDetails?: boolean };
 
 	// 成功状态渲染

@@ -37,12 +37,7 @@ export function WidgetErrorState({
 			<p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
 
 			{/* 操作按钮 */}
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={onRetry}
-				className="gap-2"
-			>
+			<Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
 				<RefreshCw className="h-3 w-3" />
 				重试
 			</Button>

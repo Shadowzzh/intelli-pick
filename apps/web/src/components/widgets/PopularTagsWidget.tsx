@@ -1,8 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import {
-	WidgetLoadingState,
-	WidgetWithStates,
-} from "@/components/widgets";
+import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
 import { useQuery } from "@tanstack/react-query";
 import { Hash } from "lucide-react";
 
