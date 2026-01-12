@@ -102,14 +102,20 @@ export function WidgetWithStates<TData>({
 			);
 		}
 
-		// 处理对象：检查所有值是否为空数组
+		// 处理对象：检查是否包含空数组字段
+		// 例如：{ categories: [], total: 0 } 或 { tags: [], total: 0 }
 		if (typeof data === "object") {
 			const values = Object.values(data);
-			// 如果所有值都是空数组，视为空
-			return (
-				values.length > 0 &&
-				values.every((v) => Array.isArray(v) && v.length === 0)
-			);
+			// 找出所有数组字段
+			const arrayValues = values.filter((v) => Array.isArray(v));
+
+			// 如果存在数组字段，检查是否所有数组都为空
+			if (arrayValues.length > 0) {
+				return arrayValues.every((arr) => arr.length === 0);
+			}
+
+			// 如果没有数组字段，不视为空
+			return false;
 		}
 
 		return false;
