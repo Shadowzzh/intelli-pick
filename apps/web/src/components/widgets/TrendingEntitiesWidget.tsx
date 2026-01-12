@@ -79,10 +79,11 @@ function EntityListItem({ entity, rank }: EntityListItemProps) {
 	};
 
 	return (
-		<div
+		<button
+			type="button"
 			onClick={handleClick}
 			className={`
-				flex items-center gap-2 px-2 py-1.5 rounded transition-colors cursor-pointer
+				flex items-center gap-2 px-2 py-1.5 rounded transition-colors cursor-pointer w-full text-left
 				${
 					isSelected
 						? "bg-primary/10 border-l-2 border-l-primary"
@@ -112,7 +113,7 @@ function EntityListItem({ entity, rank }: EntityListItemProps) {
 			<span className="text-xs text-muted-foreground">
 				{entity.mentionCount}
 			</span>
-		</div>
+		</button>
 	);
 }
 
