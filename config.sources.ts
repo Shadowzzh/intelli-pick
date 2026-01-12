@@ -2,15 +2,15 @@
 import type { SourceConfig } from "@intellipick/config";
 
 export const sources: SourceConfig[] = [
-	{
-		name: "Hacker News",
-		type: "rss",
-		enabled: false,
-		fetchInterval: 1800, // 1 小时
-		config: {
-			url: "https://hnrss.org/frontpage",
-		},
-	},
+	// {
+	// 	name: "Hacker News",
+	// 	type: "rss",
+	// 	enabled: false,
+	// 	fetchInterval: 1800, // 1 小时
+	// 	config: {
+	// 		url: "https://hnrss.org/frontpage",
+	// 	},
+	// },
 	{
 		name: "V2EX 热门",
 		type: "v2ex",
@@ -76,22 +76,23 @@ export const sources: SourceConfig[] = [
 			url: "http://localhost:1200/infoq/recommend", // 使用本地 RSSHub
 		},
 	},
-	{
-		name: "一觉醒来发生了什么 - 即刻圈子",
-		type: "rss",
-		enabled: true,
-		fetchInterval: 4 * 60 * 60, // 20 分钟
-		config: {
-			url: "http://localhost:1200/jike/topic/553870e8e4b0cafb0a1bef68", // 使用本地 RSSHub
-		},
-	},
+	// {
+	// 	name: "一觉醒来发生了什么 - 即刻圈子",
+	// 	type: "rss",
+	// 	enabled: true,
+	// 	fetchInterval: 4 * 60 * 60, // 20 分钟
+	// 	config: {
+	// 		url: "http://localhost:1200/jike/topic/553870e8e4b0cafb0a1bef68", // 使用本地 RSSHub
+	// 	},
+	// },
 	{
 		name: "极客公园",
 		type: "rss",
-		enabled: true,
-		fetchInterval: 30 * 60, // 20 分钟
+		enabled: false, // 禁用原因：网站存在 TLS/SSL 连接问题（Client network socket disconnected before secure TLS connection was established）
+		fetchInterval: 30 * 60, // 30 分钟
 		config: {
-			url: "https://www.geekpark.net/rss", // 使用本地 RSSHub
+			url: "http://localhost:1200/geekpark", // 使用 RSSHub 路由（但源站仍有 TLS 问题）
+			// 原始 RSS: url: "https://www.geekpark.net/rss", // 无法访问：TLS 错误
 		},
 	},
 	{

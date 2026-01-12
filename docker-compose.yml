@@ -107,14 +107,16 @@ services:
     depends_on:
       intellipick-redis:
         condition: service_healthy
+    env_file:
+      - .env.production
     environment:
       NODE_ENV: production
       CACHE_TYPE: redis
       # 使用生产环境的 Redis(在 Docker 网络中通过服务名访问)
       REDIS_URL: 'redis://intellipick-redis:6379/'
-      # 条件性代理配置(仅在设置了环境变量时启用)
-      HTTP_PROXY: ${RSSHUB_HTTP_PROXY:-}
-      HTTPS_PROXY: ${RSSHUB_HTTPS_PROXY:-}
+      # 代理配置（访问外网需要）
+      HTTP_PROXY: 'http://host.docker.internal:7890'
+      HTTPS_PROXY: 'http://host.docker.internal:7890'
       NO_PROXY: 'localhost,127.0.0.1,intellipick-redis,intellipick-db,intellipick-app'
     networks:
       - intellipick-network

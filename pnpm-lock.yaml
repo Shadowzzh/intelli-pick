@@ -387,6 +387,9 @@ importers:
       https-proxy-agent:
         specifier: ^7.0.6
         version: 7.0.6
+      rss-parser:
+        specifier: ^3.13.0
+        version: 3.13.0
       twitter-api-v2:
         specifier: ^1.18.0
         version: 1.28.0
