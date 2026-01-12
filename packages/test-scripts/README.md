@@ -40,10 +40,18 @@ pnpm --filter @intellipick/test-scripts run test:extract test-data/twitter-sampl
 ## 完整工作流程
 
 ### 1. 采集测试数据
+
+#### Twitter 采集
 ```bash
 pnpm --filter @intellipick/test-scripts run collect
 ```
 输出：`test-data/twitter-samples-{timestamp}.json`
+
+#### 极客公园 RSS 采集
+```bash
+pnpm --filter @intellipick/test-scripts run collect:geekpark
+```
+采集极客公园的最新文章并保存到 `test-data/` 目录。
 
 ### 2. 运行 AI 测试
 
