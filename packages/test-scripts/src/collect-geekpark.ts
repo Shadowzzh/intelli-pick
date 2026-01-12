@@ -6,6 +6,7 @@ import { loadConfig } from "@intellipick/config";
 import { type RawContent, toUTCISOString } from "@intellipick/shared";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import Parser from "rss-parser";
+import type { TestSample } from "./test-utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,16 +23,6 @@ function generateOutputFilename(): string {
 
 const OUTPUT_FILE = join(TEST_DATA_DIR, generateOutputFilename());
 
-interface TestSample {
-	metadata: {
-		collectedAt: string;
-		sourceName: string;
-		sourceType: string;
-		sourceUrl: string;
-		count: number;
-	};
-	samples: RawContent[];
-}
 
 /**
  * 极客公园 RSS 测试数据采集器
