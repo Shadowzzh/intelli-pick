@@ -15,6 +15,7 @@
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
 		"collect": "tsx src/collect-twitter.ts",
+		"collect:geekpark": "tsx src/collect-geekpark.ts",
 		"test:filter": "tsx src/test-ai-filter.ts",
 		"test:filter-verbose": "tsx src/test-ai-filter-verbose.ts",
 		"test:extract": "tsx src/test-ai-extract.ts",
@@ -31,6 +32,7 @@
 		"ai": "^4.0.0",
 		"drizzle-orm": "^0.38.0",
 		"https-proxy-agent": "^7.0.6",
+		"rss-parser": "^3.13.0",
 		"twitter-api-v2": "^1.18.0",
 		"zod": "^3.24.0"
 	},
