@@ -1,45 +1,23 @@
 import { Badge } from "@/components/ui/badge";
 import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
+import { tagsApi } from "@/lib/api/tags";
 import { useQuery } from "@tanstack/react-query";
 import { Hash } from "lucide-react";
-
-interface Tag {
-	name: string;
-	count: number;
-}
 
 export function PopularTagsWidget({
 	className,
 	headerClassName,
 	contentClassName,
+	limit = 15,
 }: {
 	className?: string;
 	headerClassName?: string;
 	contentClassName?: string;
+	limit?: number;
 }) {
-	const query = useQuery<Tag[]>({
-		queryKey: ["tags", "popular"],
-		queryFn: async () => {
-			// TODO: Replace with real API call
-			// return await api.get("/api/v1/tags/popular");
-			return [
-				{ name: "react", count: 342 },
-				{ name: "ai", count: 285 },
-				{ name: "typescript", count: 231 },
-				{ name: "nextjs", count: 187 },
-				{ name: "rust", count: 156 },
-				{ name: "python", count: 142 },
-				{ name: "machine-learning", count: 128 },
-				{ name: "web3", count: 95 },
-				{ name: "database", count: 87 },
-				{ name: "performance", count: 72 },
-				{ name: "security", count: 68 },
-				{ name: "testing", count: 54 },
-				{ name: "devops", count: 48 },
-				{ name: "frontend", count: 45 },
-				{ name: "backend", count: 42 },
-			];
-		},
+	const query = useQuery({
+		queryKey: tagsApi.queryKeys.popular({ limit }),
+		queryFn: () => tagsApi.getPopular({ limit }),
 	});
 
 	return (

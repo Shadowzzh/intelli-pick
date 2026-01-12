@@ -7,5 +7,8 @@ export * from "./types/api.js";
 export * from "./types/api-types.js";
 export * from "./types/pagination.js";
 export * from "./types/search.js";
+export * from "./types/graphql.js";
+export * from "./types/web-types.js";
+export * from "./types/errors.js";
 export * from "./constants/content-categories.js";
 export * from "./utils/time.js";

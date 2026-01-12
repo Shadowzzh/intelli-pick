@@ -29,7 +29,7 @@ export function WidgetErrorState({
 			)}
 		>
 			{/* 错误图标 */}
-			<div className=" mb-3">
+			<div className="text-destructive mb-3">
 				<AlertCircle className="h-8 w-8" />
 			</div>
 

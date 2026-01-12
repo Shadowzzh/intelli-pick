@@ -4,7 +4,9 @@ import type { PaginatedResponse, PaginationParams } from "@intellipick/shared";
 export interface Entity {
 	id: string;
 	name: string;
-	type: "person" | "organization" | "product" | "location" | "event" | "other";
+	type: string; // 动态类型，支持数据库中定义的任意类型
+	url?: string;
+	description?: string;
 	mentionCount: number;
 	firstSeenAt: string;
 	lastSeenAt: string;

@@ -85,6 +85,7 @@ export function Pagination({
 				onClick={handlePrevious}
 				disabled={currentPage === 1}
 				className={cn(
+					"cursor-pointer",
 					"h-8 px-2 flex items-center justify-center rounded-md transition-colors",
 					"hover:bg-muted",
 					"disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent",
@@ -106,6 +107,7 @@ export function Pagination({
 						onClick={() => handlePageClick(page)}
 						disabled={isEllipsis}
 						className={cn(
+							"cursor-pointer",
 							"h-8 min-w-8 px-2 flex items-center justify-center rounded-md text-sm transition-colors",
 							isCurrentPage && "bg-primary text-primary-foreground",
 							!isCurrentPage && !isEllipsis && "hover:bg-muted",

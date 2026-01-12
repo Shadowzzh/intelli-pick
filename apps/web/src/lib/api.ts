@@ -1,11 +1,12 @@
-import type { Content } from "@intellipick/db";
 import type {
 	ApiError,
 	ApiResponse,
-	ErrorCode,
+	GraphqlResponse,
+	GraphqlVariables,
 	PaginatedResponse,
 	PaginationParams,
 } from "@intellipick/shared";
+import { ApiRequestError } from "@intellipick/shared";
 // apps/web/src/lib/api.ts
 import axios, {
 	type AxiosError,
@@ -22,23 +23,9 @@ import axios, {
 const API_URL = import.meta.env.VITE_API_URL || "/";
 
 // ========== 类型定义 ==========
-
-/** GraphQL 变量类型 */
-type GraphqlVariables = Record<
-	string,
-	string | number | boolean | string[] | null | undefined
->;
-
-/** GraphQL 响应类型 */
-interface GraphqlResponse<T> {
-	data?: T;
-	errors?: Array<{
-		message: string;
-		extensions?: {
-			code: string;
-		};
-	}>;
-}
+// 注意: GraphQL 相关类型已移至 @intellipick/shared
+// 统计数据和 Web 特定类型已移至 @intellipick/shared
+// API 错误类已移至 @intellipick/shared
 
 /** 内容查询参数 */
 export interface ContentQueryParams extends PaginationParams {
@@ -47,35 +34,6 @@ export interface ContentQueryParams extends PaginationParams {
 	minScore?: number;
 	sortBy?: "date" | "score" | "relevance";
 	searchQuery?: string;
-}
-
-/** 内容列表响应 */
-export interface ContentListResponse {
-	items: Content[];
-	total: number;
-	nextPage?: number;
-}
-
-/** 统计数据 */
-export interface Stats {
-	totalContents: number;
-	totalEntities: number;
-	todayNew: number;
-	activeSources: number;
-}
-
-/** API 错误类 */
-export class ApiRequestError extends Error {
-	public readonly code: ErrorCode;
-	public readonly statusCode?: number;
-	public readonly details?: unknown;
-
-	constructor(error: ApiError) {
-		super(error.error.message);
-		this.name = "ApiRequestError";
-		this.code = error.error.code;
-		this.details = error.error.details;
-	}
 }
 
 // ========== Axios 实例 ==========
@@ -317,4 +275,4 @@ export const queryKeys = {
 
 // ========== 导出类型 ==========
 
-export type { GraphqlVariables };
+// 从 @intellipick/shared 导出的类型已在文件开头导入

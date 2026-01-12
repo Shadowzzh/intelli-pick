@@ -74,19 +74,28 @@ function EntityListItem({ entity, rank }: EntityListItemProps) {
 	);
 }
 
-function EntityTypeBadge({ type }: { type: Entity["type"] }) {
-	const typeLabels: Record<Entity["type"], string> = {
+function EntityTypeBadge({ type }: { type: string }) {
+	// 支持动态类型，提供常见类型的中文翻译
+	const typeLabels: Record<string, string> = {
 		person: "人物",
 		organization: "组织",
 		product: "产品",
 		location: "地点",
 		event: "事件",
 		other: "其他",
+		// 数据库中实际使用的类型
+		tool: "工具",
+		project: "项目",
+		library: "库",
+		article: "文章",
+		company: "公司",
 	};
+
+	const label = typeLabels[type] || type;
 
 	return (
 		<Badge variant="outline" className="text-xs px-1.5 py-0">
-			{typeLabels[type] || type}
+			{label}
 		</Badge>
 	);
 }

@@ -1,18 +1,15 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
+import { sourcesApi } from "@/lib/api/sources";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle, Rss } from "lucide-react";
 
-interface Source {
-	id: string;
-	name: string;
-	type: "rss" | "twitter" | "v2ex";
-	enabled: boolean;
-}
-
-const sourceTypeIcons = {
+const sourceTypeIcons: Record<
+	string,
+	React.ComponentType<{ className?: string }>
+> = {
 	rss: Rss,
 	twitter: MessageCircle,
 	v2ex: MessageCircle,
@@ -29,17 +26,9 @@ export function SourceFilterWidget({
 }) {
 	const { filters, setFilters } = useContentHomeStore();
 
-	const query = useQuery<Source[]>({
-		queryKey: ["sources"],
-		queryFn: async () => {
-			// TODO: Replace with real API call
-			return [
-				{ id: "1", name: "TechCrunch", type: "rss", enabled: true },
-				{ id: "2", name: "Hacker News", type: "rss", enabled: true },
-				{ id: "3", name: "V2EX", type: "v2ex", enabled: true },
-				{ id: "4", name: "Tech Twitter", type: "twitter", enabled: true },
-			];
-		},
+	const query = useQuery({
+		queryKey: sourcesApi.queryKeys.all(),
+		queryFn: () => sourcesApi.getAll(),
 	});
 
 	const handleSourceToggle = (sourceId: string) => {
@@ -65,18 +54,19 @@ export function SourceFilterWidget({
 				<div className="space-y-2">
 					{sources?.map((source) => {
 						const Icon = sourceTypeIcons[source.type];
-						const isChecked = filters.sourceIds?.includes(source.id);
+						const isChecked = !!filters.sourceIds?.includes(source.id);
 
 						return (
 							<div
 								key={source.id}
-								className="flex items-center space-x-2 px-2 py-1"
+								className="flex items-center space-x-2 px-2 py-1 cursor-pointer "
+								onKeyDown={() => handleSourceToggle(source.id)}
+								onClick={(e) => {
+									e.preventDefault();
+									handleSourceToggle(source.id);
+								}}
 							>
-								<Checkbox
-									id={`source-${source.id}`}
-									checked={isChecked}
-									onCheckedChange={() => handleSourceToggle(source.id)}
-								/>
+								<Checkbox id={`source-${source.id}`} checked={isChecked} />
 								<Label
 									htmlFor={`source-${source.id}`}
 									className="flex items-center gap-2 text-sm cursor-pointer flex-1"
