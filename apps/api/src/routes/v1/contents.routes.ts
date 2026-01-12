@@ -14,6 +14,13 @@ interface TagsQueryParams extends DatesQueryParams {
 	limit?: string;
 }
 
+interface StatsQueryParams extends DatesQueryParams {
+	category?: string;
+	tags?: string | string[];
+	sourceId?: string | string[];
+	entityIds?: string | string[];
+}
+
 /**
  * 将 tags 查询参数转换为数组格式
  * 支持逗号分隔的字符串或数组
@@ -143,28 +150,43 @@ export async function contentsRoutes(
 
 	// Get category statistics
 	app.get("/categories/stats", async (req) => {
-		const query = req.query as DatesQueryParams;
+		const query = req.query as StatsQueryParams;
 		const dateRange = parseDateRange(query);
 
-		const result = await service.getCategoryStats(dateRange);
+		const result = await service.getCategoryStats({
+			...dateRange,
+			sourceIds: parseSourceIds(query.sourceId),
+			tags: parseTags(query.tags),
+			entityIds: parseEntityIds(query.entityIds),
+		});
 		return result;
 	});
 
 	// Get popular tags
 	app.get("/tags/popular", async (req) => {
-		const query = req.query as TagsQueryParams;
+		const query = req.query as StatsQueryParams & { limit?: string };
 		const params = parseTagsQueryParams(query);
 
-		const result = await service.getPopularTags(params);
+		const result = await service.getPopularTags({
+			...params,
+			category: query.category,
+			sourceIds: parseSourceIds(query.sourceId),
+			entityIds: parseEntityIds(query.entityIds),
+		});
 		return result;
 	});
 
 	// Get source statistics
 	app.get("/sources/stats", async (req) => {
-		const query = req.query as DatesQueryParams;
+		const query = req.query as StatsQueryParams;
 		const dateRange = parseDateRange(query);
 
-		const result = await service.getSourceStats(dateRange);
+		const result = await service.getSourceStats({
+			...dateRange,
+			category: query.category,
+			tags: parseTags(query.tags),
+			entityIds: parseEntityIds(query.entityIds),
+		});
 		return result;
 	});
 }

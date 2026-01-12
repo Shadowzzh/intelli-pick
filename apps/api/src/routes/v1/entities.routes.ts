@@ -9,6 +9,8 @@ interface EntitiesQueryParams extends PaginationParams {
 	from?: string;
 	to?: string;
 	category?: string;
+	sourceId?: string | string[];
+	tags?: string | string[];
 }
 
 interface EntityContentsQueryParams extends PaginationParams {
@@ -62,6 +64,26 @@ function parseEntityContentsDateRange(params: EntityContentsQueryParams): {
 	return result;
 }
 
+/**
+ * 将 sourceIds 查询参数转换为数组格式
+ */
+function parseSourceIds(
+	sourceIds: string | string[] | undefined,
+): string[] | undefined {
+	if (!sourceIds) return undefined;
+	if (Array.isArray(sourceIds)) return sourceIds;
+	return sourceIds.split(",").map((id) => id.trim());
+}
+
+/**
+ * 将 tags 查询参数转换为数组格式
+ */
+function parseTags(tags: string | string[] | undefined): string[] | undefined {
+	if (!tags) return undefined;
+	if (Array.isArray(tags)) return tags;
+	return tags.split(",").map((tag) => tag.trim());
+}
+
 export async function entitiesRoutes(
 	app: FastifyInstance,
 	service: EntitiesService,
@@ -77,6 +99,8 @@ export async function entitiesRoutes(
 			limit,
 			...dateRange,
 			category: query.category,
+			sourceIds: parseSourceIds(query.sourceId),
+			tags: parseTags(query.tags),
 		});
 		return result;
 	});

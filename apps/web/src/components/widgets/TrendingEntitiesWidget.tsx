@@ -20,6 +20,8 @@ export function TrendingEntitiesWidget({
 		queryKey: entitiesApi.queryKeys.trending({
 			limit: 10,
 			category: filters.category,
+			sourceIds: filters.sourceIds,
+			tags: filters.tags,
 			from: dateRange.from?.toISOString(),
 			to: dateRange.to?.toISOString(),
 		}),
@@ -27,6 +29,8 @@ export function TrendingEntitiesWidget({
 			entitiesApi.getTrending({
 				limit: 10,
 				category: filters.category,
+				sourceIds: filters.sourceIds,
+				tags: filters.tags,
 				from: dateRange.from?.toISOString(),
 				to: dateRange.to?.toISOString(),
 			}),

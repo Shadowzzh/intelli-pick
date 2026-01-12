@@ -16,6 +16,51 @@ import {
 export class ContentsRepository {
 	constructor(private db: Database) {}
 
+	/**
+	 * Build reusable WHERE conditions for content filtering
+	 * Does not include entityIds (requires JOIN) or search (not needed for stats)
+	 */
+	private buildContentFilters(filters: {
+		category?: string;
+		tags?: string[];
+		sourceIds?: string[];
+		publishedAfter?: Date;
+		publishedBefore?: Date;
+	}): SQL[] {
+		const conditions: SQL[] = [];
+
+		if (filters.category) {
+			conditions.push(eq(contents.category, filters.category));
+		}
+
+		if (filters.tags && filters.tags.length > 0) {
+			const tagsList = filters.tags
+				.map((tag) => `'${tag.replace(/'/g, "''")}'`)
+				.join(", ");
+			conditions.push(
+				sql`EXISTS (
+					SELECT 1
+					FROM jsonb_array_elements_text(${contents.tags}) AS tag
+					WHERE tag IN (${sql.raw(tagsList)})
+				)`,
+			);
+		}
+
+		if (filters.sourceIds && filters.sourceIds.length > 0) {
+			conditions.push(inArray(contents.sourceId, filters.sourceIds));
+		}
+
+		if (filters.publishedAfter) {
+			conditions.push(gte(contents.publishedAt, filters.publishedAfter));
+		}
+
+		if (filters.publishedBefore) {
+			conditions.push(lte(contents.publishedAt, filters.publishedBefore));
+		}
+
+		return conditions;
+	}
+
 	async findById(id: string) {
 		const [result] = await this.db
 			.select()
@@ -367,19 +412,48 @@ export class ContentsRepository {
 	async findCategoryStats(params: {
 		from?: Date;
 		to?: Date;
+		sourceIds?: string[];
+		tags?: string[];
+		entityIds?: string[];
 	}): Promise<{ name: string; count: number; latestUpdate: Date }[]> {
-		const conditions = [];
+		// Use shared filter builder
+		const conditions = this.buildContentFilters({
+			publishedAfter: params.from,
+			publishedBefore: params.to,
+			sourceIds: params.sourceIds,
+			tags: params.tags,
+			// category not included - we're grouping by it
+		});
 
-		if (params.from) {
-			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(gte(contents.publishedAt, params.from));
+		// If entityIds provided, need to JOIN entity_mentions
+		if (params.entityIds && params.entityIds.length > 0) {
+			const { entityMentions } = await import("@intellipick/db");
+
+			conditions.push(inArray(entityMentions.entityId, params.entityIds));
+
+			const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+			const results = await this.db
+				.select({
+					name: contents.category,
+					count: sql<number>`count(DISTINCT ${contents.id})`,
+					latestUpdate: sql<Date>`max(${contents.publishedAt})`,
+				})
+				.from(contents)
+				.innerJoin(entityMentions, eq(entityMentions.contentId, contents.id))
+				.where(where || sql`1=1`)
+				.groupBy(contents.category)
+				.orderBy(desc(sql`count(DISTINCT ${contents.id})`));
+
+			return results
+				.filter((r) => r.name !== null)
+				.map((r) => ({
+					...r,
+					name: r.name as string,
+				}));
 		}
 
-		if (params.to) {
-			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(lte(contents.publishedAt, params.to));
-		}
-
+		// No entityIds - simpler query without JOIN
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
 		const results = await this.db
@@ -406,19 +480,43 @@ export class ContentsRepository {
 		from?: Date;
 		to?: Date;
 		limit?: number;
+		category?: string;
+		sourceIds?: string[];
+		entityIds?: string[];
 	}): Promise<{ name: string; count: number }[]> {
-		const conditions = [];
+		// Use shared filter builder
+		const conditions = this.buildContentFilters({
+			publishedAfter: params.from,
+			publishedBefore: params.to,
+			category: params.category,
+			sourceIds: params.sourceIds,
+			// tags not included - we're grouping by them
+		});
 
-		if (params.from) {
-			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(gte(contents.publishedAt, params.from));
+		// If entityIds provided, need to JOIN entity_mentions
+		if (params.entityIds && params.entityIds.length > 0) {
+			const { entityMentions } = await import("@intellipick/db");
+
+			conditions.push(inArray(entityMentions.entityId, params.entityIds));
+
+			const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+			const results = await this.db
+				.select({
+					name: sql<string>`jsonb_array_elements_text(${contents.tags})`,
+					count: sql<number>`count(DISTINCT ${contents.id})`,
+				})
+				.from(contents)
+				.innerJoin(entityMentions, eq(entityMentions.contentId, contents.id))
+				.where(where || sql`1=1`)
+				.groupBy(sql`jsonb_array_elements_text(${contents.tags})`)
+				.orderBy(desc(sql`count(DISTINCT ${contents.id})`))
+				.limit(params.limit || 50);
+
+			return results;
 		}
 
-		if (params.to) {
-			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(lte(contents.publishedAt, params.to));
-		}
-
+		// No entityIds - simpler query without JOIN
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
 		// Use PostgreSQL's jsonb_array_elements_text to unpack jsonb tags array
@@ -439,19 +537,45 @@ export class ContentsRepository {
 	async findSourceStats(params: {
 		from?: Date;
 		to?: Date;
+		category?: string;
+		tags?: string[];
+		entityIds?: string[];
 	}): Promise<{ id: string; name: string; type: string; count: number }[]> {
-		const conditions = [];
+		// Use shared filter builder
+		const conditions = this.buildContentFilters({
+			publishedAfter: params.from,
+			publishedBefore: params.to,
+			category: params.category,
+			tags: params.tags,
+			// sourceIds not included - we're grouping by sources
+		});
 
-		if (params.from) {
-			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(gte(contents.publishedAt, params.from));
+		// If entityIds provided, need to JOIN entity_mentions
+		if (params.entityIds && params.entityIds.length > 0) {
+			const { entityMentions } = await import("@intellipick/db");
+
+			conditions.push(inArray(entityMentions.entityId, params.entityIds));
+
+			const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+			const results = await this.db
+				.select({
+					id: sources.id,
+					name: sources.name,
+					type: sources.type,
+					count: sql<number>`count(DISTINCT ${contents.id})`,
+				})
+				.from(contents)
+				.innerJoin(sources, eq(contents.sourceId, sources.id))
+				.innerJoin(entityMentions, eq(entityMentions.contentId, contents.id))
+				.where(where || sql`1=1`)
+				.groupBy(sources.id, sources.name, sources.type)
+				.orderBy(desc(sql`count(DISTINCT ${contents.id})`));
+
+			return results;
 		}
 
-		if (params.to) {
-			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(lte(contents.publishedAt, params.to));
-		}
-
+		// No entityIds - simpler query without entity_mentions JOIN
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
 		// Join with sources table to get source name and type

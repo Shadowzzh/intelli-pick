@@ -17,11 +17,13 @@ interface EntitiesQueryParams extends PaginationParams {
 	from?: string;
 	to?: string;
 	category?: string;
+	sourceIds?: string[];
+	tags?: string[];
 }
 
 export const entitiesApi = {
 	/**
-	 * Fetch trending entities
+	 * Fetch trending entities with filters
 	 */
 	async getTrending(
 		params?: EntitiesQueryParams,
@@ -33,6 +35,9 @@ export const entitiesApi = {
 		if (params?.from) queryParams.from = params.from;
 		if (params?.to) queryParams.to = params.to;
 		if (params?.category) queryParams.category = params.category;
+		if (params?.sourceIds?.length)
+			queryParams.sourceId = params.sourceIds.join(",");
+		if (params?.tags?.length) queryParams.tags = params.tags.join(",");
 
 		return api.getPaginated<Entity>("/api/v1/entities", queryParams);
 	},

@@ -32,11 +32,17 @@ export function SourceFilterWidget({
 		queryKey: contentsApi.queryKeys.sources({
 			from: dateRange.from?.toISOString(),
 			to: dateRange.to?.toISOString(),
+			category: filters.category,
+			tags: filters.tags,
+			entityIds: filters.entityIds,
 		}),
 		queryFn: () =>
 			contentsApi.getSourceStats({
 				from: dateRange.from?.toISOString(),
 				to: dateRange.to?.toISOString(),
+				category: filters.category,
+				tags: filters.tags,
+				entityIds: filters.entityIds,
 			}),
 	});
 

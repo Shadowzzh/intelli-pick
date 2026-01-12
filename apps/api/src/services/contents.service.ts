@@ -87,7 +87,13 @@ export class ContentsService {
 		};
 	}
 
-	async getCategoryStats(params: { from?: Date; to?: Date }) {
+	async getCategoryStats(params: {
+		from?: Date;
+		to?: Date;
+		sourceIds?: string[];
+		tags?: string[];
+		entityIds?: string[];
+	}) {
 		const results = await this.contentsRepo.findCategoryStats(params);
 
 		const total = results.reduce((sum, r) => sum + r.count, 0);
@@ -105,6 +111,9 @@ export class ContentsService {
 		from?: Date;
 		to?: Date;
 		limit?: number;
+		category?: string;
+		sourceIds?: string[];
+		entityIds?: string[];
 	}) {
 		const results = await this.contentsRepo.findPopularTags(params);
 
@@ -119,7 +128,13 @@ export class ContentsService {
 		};
 	}
 
-	async getSourceStats(params: { from?: Date; to?: Date }) {
+	async getSourceStats(params: {
+		from?: Date;
+		to?: Date;
+		category?: string;
+		tags?: string[];
+		entityIds?: string[];
+	}) {
 		const results = await this.contentsRepo.findSourceStats(params);
 
 		const total = results.reduce((sum, r) => sum + r.count, 0);

@@ -22,11 +22,17 @@ export function CategoryNavWidget({
 		queryKey: contentsApi.queryKeys.categories({
 			from: dateRange.from?.toISOString(),
 			to: dateRange.to?.toISOString(),
+			sourceIds: filters.sourceIds,
+			tags: filters.tags,
+			entityIds: filters.entityIds,
 		}),
 		queryFn: () =>
 			contentsApi.getCategoryStats({
 				from: dateRange.from?.toISOString(),
 				to: dateRange.to?.toISOString(),
+				sourceIds: filters.sourceIds,
+				tags: filters.tags,
+				entityIds: filters.entityIds,
 			}),
 	});
 

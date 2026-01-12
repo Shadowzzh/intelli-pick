@@ -22,12 +22,18 @@ export function TagFilterWidget({
 		queryKey: contentsApi.queryKeys.tags({
 			from: dateRange.from?.toISOString(),
 			to: dateRange.to?.toISOString(),
+			category: filters.category,
+			sourceIds: filters.sourceIds,
+			entityIds: filters.entityIds,
 		}),
 		queryFn: () =>
 			contentsApi.getPopularTags({
 				limit: 50,
 				from: dateRange.from?.toISOString(),
 				to: dateRange.to?.toISOString(),
+				category: filters.category,
+				sourceIds: filters.sourceIds,
+				entityIds: filters.entityIds,
 			}),
 	});
 

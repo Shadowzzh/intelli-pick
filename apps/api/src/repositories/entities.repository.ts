@@ -2,7 +2,7 @@
 import { entityMentions } from "@intellipick/db";
 import { entities } from "@intellipick/db";
 import type { Database } from "@intellipick/db";
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 
 export class EntitiesRepository {
 	constructor(private db: Database) {}
@@ -36,12 +36,42 @@ export class EntitiesRepository {
 		lastMentionedAfter?: Date;
 		lastMentionedBefore?: Date;
 		category?: string;
+		sourceIds?: string[];
+		tags?: string[];
 	}) {
-		// 如果有 category 筛选，需要 JOIN contents 表
-		if (options.category) {
-			const { contents } = await import("@intellipick/db");
-			const conditions = [eq(contents.category, options.category)];
+		// 如果有任何 content 筛选条件，需要 JOIN contents 表
+		const needsContentJoin =
+			options.category || options.sourceIds || options.tags;
 
+		if (needsContentJoin) {
+			const { contents } = await import("@intellipick/db");
+			const conditions = [];
+
+			// 分类筛选
+			if (options.category) {
+				conditions.push(eq(contents.category, options.category));
+			}
+
+			// 数据源筛选
+			if (options.sourceIds && options.sourceIds.length > 0) {
+				conditions.push(inArray(contents.sourceId, options.sourceIds));
+			}
+
+			// 标签筛选
+			if (options.tags && options.tags.length > 0) {
+				const tagsList = options.tags
+					.map((tag) => `'${tag.replace(/'/g, "''")}'`)
+					.join(", ");
+				conditions.push(
+					sql`EXISTS (
+						SELECT 1
+						FROM jsonb_array_elements_text(${contents.tags}) AS tag
+						WHERE tag IN (${sql.raw(tagsList)})
+					)`,
+				);
+			}
+
+			// 日期筛选
 			if (options.lastMentionedAfter) {
 				conditions.push(
 					gte(entities.lastMentionedAt, options.lastMentionedAfter),
@@ -56,7 +86,7 @@ export class EntitiesRepository {
 
 			const where = and(...conditions);
 
-			// 通过 entity_mentions 和 contents 表关联，筛选该分类下的实体
+			// 通过 entity_mentions 和 contents 表关联
 			return this.db
 				.selectDistinct({
 					id: entities.id,
@@ -79,7 +109,7 @@ export class EntitiesRepository {
 				.offset(options.offset);
 		}
 
-		// 没有 category 筛选时，保持原有逻辑
+		// 没有 content 筛选时，保持原有逻辑
 		const conditions = [];
 
 		if (options.lastMentionedAfter) {
@@ -117,11 +147,37 @@ export class EntitiesRepository {
 		lastMentionedAfter?: Date;
 		lastMentionedBefore?: Date;
 		category?: string;
+		sourceIds?: string[];
+		tags?: string[];
 	}): Promise<number> {
-		// 如果有 category 筛选，需要 JOIN contents 表
-		if (options?.category) {
+		// 如果有任何 content 筛选条件，需要 JOIN contents 表
+		const needsContentJoin =
+			options?.category || options?.sourceIds || options?.tags;
+
+		if (needsContentJoin) {
 			const { contents } = await import("@intellipick/db");
-			const conditions = [eq(contents.category, options.category)];
+			const conditions = [];
+
+			if (options.category) {
+				conditions.push(eq(contents.category, options.category));
+			}
+
+			if (options.sourceIds && options.sourceIds.length > 0) {
+				conditions.push(inArray(contents.sourceId, options.sourceIds));
+			}
+
+			if (options.tags && options.tags.length > 0) {
+				const tagsList = options.tags
+					.map((tag) => `'${tag.replace(/'/g, "''")}'`)
+					.join(", ");
+				conditions.push(
+					sql`EXISTS (
+						SELECT 1
+						FROM jsonb_array_elements_text(${contents.tags}) AS tag
+						WHERE tag IN (${sql.raw(tagsList)})
+					)`,
+				);
+			}
 
 			if (options.lastMentionedAfter) {
 				conditions.push(
@@ -148,7 +204,7 @@ export class EntitiesRepository {
 			return result.count;
 		}
 
-		// 没有 category 筛选时，保持原有逻辑
+		// 没有 content 筛选时，保持原有逻辑
 		const conditions = [];
 
 		if (options?.lastMentionedAfter) {

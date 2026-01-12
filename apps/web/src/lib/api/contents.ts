@@ -47,15 +47,23 @@ export const contentsApi = {
 	},
 
 	/**
-	 * Fetch category statistics
+	 * Fetch category statistics with filters
 	 */
 	async getCategoryStats(params?: {
 		from?: string;
 		to?: string;
+		sourceIds?: string[];
+		tags?: string[];
+		entityIds?: string[];
 	}): Promise<CategoryStatsResponseData> {
 		const queryParams: Record<string, string> = {};
 		if (params?.from) queryParams.from = params.from;
 		if (params?.to) queryParams.to = params.to;
+		if (params?.sourceIds?.length)
+			queryParams.sourceId = params.sourceIds.join(",");
+		if (params?.tags?.length) queryParams.tags = params.tags.join(",");
+		if (params?.entityIds?.length)
+			queryParams.entityIds = params.entityIds.join(",");
 
 		const queryString = new URLSearchParams(queryParams).toString();
 		const url = queryString
@@ -66,15 +74,24 @@ export const contentsApi = {
 	},
 
 	/**
-	 * Fetch popular tags
+	 * Fetch popular tags with filters
 	 */
 	async getPopularTags(
-		params?: PopularTagsQueryParams,
+		params?: PopularTagsQueryParams & {
+			category?: string;
+			sourceIds?: string[];
+			entityIds?: string[];
+		},
 	): Promise<PopularTagsResponseData> {
 		const queryParams: Record<string, string> = {};
 		if (params?.from) queryParams.from = params.from;
 		if (params?.to) queryParams.to = params.to;
 		if (params?.limit) queryParams.limit = params.limit.toString();
+		if (params?.category) queryParams.category = params.category;
+		if (params?.sourceIds?.length)
+			queryParams.sourceId = params.sourceIds.join(",");
+		if (params?.entityIds?.length)
+			queryParams.entityIds = params.entityIds.join(",");
 
 		const queryString = new URLSearchParams(queryParams).toString();
 		const url = queryString
@@ -85,15 +102,22 @@ export const contentsApi = {
 	},
 
 	/**
-	 * Fetch source statistics
+	 * Fetch source statistics with filters
 	 */
 	async getSourceStats(params?: {
 		from?: string;
 		to?: string;
+		category?: string;
+		tags?: string[];
+		entityIds?: string[];
 	}): Promise<SourceStatsResponseData> {
 		const queryParams: Record<string, string> = {};
 		if (params?.from) queryParams.from = params.from;
 		if (params?.to) queryParams.to = params.to;
+		if (params?.category) queryParams.category = params.category;
+		if (params?.tags?.length) queryParams.tags = params.tags.join(",");
+		if (params?.entityIds?.length)
+			queryParams.entityIds = params.entityIds.join(",");
 
 		const queryString = new URLSearchParams(queryParams).toString();
 		const url = queryString
@@ -111,11 +135,26 @@ export const contentsApi = {
 		filtered: (params: ContentQueryParams) =>
 			["contents", "filtered", params] as const,
 		detail: (id: string) => ["contents", "detail", id] as const,
-		categories: (params?: { from?: string; to?: string }) =>
-			["categories", "stats", params] as const,
-		tags: (params?: PopularTagsQueryParams) =>
-			["tags", "popular", params] as const,
-		sources: (params?: { from?: string; to?: string }) =>
-			["sources", "stats", params] as const,
+		categories: (params?: {
+			from?: string;
+			to?: string;
+			sourceIds?: string[];
+			tags?: string[];
+			entityIds?: string[];
+		}) => ["categories", "stats", params] as const,
+		tags: (
+			params?: PopularTagsQueryParams & {
+				category?: string;
+				sourceIds?: string[];
+				entityIds?: string[];
+			},
+		) => ["tags", "popular", params] as const,
+		sources: (params?: {
+			from?: string;
+			to?: string;
+			category?: string;
+			tags?: string[];
+			entityIds?: string[];
+		}) => ["sources", "stats", params] as const,
 	},
 };
