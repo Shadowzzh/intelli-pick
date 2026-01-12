@@ -115,6 +115,8 @@ axiosInstance.interceptors.response.use(
 		const endTime = Date.now();
 		const duration = endTime - (response.config.metadata?.startTime || endTime);
 
+		throw new Error();
+
 		// 开发环境下打印请求日志
 		if (import.meta.env.DEV) {
 			console.log(

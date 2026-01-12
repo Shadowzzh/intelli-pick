@@ -2,6 +2,11 @@ import { FilterDisplay } from "@/components/content/FilterDisplay";
 import { SearchBox } from "@/components/content/SearchBox";
 import { ViewModeToggle } from "@/components/content/ViewModeToggle";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+	WidgetEmptyState,
+	WidgetErrorState,
+	WidgetLoadingState,
+} from "@/components/widgets";
 import { Widget } from "@/components/widgets/Widget";
 import { contentsApi } from "@/lib/api/contents";
 import { useContentHomeStore } from "@/store/content-home-store";
@@ -9,7 +14,7 @@ import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { Loader2, Newspaper } from "lucide-react";
+import { Newspaper } from "lucide-react";
 
 interface ContentListProps {
 	className?: string;
@@ -110,51 +115,30 @@ export function ContentListNew({
 				onClearAll={resetFilters}
 			/>
 
-			{isLoading && (
-				<div className="flex flex-col items-center justify-center py-16">
-					<Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
-					<p className="text-sm text-muted-foreground">加载中...</p>
-				</div>
-			)}
+			{/* Loading state */}
+			{isLoading && <WidgetLoadingState lines={5} variant="card" />}
 
+			{/* Error state */}
 			{error && (
-				<div className="flex flex-col items-center justify-center py-16 px-4">
-					<div className="w-16 h-16 mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
-						<Newspaper className="h-8 w-8 text-destructive/60" />
-					</div>
-					<p className="text-destructive font-medium mb-2">加载失败</p>
-					<p className="text-sm text-muted-foreground/70 mb-4 max-w-md text-center">
-						{(error as Error).message}
-					</p>
-					<button
-						type="button"
-						onClick={() => refetch()}
-						className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-					>
-						重试
-					</button>
-				</div>
+				<WidgetErrorState
+					error={error as Error}
+					onRetry={() => refetch()}
+					message="加载失败"
+				/>
 			)}
 
+			{/* Empty state */}
 			{!isLoading && !error && items.length === 0 && (
-				<div className="flex flex-col items-center justify-center py-16 px-4">
-					<div className="w-16 h-16 mb-4 rounded-full bg-muted/50 flex items-center justify-center">
-						<Newspaper className="h-8 w-8 text-muted-foreground/60" />
-					</div>
-					<p className="text-muted-foreground font-medium mb-2">
-						{searchQuery ? "没有找到匹配的内容" : "没有找到内容"}
-					</p>
-					<p className="text-sm text-muted-foreground/70 text-center max-w-md">
-						{searchQuery
-							? "试试调整搜索关键词或清除搜索条件"
-							: "试试调整筛选条件或选择其他日期范围"}
-					</p>
-				</div>
+				<WidgetEmptyState
+					message={
+						searchQuery ? "没有找到匹配的内容" : "没有找到内容"
+					}
+				/>
 			)}
 
+			{/* Content items */}
 			{!isLoading && !error && items.length > 0 && (
 				<div className="space-y-3">
-					{/* Content items */}
 					{items.map((item: Content, index: number) => (
 						<ContentListItem
 							key={item.id}
