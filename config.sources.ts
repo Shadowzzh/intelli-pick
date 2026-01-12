@@ -77,15 +77,6 @@ export const sources: SourceConfig[] = [
 		},
 	},
 	{
-		name: "月球背面",
-		type: "rss",
-		enabled: true,
-		fetchInterval: 2 * 60 * 60, // 20 分钟
-		config: {
-			url: "https://moonvy.com/blog/rss.xml", // 使用本地 RSSHub
-		},
-	},
-	{
 		name: "一觉醒来发生了什么 - 即刻圈子",
 		type: "rss",
 		enabled: true,
