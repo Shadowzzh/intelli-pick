@@ -118,8 +118,6 @@ services:
       HTTP_PROXY: 'http://host.docker.internal:7890'
       HTTPS_PROXY: 'http://host.docker.internal:7890'
       NO_PROXY: 'localhost,127.0.0.1,intellipick-redis,intellipick-db,intellipick-app'
-      # GitHub Access Token (GitHub trending 等路由需要)
-      GITHUB_ACCESS_TOKEN: ${GITHUB_ACCESS_TOKEN:-}
     networks:
       - intellipick-network
     healthcheck:
