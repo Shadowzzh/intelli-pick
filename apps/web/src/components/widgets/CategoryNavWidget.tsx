@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { Folder } from "lucide-react";
+import { useEffect } from "react";
 
 export function CategoryNavWidget({
 	className,
@@ -15,12 +16,31 @@ export function CategoryNavWidget({
 	headerClassName?: string;
 	contentClassName?: string;
 }) {
-	const { filters, setFilters } = useContentHomeStore();
+	const { filters, setFilters, dateRange } = useContentHomeStore();
 
 	const query = useQuery({
-		queryKey: contentsApi.queryKeys.categories(),
-		queryFn: () => contentsApi.getCategoryStats(),
+		queryKey: contentsApi.queryKeys.categories({
+			from: dateRange.from?.toISOString(),
+			to: dateRange.to?.toISOString(),
+		}),
+		queryFn: () =>
+			contentsApi.getCategoryStats({
+				from: dateRange.from?.toISOString(),
+				to: dateRange.to?.toISOString(),
+			}),
 	});
+
+	// 如果当前选中的 category 不在查询结果中，自动清除筛选
+	useEffect(() => {
+		if (query.data?.categories && filters.category) {
+			const categoryExists = query.data.categories.some(
+				(cat) => cat.name === filters.category,
+			);
+			if (!categoryExists) {
+				setFilters({ category: undefined });
+			}
+		}
+	}, [query.data, filters.category, setFilters]);
 
 	const handleCategoryClick = (category: string) => {
 		// Toggle category filter

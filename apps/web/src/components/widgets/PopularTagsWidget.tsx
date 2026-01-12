@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
 import { tagsApi } from "@/lib/api/tags";
+import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { Hash } from "lucide-react";
 
@@ -15,9 +16,20 @@ export function PopularTagsWidget({
 	contentClassName?: string;
 	limit?: number;
 }) {
+	const { dateRange } = useContentHomeStore();
+
 	const query = useQuery({
-		queryKey: tagsApi.queryKeys.popular({ limit }),
-		queryFn: () => tagsApi.getPopular({ limit }),
+		queryKey: tagsApi.queryKeys.popular({
+			limit,
+			from: dateRange.from?.toISOString(),
+			to: dateRange.to?.toISOString(),
+		}),
+		queryFn: () =>
+			tagsApi.getPopular({
+				limit,
+				from: dateRange.from?.toISOString(),
+				to: dateRange.to?.toISOString(),
+			}),
 	});
 
 	return (

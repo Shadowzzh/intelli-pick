@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
 import { type Entity, entitiesApi } from "@/lib/api/entities";
+import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp } from "lucide-react";
 
@@ -13,9 +14,20 @@ export function TrendingEntitiesWidget({
 	headerClassName?: string;
 	contentClassName?: string;
 }) {
+	const { dateRange } = useContentHomeStore();
+
 	const query = useQuery({
-		queryKey: entitiesApi.queryKeys.trending({ limit: 10 }),
-		queryFn: () => entitiesApi.getTrending({ limit: 10 }),
+		queryKey: entitiesApi.queryKeys.trending({
+			limit: 10,
+			from: dateRange.from?.toISOString(),
+			to: dateRange.to?.toISOString(),
+		}),
+		queryFn: () =>
+			entitiesApi.getTrending({
+				limit: 10,
+				from: dateRange.from?.toISOString(),
+				to: dateRange.to?.toISOString(),
+			}),
 	});
 
 	return (

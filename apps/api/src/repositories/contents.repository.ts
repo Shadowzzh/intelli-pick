@@ -171,11 +171,8 @@ export class ContentsRepository {
 		}
 
 		if (params.to) {
-			// Include the entire end day
-			const endOfDay = new Date(params.to);
-			endOfDay.setHours(23, 59, 59, 999);
 			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(lte(contents.publishedAt, endOfDay));
+			conditions.push(lte(contents.publishedAt, params.to));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -205,11 +202,8 @@ export class ContentsRepository {
 		}
 
 		if (params.to) {
-			// Include the entire end day
-			const endOfDay = new Date(params.to);
-			endOfDay.setHours(23, 59, 59, 999);
 			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(lte(contents.publishedAt, endOfDay));
+			conditions.push(lte(contents.publishedAt, params.to));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -247,11 +241,8 @@ export class ContentsRepository {
 		}
 
 		if (params.to) {
-			// Include the entire end day
-			const endOfDay = new Date(params.to);
-			endOfDay.setHours(23, 59, 59, 999);
 			// 直接使用 Date 对象，PostgreSQL 自动处理 UTC 时区
-			conditions.push(lte(contents.publishedAt, endOfDay));
+			conditions.push(lte(contents.publishedAt, params.to));
 		}
 
 		const where = conditions.length > 0 ? and(...conditions) : undefined;

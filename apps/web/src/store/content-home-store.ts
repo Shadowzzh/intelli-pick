@@ -62,27 +62,30 @@ export const useContentHomeStore = create<ContentHomeState>()(
 			// Actions
 			setSelectedDate: (date) => set({ selectedDate: date }),
 
-			setDateRange: (range) => set({ dateRange: range }),
+			setDateRange: (range) => set({ dateRange: range, currentPage: 1 }),
 
 			setFilters: (newFilters) =>
 				set((state) => ({
 					filters: { ...state.filters, ...newFilters },
+					currentPage: 1,
 				})),
 
 			setViewMode: (mode) => set({ viewMode: mode }),
 
 			setCurrentPage: (page) => set({ currentPage: page }),
 
-			setSearchQuery: (query) => set({ searchQuery: query }),
+			setSearchQuery: (query) => set({ searchQuery: query, currentPage: 1 }),
 
 			resetFilters: () =>
 				set({
 					filters: {},
+					currentPage: 1,
 				}),
 
 			removeCategory: () =>
 				set((state) => ({
 					filters: { ...state.filters, category: undefined },
+					currentPage: 1,
 				})),
 
 			removeTag: (tagToRemove) =>
@@ -92,6 +95,7 @@ export const useContentHomeStore = create<ContentHomeState>()(
 						tags:
 							state.filters.tags?.filter((tag) => tag !== tagToRemove) || [],
 					},
+					currentPage: 1,
 				})),
 
 			removeSourceId: (sourceIdToRemove) =>
@@ -103,6 +107,7 @@ export const useContentHomeStore = create<ContentHomeState>()(
 								(id) => id !== sourceIdToRemove,
 							) || [],
 					},
+					currentPage: 1,
 				})),
 		}),
 		{

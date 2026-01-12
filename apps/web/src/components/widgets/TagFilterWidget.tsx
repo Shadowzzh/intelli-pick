@@ -5,6 +5,7 @@ import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { Tag as TagIcon } from "lucide-react";
 import { X } from "lucide-react";
+import { useEffect } from "react";
 
 export function TagFilterWidget({
 	className,
@@ -29,6 +30,23 @@ export function TagFilterWidget({
 				to: dateRange.to?.toISOString(),
 			}),
 	});
+
+	// 如果当前选中的标签不在查询结果中，自动清除不存在的标签
+	useEffect(() => {
+		if (query.data?.tags && filters.tags && filters.tags.length > 0) {
+			const availableTagNames = new Set(query.data.tags.map((tag) => tag.name));
+			const validTags = filters.tags.filter((tag) =>
+				availableTagNames.has(tag),
+			);
+
+			// 如果有标签被过滤掉了，更新筛选条件
+			if (validTags.length !== filters.tags.length) {
+				setFilters({
+					tags: validTags.length > 0 ? validTags : undefined,
+				});
+			}
+		}
+	}, [query.data, filters.tags, setFilters]);
 
 	const selectedTags = filters.tags || [];
 

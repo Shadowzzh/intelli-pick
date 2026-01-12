@@ -97,7 +97,9 @@ export function WidgetWithStates<TData>({
 			"meta" in data
 		) {
 			const paginatedData = data as { data: unknown };
-			return Array.isArray(paginatedData.data) && paginatedData.data.length === 0;
+			return (
+				Array.isArray(paginatedData.data) && paginatedData.data.length === 0
+			);
 		}
 
 		// 处理对象：检查所有值是否为空数组
