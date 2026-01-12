@@ -11,6 +11,17 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# 加载 .env 文件
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ENV_FILE="$PROJECT_ROOT/.env"
+
+if [ -f "$ENV_FILE" ]; then
+  echo -e "${GREEN}正在加载 .env 文件...${NC}"
+  # 导出 .env 文件中的变量（忽略注释和空行）
+  export $(grep -v '^#' "$ENV_FILE" | grep -v '^$' | xargs)
+fi
+
 echo -e "${YELLOW}⚠️  警告：此操作将清空所有数据库数据！${NC}"
 echo -e "${YELLOW}包含的表：contents, entities, entity_mentions, tags, quarantine, sources${NC}"
 echo ""

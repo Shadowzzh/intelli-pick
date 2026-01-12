@@ -9,12 +9,7 @@ interface PageHeaderProps {
 	themeToggle?: React.ReactNode;
 }
 
-export function PageHeader({
-	pages,
-	currentPage,
-	onPageChange,
-	themeToggle = <ThemeToggle />,
-}: PageHeaderProps) {
+export function PageHeader({ themeToggle = <ThemeToggle /> }: PageHeaderProps) {
 	const { isRefreshing, refreshAll } = useRefreshAll();
 
 	return (
@@ -24,24 +19,6 @@ export function PageHeader({
 				<div className="flex items-center gap-2">
 					<div className="text-xl font-bold text-primary">I</div>
 					<span className="text-base font-bold">IntelliPick</span>
-				</div>
-
-				{/* Page 导航 */}
-				<div className="flex items-center gap-1">
-					{pages.map((page) => (
-						<button
-							key={page}
-							type="button"
-							className={`cursor-pointer px-3 py-1 text-sm transition-colors border-b-2 ${
-								currentPage === page
-									? "border-primary text-foreground"
-									: "border-transparent text-muted-foreground hover:border-muted-foreground hover:text-foreground"
-							}`}
-							onClick={() => onPageChange(page)}
-						>
-							Page {page}
-						</button>
-					))}
 				</div>
 
 				{/* 右侧按钮组 */}
