@@ -1,10 +1,12 @@
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { WidgetLoadingState, WidgetWithStates } from "@/components/widgets";
-import { sourcesApi } from "@/lib/api/sources";
+import { contentsApi } from "@/lib/api/contents";
 import { useContentHomeStore } from "@/store/content-home-store";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle, Rss } from "lucide-react";
+import { useEffect } from "react";
 
 const sourceTypeIcons: Record<
 	string,
@@ -24,12 +26,40 @@ export function SourceFilterWidget({
 	headerClassName?: string;
 	contentClassName?: string;
 }) {
-	const { filters, setFilters } = useContentHomeStore();
+	const { filters, setFilters, dateRange } = useContentHomeStore();
 
 	const query = useQuery({
-		queryKey: sourcesApi.queryKeys.all(),
-		queryFn: () => sourcesApi.getAll(),
+		queryKey: contentsApi.queryKeys.sources({
+			from: dateRange.from?.toISOString(),
+			to: dateRange.to?.toISOString(),
+		}),
+		queryFn: () =>
+			contentsApi.getSourceStats({
+				from: dateRange.from?.toISOString(),
+				to: dateRange.to?.toISOString(),
+			}),
 	});
+
+	// 如果当前选中的 sourceIds 不在查询结果中，自动清除不存在的 sourceIds
+	useEffect(() => {
+		if (
+			query.data?.sources &&
+			filters.sourceIds &&
+			filters.sourceIds.length > 0
+		) {
+			const availableSourceIds = new Set(query.data.sources.map((s) => s.id));
+			const validSourceIds = filters.sourceIds.filter((id) =>
+				availableSourceIds.has(id),
+			);
+
+			// 如果有 sourceId 被过滤掉了，更新筛选条件
+			if (validSourceIds.length !== filters.sourceIds.length) {
+				setFilters({
+					sourceIds: validSourceIds.length > 0 ? validSourceIds : undefined,
+				});
+			}
+		}
+	}, [query.data, filters.sourceIds, setFilters]);
 
 	const handleSourceToggle = (sourceId: string) => {
 		const current = filters.sourceIds || [];
@@ -50,7 +80,7 @@ export function SourceFilterWidget({
 			loading={<WidgetLoadingState lines={4} />}
 			empty={{ message: "暂无数据源" }}
 		>
-			{(sources) => (
+			{({ sources }) => (
 				<div className="space-y-2">
 					{sources?.map((source) => {
 						const Icon = sourceTypeIcons[source.type];
@@ -74,6 +104,9 @@ export function SourceFilterWidget({
 									<Icon className="h-3 w-3 text-muted-foreground" />
 									<span className="truncate">{source.name}</span>
 								</Label>
+								<Badge variant="secondary" className="text-xs">
+									{source.count}
+								</Badge>
 							</div>
 						);
 					})}

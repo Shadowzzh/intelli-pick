@@ -25,6 +25,30 @@ function parseTags(tags: string | string[] | undefined): string[] | undefined {
 }
 
 /**
+ * 将 entityIds 查询参数转换为数组格式
+ * 支持逗号分隔的字符串或数组
+ */
+function parseEntityIds(
+	entityIds: string | string[] | undefined,
+): string[] | undefined {
+	if (!entityIds) return undefined;
+	if (Array.isArray(entityIds)) return entityIds;
+	return entityIds.split(",").map((id) => id.trim());
+}
+
+/**
+ * 将 sourceIds 查询参数转换为数组格式
+ * 支持逗号分隔的字符串或数组
+ */
+function parseSourceIds(
+	sourceIds: string | string[] | undefined,
+): string[] | undefined {
+	if (!sourceIds) return undefined;
+	if (Array.isArray(sourceIds)) return sourceIds;
+	return sourceIds.split(",").map((id) => id.trim());
+}
+
+/**
  * 解析日期查询参数
  */
 function parseDateRange(params: DatesQueryParams): {
@@ -67,17 +91,22 @@ export async function contentsRoutes(
 ) {
 	// List contents
 	app.get("/contents", async (req) => {
-		const query = req.query as ContentQueryParams & { search?: string };
+		const query = req.query as ContentQueryParams & {
+			search?: string;
+			entityIds?: string | string[];
+			sourceId?: string | string[];
+		};
 		const { page, limit } = parsePagination(query);
 		const dateRange = parseDateRange(query);
 
 		const filters = {
 			category: query.category,
 			tags: parseTags(query.tags),
-			sourceId: query.sourceId,
+			sourceIds: parseSourceIds(query.sourceId),
 			publishedAfter: dateRange.from,
 			publishedBefore: dateRange.to,
 			search: query.search,
+			entityIds: parseEntityIds(query.entityIds),
 		};
 
 		const result = await service.findPaginated({ page, limit, filters });
@@ -127,6 +156,15 @@ export async function contentsRoutes(
 		const params = parseTagsQueryParams(query);
 
 		const result = await service.getPopularTags(params);
+		return result;
+	});
+
+	// Get source statistics
+	app.get("/sources/stats", async (req) => {
+		const query = req.query as DatesQueryParams;
+		const dateRange = parseDateRange(query);
+
+		const result = await service.getSourceStats(dateRange);
 		return result;
 	});
 }

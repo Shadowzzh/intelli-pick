@@ -14,17 +14,19 @@ export function TrendingEntitiesWidget({
 	headerClassName?: string;
 	contentClassName?: string;
 }) {
-	const { dateRange } = useContentHomeStore();
+	const { dateRange, filters } = useContentHomeStore();
 
 	const query = useQuery({
 		queryKey: entitiesApi.queryKeys.trending({
 			limit: 10,
+			category: filters.category,
 			from: dateRange.from?.toISOString(),
 			to: dateRange.to?.toISOString(),
 		}),
 		queryFn: () =>
 			entitiesApi.getTrending({
 				limit: 10,
+				category: filters.category,
 				from: dateRange.from?.toISOString(),
 				to: dateRange.to?.toISOString(),
 			}),
@@ -58,14 +60,42 @@ interface EntityListItemProps {
 }
 
 function EntityListItem({ entity, rank }: EntityListItemProps) {
+	const { filters, setFilters } = useContentHomeStore();
+	const isSelected = filters.entityIds?.includes(entity.id) || false;
+
+	const handleClick = () => {
+		const currentEntityIds = filters.entityIds || [];
+		if (isSelected) {
+			// 取消选择：移除该实体
+			setFilters({
+				entityIds: currentEntityIds.filter((id) => id !== entity.id),
+			});
+		} else {
+			// 添加选择：添加该实体
+			setFilters({
+				entityIds: [...currentEntityIds, entity.id],
+			});
+		}
+	};
+
 	return (
-		<div className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent transition-colors cursor-pointer">
+		<div
+			onClick={handleClick}
+			className={`
+				flex items-center gap-2 px-2 py-1.5 rounded transition-colors cursor-pointer
+				${
+					isSelected
+						? "bg-primary/10 border-l-2 border-l-primary"
+						: "hover:bg-accent border-l-2 border-l-transparent"
+				}
+			`}
+		>
 			{/* Rank */}
 			<span
 				className={`
-        text-sm font-semibold w-5 text-center
-        ${rank <= 3 ? "text-primary" : "text-muted-foreground"}
-      `}
+					text-sm font-semibold w-5 text-center
+					${rank <= 3 ? "text-primary" : "text-muted-foreground"}
+				`}
 			>
 				{rank}
 			</span>

@@ -1,3 +1,4 @@
+import { useSourcesMap } from "@/hooks/useSourcesMap";
 import type { ContentFilters } from "@/store/content-home-store";
 import { X } from "lucide-react";
 import { memo } from "react";
@@ -7,6 +8,7 @@ interface FilterDisplayProps {
 	onRemoveCategory?: () => void;
 	onRemoveTag?: (tag: string) => void;
 	onRemoveSourceId?: (sourceId: string) => void;
+	onRemoveEntityId?: (entityId: string) => void;
 	onClearAll?: () => void;
 	className?: string;
 }
@@ -16,14 +18,19 @@ export const FilterDisplay = memo(function FilterDisplay({
 	onRemoveCategory,
 	onRemoveTag,
 	onRemoveSourceId,
+	onRemoveEntityId,
 	onClearAll,
 	className = "",
 }: FilterDisplayProps) {
+	// 获取数据源 ID 到名称的映射
+	const sourcesMap = useSourcesMap();
+
 	// 如果没有任何筛选条件，不显示组件
 	const hasFilters =
 		filters.category ||
 		(filters.tags && filters.tags.length > 0) ||
-		(filters.sourceIds && filters.sourceIds.length > 0);
+		(filters.sourceIds && filters.sourceIds.length > 0) ||
+		(filters.entityIds && filters.entityIds.length > 0);
 
 	if (!hasFilters) {
 		return null;
@@ -69,15 +76,39 @@ export const FilterDisplay = memo(function FilterDisplay({
 	// 数据源
 	if (filters.sourceIds && filters.sourceIds.length > 0) {
 		for (const sourceId of filters.sourceIds) {
+			// 从映射中获取数据源名称，如果找不到则显示 ID 的前 8 位
+			const sourceName = sourcesMap.get(sourceId) || sourceId.slice(0, 8);
+
 			filterParts.push(
 				<button
 					key={sourceId}
 					type="button"
 					onClick={() => onRemoveSourceId?.(sourceId)}
 					className="inline-flex items-center gap-1 px-1 py-0.5 hover:text-destructive text-sm cursor-pointer transition-colors"
-					title={`清除数据源：${sourceId}`}
+					title={`清除数据源：${sourceName}`}
 				>
-					<span>{sourceId.slice(0, 8)}</span>
+					<span>{sourceName}</span>
+					<X className="h-3 w-3 shrink-0 opacity-60" />
+				</button>,
+			);
+		}
+	}
+
+	// 实体
+	if (filters.entityIds && filters.entityIds.length > 0) {
+		for (const entityId of filters.entityIds) {
+			// 暂时显示实体 ID 的前 8 位，未来可以优化为显示实体名称
+			const entityLabel = `实体:${entityId.slice(0, 8)}`;
+
+			filterParts.push(
+				<button
+					key={`entity-${entityId}`}
+					type="button"
+					onClick={() => onRemoveEntityId?.(entityId)}
+					className="inline-flex items-center gap-1 px-1 py-0.5 hover:text-destructive text-sm cursor-pointer transition-colors"
+					title={`清除实体筛选：${entityId}`}
+				>
+					<span>{entityLabel}</span>
 					<X className="h-3 w-3 shrink-0 opacity-60" />
 				</button>,
 			);

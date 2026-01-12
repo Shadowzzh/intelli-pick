@@ -8,6 +8,7 @@ import type { EntitiesService } from "../../services/entities.service";
 interface EntitiesQueryParams extends PaginationParams {
 	from?: string;
 	to?: string;
+	category?: string;
 }
 
 interface EntityContentsQueryParams extends PaginationParams {
@@ -75,6 +76,7 @@ export async function entitiesRoutes(
 			page,
 			limit,
 			...dateRange,
+			category: query.category,
 		});
 		return result;
 	});

@@ -36,6 +36,7 @@ export function ContentListNew({
 		removeCategory,
 		removeTag,
 		removeSourceId,
+		removeEntityId,
 		resetFilters,
 		setCurrentPage,
 		setSearchQuery,
@@ -49,6 +50,7 @@ export function ContentListNew({
 		category: filters.category,
 		tags: filters.tags,
 		sourceIds: filters.sourceIds,
+		entityIds: filters.entityIds,
 		page: currentPage,
 		limit: 20,
 		search: searchQuery || undefined,
@@ -88,7 +90,7 @@ export function ContentListNew({
 			headerClassName={headerClassName}
 			contentClassName={contentClassName}
 			footer={
-				totalPages > 1 ? (
+				!isLoading && totalNum > 0 ? (
 					<div className="flex items-center justify-between gap-4">
 						<div className="text-sm text-muted-foreground">
 							<span className="font-medium text-foreground">
@@ -96,11 +98,13 @@ export function ContentListNew({
 							</span>{" "}
 							/ {total} 条
 						</div>
-						<Pagination
-							currentPage={currentPage}
-							totalPages={totalPages}
-							onPageChange={handlePageChange}
-						/>
+						{totalPages > 1 && (
+							<Pagination
+								currentPage={currentPage}
+								totalPages={totalPages}
+								onPageChange={handlePageChange}
+							/>
+						)}
 					</div>
 				) : null
 			}
@@ -112,6 +116,7 @@ export function ContentListNew({
 				onRemoveCategory={removeCategory}
 				onRemoveTag={removeTag}
 				onRemoveSourceId={removeSourceId}
+				onRemoveEntityId={removeEntityId}
 				onClearAll={resetFilters}
 			/>
 

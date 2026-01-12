@@ -16,6 +16,7 @@ interface EntitiesQueryParams extends PaginationParams {
 	type?: string;
 	from?: string;
 	to?: string;
+	category?: string;
 }
 
 export const entitiesApi = {
@@ -31,6 +32,7 @@ export const entitiesApi = {
 		if (params?.type) queryParams.type = params.type;
 		if (params?.from) queryParams.from = params.from;
 		if (params?.to) queryParams.to = params.to;
+		if (params?.category) queryParams.category = params.category;
 
 		return api.getPaginated<Entity>("/api/v1/entities", queryParams);
 	},

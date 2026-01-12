@@ -35,7 +35,51 @@ export class EntitiesRepository {
 		offset: number;
 		lastMentionedAfter?: Date;
 		lastMentionedBefore?: Date;
+		category?: string;
 	}) {
+		// 如果有 category 筛选，需要 JOIN contents 表
+		if (options.category) {
+			const { contents } = await import("@intellipick/db");
+			const conditions = [eq(contents.category, options.category)];
+
+			if (options.lastMentionedAfter) {
+				conditions.push(
+					gte(entities.lastMentionedAt, options.lastMentionedAfter),
+				);
+			}
+
+			if (options.lastMentionedBefore) {
+				conditions.push(
+					lte(entities.lastMentionedAt, options.lastMentionedBefore),
+				);
+			}
+
+			const where = and(...conditions);
+
+			// 通过 entity_mentions 和 contents 表关联，筛选该分类下的实体
+			return this.db
+				.selectDistinct({
+					id: entities.id,
+					name: entities.name,
+					type: entities.type,
+					url: entities.url,
+					description: entities.description,
+					mentionCount: entities.mentionCount,
+					metadata: entities.metadata,
+					createdAt: entities.createdAt,
+					firstMentionedAt: entities.firstMentionedAt,
+					lastMentionedAt: entities.lastMentionedAt,
+				})
+				.from(entities)
+				.innerJoin(entityMentions, eq(entityMentions.entityId, entities.id))
+				.innerJoin(contents, eq(contents.id, entityMentions.contentId))
+				.where(where)
+				.orderBy(desc(entities.mentionCount))
+				.limit(options.limit)
+				.offset(options.offset);
+		}
+
+		// 没有 category 筛选时，保持原有逻辑
 		const conditions = [];
 
 		if (options.lastMentionedAfter) {
@@ -72,7 +116,39 @@ export class EntitiesRepository {
 	async count(options?: {
 		lastMentionedAfter?: Date;
 		lastMentionedBefore?: Date;
+		category?: string;
 	}): Promise<number> {
+		// 如果有 category 筛选，需要 JOIN contents 表
+		if (options?.category) {
+			const { contents } = await import("@intellipick/db");
+			const conditions = [eq(contents.category, options.category)];
+
+			if (options.lastMentionedAfter) {
+				conditions.push(
+					gte(entities.lastMentionedAt, options.lastMentionedAfter),
+				);
+			}
+
+			if (options.lastMentionedBefore) {
+				conditions.push(
+					lte(entities.lastMentionedAt, options.lastMentionedBefore),
+				);
+			}
+
+			const where = and(...conditions);
+
+			// COUNT DISTINCT entities
+			const [result] = await this.db
+				.selectDistinct({ count: sql<number>`count(DISTINCT ${entities.id})` })
+				.from(entities)
+				.innerJoin(entityMentions, eq(entityMentions.entityId, entities.id))
+				.innerJoin(contents, eq(contents.id, entityMentions.contentId))
+				.where(where);
+
+			return result.count;
+		}
+
+		// 没有 category 筛选时，保持原有逻辑
 		const conditions = [];
 
 		if (options?.lastMentionedAfter) {

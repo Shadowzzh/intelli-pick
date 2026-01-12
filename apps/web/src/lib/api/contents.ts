@@ -6,6 +6,7 @@ import type {
 	PaginatedResponse,
 	PopularTagsQueryParams,
 	PopularTagsResponseData,
+	SourceStatsResponseData,
 } from "@intellipick/shared";
 
 export const contentsApi = {
@@ -13,7 +14,7 @@ export const contentsApi = {
 	 * Fetch contents with filters
 	 */
 	async getContents(
-		params: ContentQueryParams & { search?: string },
+		params: ContentQueryParams & { search?: string; entityIds?: string[] },
 	): Promise<PaginatedResponse<Content>> {
 		const queryParams: Record<string, string> = {};
 
@@ -32,6 +33,8 @@ export const contentsApi = {
 		}
 		if (params.sourceIds?.length)
 			queryParams.sourceId = params.sourceIds.join(",");
+		if (params.entityIds?.length)
+			queryParams.entityIds = params.entityIds.join(",");
 
 		return api.getPaginated<Content>("/api/v1/contents", queryParams);
 	},
@@ -82,6 +85,25 @@ export const contentsApi = {
 	},
 
 	/**
+	 * Fetch source statistics
+	 */
+	async getSourceStats(params?: {
+		from?: string;
+		to?: string;
+	}): Promise<SourceStatsResponseData> {
+		const queryParams: Record<string, string> = {};
+		if (params?.from) queryParams.from = params.from;
+		if (params?.to) queryParams.to = params.to;
+
+		const queryString = new URLSearchParams(queryParams).toString();
+		const url = queryString
+			? `/api/v1/sources/stats?${queryString}`
+			: "/api/v1/sources/stats";
+
+		return api.get<SourceStatsResponseData>(url);
+	},
+
+	/**
 	 * Query key factory for contents
 	 */
 	queryKeys: {
@@ -93,5 +115,7 @@ export const contentsApi = {
 			["categories", "stats", params] as const,
 		tags: (params?: PopularTagsQueryParams) =>
 			["tags", "popular", params] as const,
+		sources: (params?: { from?: string; to?: string }) =>
+			["sources", "stats", params] as const,
 	},
 };

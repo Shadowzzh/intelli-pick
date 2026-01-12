@@ -11,6 +11,7 @@ export class EntitiesService {
 		limit: number;
 		lastMentionedAfter?: Date;
 		lastMentionedBefore?: Date;
+		category?: string;
 	}): Promise<PaginatedResponse<Entity>> {
 		const offset = (params.page - 1) * params.limit;
 
@@ -20,10 +21,12 @@ export class EntitiesService {
 				offset,
 				lastMentionedAfter: params.lastMentionedAfter,
 				lastMentionedBefore: params.lastMentionedBefore,
+				category: params.category,
 			}),
 			this.entitiesRepo.count({
 				lastMentionedAfter: params.lastMentionedAfter,
 				lastMentionedBefore: params.lastMentionedBefore,
+				category: params.category,
 			}),
 		]);
 

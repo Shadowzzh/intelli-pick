@@ -6,6 +6,7 @@ export interface ContentFilters {
 	category?: string;
 	sourceIds?: string[];
 	tags?: string[];
+	entityIds?: string[];
 }
 
 type ViewMode = "compact" | "detailed";
@@ -38,6 +39,7 @@ interface ContentHomeState {
 	removeCategory: () => void;
 	removeTag: (tag: string) => void;
 	removeSourceId: (sourceId: string) => void;
+	removeEntityId: (entityId: string) => void;
 }
 
 export const useContentHomeStore = create<ContentHomeState>()(
@@ -105,6 +107,18 @@ export const useContentHomeStore = create<ContentHomeState>()(
 						sourceIds:
 							state.filters.sourceIds?.filter(
 								(id) => id !== sourceIdToRemove,
+							) || [],
+					},
+					currentPage: 1,
+				})),
+
+			removeEntityId: (entityIdToRemove) =>
+				set((state) => ({
+					filters: {
+						...state.filters,
+						entityIds:
+							state.filters.entityIds?.filter(
+								(id) => id !== entityIdToRemove,
 							) || [],
 					},
 					currentPage: 1,

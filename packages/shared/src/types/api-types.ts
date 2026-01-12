@@ -75,6 +75,23 @@ export interface PopularTagsResponseData {
 /** 热门标签响应类型 */
 export type PopularTagsResponse = PaginatedResponse<PopularTagsResponseData>;
 
+/** 数据源统计数据 */
+export interface SourceStats {
+	id: string;
+	name: string;
+	type: string;
+	count: number;
+}
+
+/** 数据源统计响应数据 */
+export interface SourceStatsResponseData {
+	sources: SourceStats[];
+	total: number;
+}
+
+/** 数据源统计响应类型 */
+export type SourceStatsResponse = PaginatedResponse<SourceStatsResponseData>;
+
 // ============================================================================
 // Entities API Types
 // ============================================================================

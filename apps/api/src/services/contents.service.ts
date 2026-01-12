@@ -12,10 +12,11 @@ export class ContentsService {
 		filters?: {
 			category?: string;
 			tags?: string[];
-			sourceId?: string;
+			sourceIds?: string[];
 			publishedAfter?: Date;
 			publishedBefore?: Date;
 			search?: string;
+			entityIds?: string[];
 		};
 	}): Promise<PaginatedResponse<Content>> {
 		const offset = (params.page - 1) * params.limit;
@@ -113,6 +114,20 @@ export class ContentsService {
 			success: true,
 			data: {
 				tags: results,
+				total,
+			},
+		};
+	}
+
+	async getSourceStats(params: { from?: Date; to?: Date }) {
+		const results = await this.contentsRepo.findSourceStats(params);
+
+		const total = results.reduce((sum, r) => sum + r.count, 0);
+
+		return {
+			success: true,
+			data: {
+				sources: results,
 				total,
 			},
 		};
