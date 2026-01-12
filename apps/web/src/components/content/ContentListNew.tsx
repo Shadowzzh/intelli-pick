@@ -130,9 +130,7 @@ export function ContentListNew({
 			{/* Empty state */}
 			{!isLoading && !error && items.length === 0 && (
 				<WidgetEmptyState
-					message={
-						searchQuery ? "没有找到匹配的内容" : "没有找到内容"
-					}
+					message={searchQuery ? "没有找到匹配的内容" : "没有找到内容"}
 				/>
 			)}
 
