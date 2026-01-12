@@ -89,6 +89,17 @@ export function WidgetWithStates<TData>({
 		// 处理数组
 		if (Array.isArray(data)) return data.length === 0;
 
+		// 处理 PaginatedResponse 格式: { success: true, data: T[], meta: {...} }
+		if (
+			typeof data === "object" &&
+			"success" in data &&
+			"data" in data &&
+			"meta" in data
+		) {
+			const paginatedData = data as { data: unknown };
+			return Array.isArray(paginatedData.data) && paginatedData.data.length === 0;
+		}
+
 		// 处理对象：检查所有值是否为空数组
 		if (typeof data === "object") {
 			const values = Object.values(data);
