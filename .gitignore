@@ -11,3 +11,4 @@ test-data/*.json
 
 glance/
 coverage/
+.worktrees/
