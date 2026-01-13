@@ -26,7 +26,8 @@ export class ContentsService {
 				...params.filters,
 				limit: params.limit,
 				offset,
-				orderBy: { column: "publishedAt", direction: "desc" },
+				// 使用 collectedAt 作为主排序字段，因为某些数据源（如 readhub 早报、github 趋势）没有 publishedAt
+				orderBy: { column: "collectedAt", direction: "desc" },
 			}),
 			this.contentsRepo.countWithFilters(params.filters || {}),
 		]);
