@@ -25,7 +25,6 @@ export function SearchBox({
 				className={cn(
 					"h-8 w-48 pl-8 pr-2 text-sm border rounded-md",
 					"focus:ring-2 focus:ring-primary focus:outline-none",
-					"placeholder:text-muted-foreground",
 					"transition-all",
 				)}
 			/>
