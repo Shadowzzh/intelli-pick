@@ -29,11 +29,9 @@ export function useDeferredLoading<TData = unknown, TError = Error>(
 	// 获取延迟时间,优先使用局部配置
 	const delay = options?.delay ?? DEFERRED_LOADING_CONFIG.delay;
 
-	// 初始化延迟状态,与真实状态保持一致
-	const [deferredIsLoading, setDeferredIsLoading] = useState(query.isLoading);
-	const [deferredIsFetching, setDeferredIsFetching] = useState(
-		query.isFetching,
-	);
+	// 初始化延迟状态为 false，让 useEffect 控制何时显示 loading
+	const [deferredIsLoading, setDeferredIsLoading] = useState(false);
+	const [deferredIsFetching, setDeferredIsFetching] = useState(false);
 
 	// 处理 isLoading 状态延迟
 	useEffect(() => {
