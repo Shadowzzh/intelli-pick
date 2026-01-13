@@ -35,12 +35,6 @@ export function useDeferredLoading<TData = unknown, TError = Error>(
 
 	// 处理 isLoading 状态延迟
 	useEffect(() => {
-		console.log("[useDeferredLoading] isLoading effect:", {
-			queryIsLoading: query.isLoading,
-			deferredIsLoading,
-			delay,
-		});
-
 		// 如果延迟为 0,禁用延迟功能
 		if (delay <= 0) {
 			setDeferredIsLoading(query.isLoading);
@@ -49,24 +43,16 @@ export function useDeferredLoading<TData = unknown, TError = Error>(
 
 		// 从 false → true: 延迟更新
 		if (query.isLoading && !deferredIsLoading) {
-			console.log(
-				`[useDeferredLoading] Starting ${delay}ms delay timer for isLoading`,
-			);
 			const timer = setTimeout(() => {
-				console.log("[useDeferredLoading] Timer fired, showing loading");
 				setDeferredIsLoading(true);
 			}, delay);
 
 			// 清理定时器
-			return () => {
-				console.log("[useDeferredLoading] Cleanup: clearing timer");
-				clearTimeout(timer);
-			};
+			return () => clearTimeout(timer);
 		}
 
 		// 从 true → false: 立即更新
 		if (!query.isLoading && deferredIsLoading) {
-			console.log("[useDeferredLoading] Hiding loading immediately");
 			setDeferredIsLoading(false);
 		}
 	}, [query.isLoading, deferredIsLoading, delay]);
