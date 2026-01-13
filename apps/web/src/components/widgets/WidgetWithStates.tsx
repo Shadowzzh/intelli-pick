@@ -45,6 +45,16 @@ export function WidgetWithStates<TData>({
 	// 应用延迟 loading，避免快速请求时的闪烁
 	const deferredQuery = useDeferredLoading(query);
 
+	// 0. 延迟期间状态（原始 query 正在 loading，但延迟状态为 false）
+	// 在这个期间，显示空白占位符，避免闪烁到 empty 状态
+	if (query.isLoading && !deferredQuery.isLoading) {
+		return (
+			<Widget {...widgetProps}>
+				<div />
+			</Widget>
+		);
+	}
+
 	// 1. Loading 状态
 	if (deferredQuery.isLoading) {
 		if (loading === false) {
