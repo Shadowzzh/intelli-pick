@@ -41,7 +41,10 @@ export const rssPlugin: CollectorPlugin = {
 			content: item.contentSnippet || item.content || "",
 			url: item.link || "",
 			author: item.creator || item.author || null,
-			publishedAt: item.pubDate ? toUTCISOString(item.pubDate) : null,
+			// 如果 RSS 源没有提供 pubDate，使用当前时间作为 publishedAt
+			publishedAt: item.pubDate
+				? toUTCISOString(item.pubDate)
+				: toUTCISOString(new Date()),
 			collectedAt: toUTCISOString(new Date()),
 			raw: item,
 		}));
