@@ -2,7 +2,6 @@ import { Widget } from "@/components/widgets/Widget";
 import { WidgetEmptyState } from "@/components/widgets/WidgetEmptyState";
 import { WidgetErrorState } from "@/components/widgets/WidgetErrorState";
 import { WidgetLoadingState } from "@/components/widgets/WidgetLoadingState";
-import { useDeferredLoading } from "@/hooks/useDeferredLoading";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { isValidElement } from "react";
@@ -42,21 +41,8 @@ export function WidgetWithStates<TData>({
 	children,
 	...widgetProps
 }: WidgetWithStatesProps<TData>) {
-	// 应用延迟 loading，避免快速请求时的闪烁
-	const deferredQuery = useDeferredLoading(query);
-
-	// 0. 延迟期间状态（原始 query 正在 loading，但延迟状态为 false）
-	// 在这个期间，显示空白占位符，避免闪烁到 empty 状态
-	if (query.isLoading && !deferredQuery.isLoading) {
-		return (
-			<Widget {...widgetProps}>
-				<div />
-			</Widget>
-		);
-	}
-
 	// 1. Loading 状态
-	if (deferredQuery.isLoading) {
+	if (query.isLoading) {
 		if (loading === false) {
 			// 允许禁用默认 loading
 			return <Widget {...widgetProps}>{children(null as TData)}</Widget>;
@@ -73,7 +59,7 @@ export function WidgetWithStates<TData>({
 	}
 
 	// 2. Error 状态
-	if (deferredQuery.error) {
+	if (query.error) {
 		if (error === false) {
 			return <Widget {...widgetProps}>{children(null as TData)}</Widget>;
 		}
@@ -85,8 +71,8 @@ export function WidgetWithStates<TData>({
 		return (
 			<Widget {...widgetProps}>
 				<WidgetErrorState
-					error={deferredQuery.error as Error}
-					onRetry={() => deferredQuery.refetch()}
+					error={query.error as Error}
+					onRetry={() => query.refetch()}
 					message={errorConfig.message}
 					showDetails={errorConfig.showDetails}
 				/>
@@ -95,7 +81,7 @@ export function WidgetWithStates<TData>({
 	}
 
 	// 3. Empty 状态
-	const data = deferredQuery.data;
+	const data = query.data;
 	const isEmpty = (() => {
 		// 处理 null/undefined
 		if (!data) return true;

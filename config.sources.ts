@@ -58,15 +58,15 @@ export const sources: SourceConfig[] = [
 			url: "http://localhost:1200/readhub/daily", // 使用本地 RSSHub
 		},
 	},
-	{
-		name: "澎湃首页",
-		type: "rss",
-		enabled: true,
-		fetchInterval: 20 * 60, // 20 分钟
-		config: {
-			url: "http://localhost:1200/thepaper/featured", // 使用本地 RSSHub
-		},
-	},
+	// {
+	// 	name: "澎湃首页",
+	// 	type: "rss",
+	// 	enabled: true,
+	// 	fetchInterval: 20 * 60, // 20 分钟
+	// 	config: {
+	// 		url: "http://localhost:1200/thepaper/featured", // 使用本地 RSSHub
+	// 	},
+	// },
 	{
 		name: "infoQ",
 		type: "rss",
