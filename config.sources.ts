@@ -2,15 +2,15 @@
 import type { SourceConfig } from "@intellipick/config";
 
 export const sources: SourceConfig[] = [
-	// {
-	// 	name: "Hacker News",
-	// 	type: "rss",
-	// 	enabled: false,
-	// 	fetchInterval: 1800, // 1 小时
-	// 	config: {
-	// 		url: "https://hnrss.org/frontpage",
-	// 	},
-	// },
+	{
+		name: "Hacker News",
+		type: "rss",
+		enabled: false,
+		fetchInterval: 20 * 60, // 1 小时
+		config: {
+			url: "http://localhost:1200/hackernews/threads/comments_list/dang", // 使用本地 RSSHub
+		},
+	},
 	{
 		name: "V2EX 热门",
 		type: "v2ex",
@@ -53,7 +53,7 @@ export const sources: SourceConfig[] = [
 		name: "readhub早报",
 		type: "rss",
 		enabled: true,
-		fetchInterval: 4 * 60 * 60, // 2 小时
+		fetchInterval: 1 * 60 * 60, // 1 小时
 		config: {
 			url: "http://localhost:1200/readhub/daily", // 使用本地 RSSHub
 		},
@@ -101,7 +101,7 @@ export const sources: SourceConfig[] = [
 		enabled: true,
 		fetchInterval: 20 * 60, // 20 分钟
 		config: {
-			url: "http://localhost:1200/trending/daily/any", // 使用本地 RSSHub
+			url: "http://localhost:1200/github/trending/daily/any", // 使用本地 RSSHub
 		},
 	},
 	{
