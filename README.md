@@ -123,9 +123,6 @@ graph LR
 - 响应式设计，支持移动端
 - 实时更新，WebSocket 连接
 - 内容浏览和搜索
-- 实体关系图谱
-
-详见 [CLAUDE.md](./CLAUDE.md) 获取完整的开发文档。
 
 ---
 
@@ -295,8 +292,6 @@ socket.on('content:updated', (content) => {
   console.log('内容更新:', content);
 });
 ```
-
-详见 [docs/api.md](./docs/api.md) 获取完整的 API 文档，以及 [docs/api-examples.md](./docs/api-examples.md) 查看使用示例。
 
 ---
 
