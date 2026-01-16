@@ -5,10 +5,19 @@ export const sources: SourceConfig[] = [
 	{
 		name: "Hacker News",
 		type: "rss",
-		enabled: false,
+		enabled: true,
 		fetchInterval: 20 * 60, // 1 小时
 		config: {
 			url: "http://localhost:1200/hackernews/threads/comments_list/dang", // 使用本地 RSSHub
+		},
+	},
+	{
+		name: "LINUX DO 快讯",
+		type: "rss",
+		enabled: true,
+		fetchInterval: 20 * 60, // 1 小时
+		config: {
+			url: "https://linux.do/c/news/34.rss",
 		},
 	},
 	{
