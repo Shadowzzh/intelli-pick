@@ -40,7 +40,7 @@ export const typeDefs = `
 
   type Query {
     contents(
-      limit: Int = 20
+      limit: Int = 50
       offset: Int = 0
       sources: [String!]
       minScore: Float
@@ -51,7 +51,7 @@ export const typeDefs = `
     content(id: ID!): Content
 
     entities(
-      limit: Int = 20
+      limit: Int = 50
       offset: Int = 0
     ): [Entity!]!
 

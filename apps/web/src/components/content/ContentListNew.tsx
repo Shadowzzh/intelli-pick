@@ -52,7 +52,7 @@ export function ContentListNew({
 		sourceIds: filters.sourceIds,
 		entityIds: filters.entityIds,
 		page: currentPage,
-		limit: 20,
+		limit: 50,
 		search: searchQuery || undefined,
 	};
 
@@ -65,7 +65,7 @@ export function ContentListNew({
 	const total = data?.meta?.total || "0";
 
 	// 计算分页统计数据
-	const limit = 20;
+	const limit = 50;
 	const totalNum = Number.parseInt(total, 10);
 	const totalPages = Math.ceil(totalNum / limit);
 	const start = (currentPage - 1) * limit + 1;

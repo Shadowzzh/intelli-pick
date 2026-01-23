@@ -13,7 +13,7 @@ export class SearchService {
 
 	async searchContents(
 		query: string,
-		limit = 20,
+		limit = 50,
 	): Promise<ContentSearchResult[]> {
 		// Simple ILIKE search for now (can be upgraded to tsvector later)
 		const results = await this.db
@@ -38,7 +38,7 @@ export class SearchService {
 		}));
 	}
 
-	async search(query: string, limit = 20): Promise<SearchResult> {
+	async search(query: string, limit = 50): Promise<SearchResult> {
 		const contents = await this.searchContents(query, limit);
 
 		return {

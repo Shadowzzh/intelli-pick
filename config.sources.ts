@@ -97,7 +97,7 @@ export const sources: SourceConfig[] = [
 	{
 		name: "极客公园",
 		type: "rss",
-		enabled: false, // 禁用原因：网站存在 TLS/SSL 连接问题（Client network socket disconnected before secure TLS connection was established）
+		enabled: true, // 禁用原因：网站存在 TLS/SSL 连接问题（Client network socket disconnected before secure TLS connection was established）
 		fetchInterval: 30 * 60, // 30 分钟
 		config: {
 			url: "http://localhost:1200/geekpark", // 使用 RSSHub 路由（但源站仍有 TLS 问题）
@@ -117,7 +117,7 @@ export const sources: SourceConfig[] = [
 		name: "36氪热榜",
 		type: "rss",
 		enabled: true,
-		fetchInterval: 20 * 60, // 20 分钟
+		fetchInterval: 60 * 60, // 60 分钟
 		config: {
 			url: "https://36kr.com/feed", // 使用官方 RSS
 		},

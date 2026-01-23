@@ -7,7 +7,7 @@ export async function searchRoutes(
 	service: SearchService,
 ) {
 	app.post("/search", async (req, reply) => {
-		const { query, limit = 20 } = req.body as {
+		const { query, limit = 50 } = req.body as {
 			query: string;
 			limit?: number;
 		};
