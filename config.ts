@@ -62,8 +62,8 @@ export default defineConfig({
 			spamKeywords: ["微信群", "返利", "优惠码", "开户", "代投", "包赚"], // 垃圾内容关键词
 		},
 		thresholds: {
-			passMinValueScore: 50, // 及格分数线
-			rejectMaxValueScore: 30, // 拒绝分数线
+			passMinValueScore: 60, // 及格分数线
+			rejectMaxValueScore: 40, // 拒绝分数线
 			quarantineOnSafety: true, // 安全性低于阈值时隔离
 			rejectToQuarantineMinScore: 30, // 拒绝但保留观察的最低分数
 		},
