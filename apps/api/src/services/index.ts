@@ -5,3 +5,4 @@ export { QueueService } from "./queue.service";
 export { SearchService } from "./search.service";
 export { SourcesService } from "./sources.service";
 export { StatsService } from "./stats.service";
+export { MonitoringService } from "./monitoring.service";

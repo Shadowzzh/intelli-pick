@@ -96,6 +96,126 @@ export class QueueService {
 	}
 
 	/**
+	 * 获取任务列表
+	 */
+	async getJobs(
+		status: "waiting" | "active" | "completed" | "failed" | "delayed",
+		start = 0,
+		end = 9,
+	) {
+		if (!this.queue) {
+			return { success: true, data: [] };
+		}
+
+		// BullMQ 的 getJobs 方法：start 和 end 是索引范围（包含 start 和 end）
+		// 例如：start=0, end=9 返回 10 个任务（索引 0-9）
+		const jobs = await this.queue.getJobs([status], start, end, true);
+
+		return {
+			success: true,
+			data: jobs.map((job) => ({
+				id: job.id,
+				name: job.name,
+				data: job.data,
+				progress: job.progress,
+				attemptsMade: job.attemptsMade,
+				timestamp: job.timestamp,
+				processedOn: job.processedOn,
+				finishedOn: job.finishedOn,
+				failedReason: job.failedReason,
+				stacktrace: job.stacktrace,
+				returnvalue: job.returnvalue,
+			})),
+		};
+	}
+
+	/**
+	 * 获取单个任务详情
+	 */
+	async getJob(jobId: string) {
+		if (!this.queue) {
+			return { success: false, error: "Queue not initialized" };
+		}
+
+		const job = await this.queue.getJob(jobId);
+		if (!job) {
+			return { success: false, error: "Job not found" };
+		}
+
+		return {
+			success: true,
+			data: {
+				id: job.id,
+				name: job.name,
+				data: job.data,
+				progress: job.progress,
+				attemptsMade: job.attemptsMade,
+				timestamp: job.timestamp,
+				processedOn: job.processedOn,
+				finishedOn: job.finishedOn,
+				failedReason: job.failedReason,
+				stacktrace: job.stacktrace,
+				returnvalue: job.returnvalue,
+				opts: job.opts,
+			},
+		};
+	}
+
+	/**
+	 * 获取处理速率统计
+	 */
+	async getProcessingRate() {
+		if (!this.queue) {
+			return {
+				success: true,
+				data: {
+					completedPerMinute: 0,
+					failedPerMinute: 0,
+					avgProcessingTime: 0,
+				},
+			};
+		}
+
+		// 获取最近完成的任务来计算速率
+		const completedJobs = await this.queue.getJobs(["completed"], 0, 99);
+		const failedJobs = await this.queue.getJobs(["failed"], 0, 99);
+
+		const now = Date.now();
+		const oneMinuteAgo = now - 60 * 1000;
+
+		// 计算最近一分钟的完成和失败数
+		const recentCompleted = completedJobs.filter(
+			(job) => job.finishedOn && job.finishedOn > oneMinuteAgo,
+		);
+		const recentFailed = failedJobs.filter(
+			(job) => job.finishedOn && job.finishedOn > oneMinuteAgo,
+		);
+
+		// 计算平均处理时间
+		let totalProcessingTime = 0;
+		let processedCount = 0;
+
+		for (const job of recentCompleted) {
+			if (job.processedOn && job.finishedOn) {
+				totalProcessingTime += job.finishedOn - job.processedOn;
+				processedCount++;
+			}
+		}
+
+		const avgProcessingTime =
+			processedCount > 0 ? totalProcessingTime / processedCount : 0;
+
+		return {
+			success: true,
+			data: {
+				completedPerMinute: recentCompleted.length,
+				failedPerMinute: recentFailed.length,
+				avgProcessingTime: Math.round(avgProcessingTime),
+			},
+		};
+	}
+
+	/**
 	 * 关闭队列连接
 	 */
 	async close() {

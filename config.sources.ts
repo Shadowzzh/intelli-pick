@@ -1,30 +1,66 @@
 // config.sources.ts - 数据源配置文件
 import type { SourceConfig } from "@intellipick/config";
 
+// 数据源名称
+const NAMES = {
+	HACKER_NEWS: "Hacker News",
+	LINUX_DO: "LINUX DO 快讯",
+	V2EX_HOT: "V2EX 热门",
+	SSPAI: "少数派首页",
+	ZHIHU_HOT: "知乎热榜",
+	READHUB_DAILY: "readhub早报",
+	INFOQ: "infoQ",
+	GEEKPARK: "极客公园",
+	GITHUB_TRENDING: "github 趋势",
+	KR_36: "36氪热榜",
+} as const;
+
+// 采集间隔配置（单位：秒）
+const HACKER_NEWS_INTERVAL = 2 * 60 * 60; // Hacker News - 2 小时
+const LINUX_DO_INTERVAL = 20 * 60; // LINUX DO 快讯 - 20 分钟
+const V2EX_HOT_INTERVAL = 20 * 60; // V2EX 热门 - 20 分钟
+const SSPAI_INTERVAL = 2 * 60 * 60; // 少数派首页 - 2 小时
+const ZHIHU_HOT_INTERVAL = 2 * 60 * 60; // 知乎热榜 - 2 小时
+const READHUB_DAILY_INTERVAL = 2 * 60 * 60; // readhub早报 - 2 小时
+const INFOQ_INTERVAL = 20 * 60; // infoQ - 20 分钟
+const GEEKPARK_INTERVAL = 30 * 60; // 极客公园 - 30 分钟
+const GITHUB_TRENDING_INTERVAL = 20 * 60; // github 趋势 - 20 分钟
+const KR_36_INTERVAL = 4 * 60 * 60; // 36氪热榜 - 4 小时
+const BLOCK_BEATS_INTERVAL = 2 * 60 * 60; // Block Beats - 20 分钟
+
 export const sources: SourceConfig[] = [
 	{
-		name: "Hacker News",
+		name: "Block Beats",
 		type: "rss",
 		enabled: true,
-		fetchInterval: 2 * 60 * 60, // 2 小时
+		fetchInterval: BLOCK_BEATS_INTERVAL,
+		config: {
+			url: "http://localhost:1200/theblockbeats/newsflash", // 使用本地 RSSHub
+		},
+	},
+	{
+		name: NAMES.HACKER_NEWS,
+		type: "rss",
+		enabled: true,
+		fetchInterval: HACKER_NEWS_INTERVAL,
 		config: {
 			url: "http://localhost:1200/hackernews/threads/comments_list/dang", // 使用本地 RSSHub
 		},
 	},
 	{
-		name: "LINUX DO 快讯",
+		name: NAMES.LINUX_DO,
 		type: "rss",
 		enabled: true,
-		fetchInterval: 2 * 60 * 60, // 2 小时
+		fetchInterval: LINUX_DO_INTERVAL,
 		config: {
 			url: "https://linux.do/c/news/34.rss",
 		},
 	},
 	{
-		name: "V2EX 热门",
+		name: NAMES.V2EX_HOT,
 		type: "v2ex",
 		enabled: true,
-		fetchInterval: 20 * 60, // 20 分钟
+		fetchInterval: V2EX_HOT_INTERVAL,
 		config: {
 			node: "hot",
 		},
@@ -41,83 +77,64 @@ export const sources: SourceConfig[] = [
 	// 	},
 	// },
 	{
-		name: "少数派首页",
+		name: NAMES.SSPAI,
 		type: "rss",
 		enabled: true,
-		fetchInterval: 2 * 60 * 60, // 2 小时
+		fetchInterval: SSPAI_INTERVAL,
 		config: {
 			url: "http://localhost:1200/sspai/index", // 使用本地 RSSHub
 		},
 	},
 	{
-		name: "知乎热榜",
+		name: NAMES.ZHIHU_HOT,
 		type: "rss",
 		enabled: true,
-		fetchInterval: 2 * 60 * 60, // 2 小时
+		fetchInterval: ZHIHU_HOT_INTERVAL,
 		config: {
 			url: "http://localhost:1200/zhihu/hot", // 使用本地 RSSHub
 		},
 	},
 	{
-		name: "readhub早报",
+		name: NAMES.READHUB_DAILY,
 		type: "rss",
 		enabled: true,
-		fetchInterval: 2 * 60 * 60, // 2 小时
+		fetchInterval: READHUB_DAILY_INTERVAL,
 		config: {
 			url: "http://localhost:1200/readhub/daily", // 使用本地 RSSHub
 		},
 	},
-	// {
-	// 	name: "澎湃首页",
-	// 	type: "rss",
-	// 	enabled: true,
-	// 	fetchInterval: 20 * 60, // 20 分钟
-	// 	config: {
-	// 		url: "http://localhost:1200/thepaper/featured", // 使用本地 RSSHub
-	// 	},
-	// },
 	{
-		name: "infoQ",
+		name: NAMES.INFOQ,
 		type: "rss",
 		enabled: true,
-		fetchInterval: 20 * 60, // 20 分钟
+		fetchInterval: INFOQ_INTERVAL,
 		config: {
 			url: "http://localhost:1200/infoq/recommend", // 使用本地 RSSHub
 		},
 	},
-	// {
-	// 	name: "一觉醒来发生了什么 - 即刻圈子",
-	// 	type: "rss",
-	// 	enabled: true,
-	// 	fetchInterval: 4 * 60 * 60, // 20 分钟
-	// 	config: {
-	// 		url: "http://localhost:1200/jike/topic/553870e8e4b0cafb0a1bef68", // 使用本地 RSSHub
-	// 	},
-	// },
 	{
-		name: "极客公园",
+		name: NAMES.GEEKPARK,
 		type: "rss",
 		enabled: true, // 禁用原因：网站存在 TLS/SSL 连接问题（Client network socket disconnected before secure TLS connection was established）
-		fetchInterval: 30 * 60, // 30 分钟
+		fetchInterval: GEEKPARK_INTERVAL,
 		config: {
 			url: "http://localhost:1200/geekpark", // 使用 RSSHub 路由（但源站仍有 TLS 问题）
-			// 原始 RSS: url: "https://www.geekpark.net/rss", // 无法访问：TLS 错误
 		},
 	},
 	{
-		name: "github 趋势",
+		name: NAMES.GITHUB_TRENDING,
 		type: "rss",
 		enabled: true,
-		fetchInterval: 20 * 60, // 20 分钟
+		fetchInterval: GITHUB_TRENDING_INTERVAL,
 		config: {
 			url: "http://localhost:1200/github/trending/daily/any", // 使用本地 RSSHub
 		},
 	},
 	{
-		name: "36氪热榜",
+		name: NAMES.KR_36,
 		type: "rss",
 		enabled: true,
-		fetchInterval: 2 * 60 * 60, // 2 小时
+		fetchInterval: KR_36_INTERVAL,
 		config: {
 			url: "https://36kr.com/feed", // 使用官方 RSS
 		},

@@ -10,6 +10,7 @@ interface AppLayoutProps {
 const navItems = [
 	{ href: "/", label: "仪表板" },
 	{ href: "/content-home", label: "内容主页" },
+	{ href: "/monitoring", label: "系统监控" },
 ];
 
 export function AppLayout({ children }: AppLayoutProps) {

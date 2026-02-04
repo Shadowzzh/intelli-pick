@@ -162,9 +162,11 @@ export interface SourceStatus {
 	id: string;
 	name: string;
 	type: string;
+	url?: string;
 	enabled: boolean;
 	fetchInterval: number;
 	lastFetchedAt: Date | null;
+	lastCollectedAt?: Date | null;
 	lastFetchStatus: string;
 	healthStatus: SourceHealthStatus;
 	nextFetchAt: Date | null;
@@ -216,3 +218,89 @@ export interface QueueStatsResponseData {
 
 /** 队列状态响应类型 */
 export type QueueStatsResponse = PaginatedResponse<QueueStatsResponseData>;
+
+/** 队列任务状态 */
+export type JobStatus = "waiting" | "active" | "completed" | "failed" | "delayed";
+
+/** 队列任务基本信息 */
+export interface QueueJob {
+	id: string | undefined;
+	name: string | undefined;
+	data: unknown;
+	progress: number | object;
+	attemptsMade: number;
+	timestamp: number | undefined;
+	processedOn: number | undefined;
+	finishedOn: number | undefined;
+	failedReason?: string;
+	stacktrace?: string[];
+	returnvalue: unknown;
+}
+
+/** 队列任务详细信息 */
+export interface QueueJobDetail extends QueueJob {
+	opts: unknown;
+}
+
+/** 队列处理速率统计 */
+export interface ProcessingRateStats {
+	completedPerMinute: number;
+	failedPerMinute: number;
+	avgProcessingTime: number;
+}
+
+// ============================================================================
+// Monitoring API Types
+// ============================================================================
+
+/** 系统概览统计 */
+export interface SystemOverview {
+	totalContents: number;
+	totalEntities: number;
+	activeSources: number;
+	todayNew: number;
+	queueWaiting: number;
+	queueActive: number;
+	systemStatus: "healthy" | "warning" | "error";
+}
+
+/** AI 处理性能指标 */
+export interface AiPerformanceMetrics {
+	filterCalls: number;
+	filterSuccessRate: number;
+	extractCalls: number;
+	extractSuccessRate: number;
+	avgResponseTime: number;
+	passRate: number;
+}
+
+/** 系统资源使用情况 */
+export interface SystemResourceMetrics {
+	database: {
+		status: "connected" | "disconnected";
+		connectionCount?: number;
+	};
+	redis: {
+		status: "connected" | "disconnected";
+		memoryUsage?: number;
+		memoryLimit?: number;
+	};
+	api: {
+		requestCount: number;
+		avgResponseTime: number;
+		errorRate: number;
+	};
+}
+
+/** 监控数据聚合 */
+export interface MonitoringData {
+	overview: SystemOverview;
+	queue: QueueStatsResponseData;
+	sources: SourceHealthResponseData;
+	aiPerformance: AiPerformanceMetrics;
+	systemResources: SystemResourceMetrics;
+	timestamp: string;
+}
+
+/** 监控数据响应类型 */
+export type MonitoringResponse = PaginatedResponse<MonitoringData>;

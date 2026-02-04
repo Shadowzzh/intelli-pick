@@ -16,6 +16,7 @@ import { registerV1Routes } from "./routes/v1/index";
 import {
 	ContentsService,
 	EntitiesService,
+	MonitoringService,
 	QueueService,
 	SearchService,
 	SourcesService,
@@ -65,6 +66,15 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 		? new QueueService(process.env.REDIS_URL, config?.queue.name)
 		: null;
 
+	// Initialize monitoring service
+	const monitoringService = new MonitoringService(
+		statsService,
+		queueService,
+		sourcesService,
+		contentsService,
+		entitiesService,
+	);
+
 	// Register RESTful routes
 	await registerV1Routes(app, {
 		contentsService,
@@ -72,6 +82,7 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 		searchService,
 		sourcesService,
 		statsService,
+		monitoringService,
 		queueService: queueService ?? undefined,
 		config,
 	});

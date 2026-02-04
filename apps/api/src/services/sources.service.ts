@@ -62,13 +62,19 @@ export class SourcesService {
 			);
 		}
 
+		// 从 config 中提取 URL
+		const config = source.config as Record<string, unknown>;
+		const url = typeof config?.url === "string" ? config.url : undefined;
+
 		return {
 			id: source.id,
 			name: source.name,
 			type: source.type,
+			url,
 			enabled: source.enabled ?? true,
 			fetchInterval: source.fetchInterval ?? 3600,
 			lastFetchedAt: source.lastFetchedAt,
+			lastCollectedAt: source.lastFetchedAt,
 			lastFetchStatus: healthStatus === "error" ? "failed" : "success",
 			healthStatus,
 			nextFetchAt,

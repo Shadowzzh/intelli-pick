@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ContentHomePage } from "./pages/ContentHomePage";
+import { MonitoringPage } from "./pages/MonitoringPage";
 import { TestPage } from "./pages/TestPage";
 
 function App() {
@@ -13,6 +14,14 @@ function App() {
 					element={
 						<ErrorBoundary>
 							<ContentHomePage />
+						</ErrorBoundary>
+					}
+				/>
+				<Route
+					path="/monitoring"
+					element={
+						<ErrorBoundary>
+							<MonitoringPage />
 						</ErrorBoundary>
 					}
 				/>

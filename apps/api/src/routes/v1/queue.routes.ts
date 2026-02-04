@@ -8,4 +8,55 @@ export async function queueRoutes(app: FastifyInstance, service: QueueService) {
 		const result = await service.getStats();
 		return result;
 	});
+
+	// Get jobs list by status
+	app.get<{
+		Querystring: {
+			status: "waiting" | "active" | "completed" | "failed" | "delayed";
+			start?: string;
+			end?: string;
+		};
+	}>(
+		"/queue/jobs",
+		{
+			schema: {
+				querystring: {
+					type: "object",
+					required: ["status"],
+					properties: {
+						status: {
+							type: "string",
+							enum: ["waiting", "active", "completed", "failed", "delayed"],
+						},
+						start: { type: "string" },
+						end: { type: "string" },
+					},
+				},
+			},
+		},
+		async (req) => {
+			const { status, start = "0", end = "9" } = req.query;
+			const result = await service.getJobs(
+				status,
+				Number.parseInt(start),
+				Number.parseInt(end),
+			);
+			return result;
+		},
+	);
+
+	// Get single job details
+	app.get<{
+		Params: { jobId: string };
+	}>("/queue/jobs/:jobId", async (req) => {
+		const { jobId } = req.params;
+		const result = await service.getJob(jobId);
+		return result;
+	});
+
+	// Get processing rate statistics
+	app.get("/queue/processing-rate", async (req) => {
+		const result = await service.getProcessingRate();
+		return result;
+	});
 }

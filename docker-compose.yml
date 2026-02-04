@@ -62,11 +62,11 @@ services:
     container_name: intellipick-db
     restart: unless-stopped
     ports:
-      - "15432:5432"  # 暴露数据库到宿主机 15432 端口
+      - "${DB_PORT_MAPPING:-15432:5432}"  # 暴露数据库到宿主机端口
     environment:
-      POSTGRES_DB: intellipick
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: ${POSTGRES_DB:-intellipick}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

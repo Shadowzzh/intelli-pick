@@ -31,11 +31,28 @@ interface StatsData {
 	[key: string]: unknown;
 }
 
+interface MonitoringData {
+	overview?: {
+		totalContents: number;
+		totalEntities: number;
+		activeSources: number;
+		todayNew: number;
+		queueWaiting: number;
+		queueActive: number;
+		systemStatus: "healthy" | "warning" | "error";
+	};
+	queue?: unknown;
+	timestamp: string;
+	[key: string]: unknown;
+}
+
 export interface ServerToClientEvents {
 	"content:new": (data: ContentData) => void;
 	"content:created": (data: ContentData) => void;
 	"entity:updated": (data: EntityData) => void;
 	"stats:updated": (data: StatsData) => void;
+	"monitoring:updated": (data: MonitoringData) => void;
+	"queue:updated": (data: unknown) => void;
 }
 
 export interface ClientToServerEvents {
@@ -98,6 +115,14 @@ export async function initSocket(app: FastifyInstance) {
 
 	eventEmitter.on("stats:updated", (stats) => {
 		io?.emit("stats:updated", stats);
+	});
+
+	eventEmitter.on("monitoring:updated", (monitoring) => {
+		io?.emit("monitoring:updated", monitoring);
+	});
+
+	eventEmitter.on("queue:updated", (queue) => {
+		io?.emit("queue:updated", queue);
 	});
 
 	console.log("Socket.IO server initialized");
