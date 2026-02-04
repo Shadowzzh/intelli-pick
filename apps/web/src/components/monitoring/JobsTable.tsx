@@ -4,7 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { QueueJob } from "@intellipick/shared";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { useRef } from "react";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 
 interface JobsTableProps {
 	jobs: QueueJob[];
@@ -23,7 +24,17 @@ export function JobsTable({
 	onJobClick,
 	onLoadMore,
 }: JobsTableProps) {
-	const loadMoreRef = useRef<HTMLDivElement>(null);
+	const { ref: loadMoreRef, inView } = useInView({
+		threshold: 0.1,
+		triggerOnce: false,
+	});
+
+	// 当进入视口且还有更多数据时，触发加载
+	useEffect(() => {
+		if (inView && hasMore && !isLoadingMore) {
+			onLoadMore();
+		}
+	}, [inView, hasMore, isLoadingMore, onLoadMore]);
 
 	const getStatusBadge = (job: QueueJob) => {
 		let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
@@ -51,22 +62,6 @@ export function JobsTable({
 			</Badge>
 		);
 	};
-
-	// 设置 Intersection Observer
-	if (typeof window !== "undefined" && loadMoreRef.current) {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-					onLoadMore();
-				}
-			},
-			{ threshold: 0.1 }
-		);
-
-		observer.observe(loadMoreRef.current);
-
-		return () => observer.disconnect();
-	}
 
 	if (isLoading) {
 		return (
