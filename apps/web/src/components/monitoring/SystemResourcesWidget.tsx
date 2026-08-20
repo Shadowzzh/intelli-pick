@@ -1,9 +1,9 @@
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Widget } from "@/components/widgets/Widget";
 import { WidgetEmptyState } from "@/components/widgets/WidgetEmptyState";
 import type { SystemResourceMetrics } from "@intellipick/shared";
 import { AlertTriangle, Cpu, Server } from "lucide-react";
-import { StatusIndicator } from "./StatusIndicator";
 
 interface SystemResourcesWidgetProps {
 	data?: SystemResourceMetrics;
@@ -18,6 +18,28 @@ export function SystemResourcesWidget({ data }: SystemResourcesWidgetProps) {
 		);
 	}
 
+	const isDatabaseConnected = data.database.status === "connected";
+	const isRedisConnected = data.redis.status === "connected";
+
+	// 计算内存使用情况
+	let memoryUsagePercent = 0;
+	let memoryUsageMB = 0;
+	let memoryLimitMB = 0;
+	let hasMemoryData = false;
+
+	if (
+		data.redis.memoryUsage !== undefined &&
+		data.redis.memoryLimit !== undefined
+	) {
+		hasMemoryData = true;
+		memoryUsagePercent =
+			(data.redis.memoryUsage / data.redis.memoryLimit) * 100;
+		memoryUsageMB = data.redis.memoryUsage / 1024 / 1024;
+		memoryLimitMB = data.redis.memoryLimit / 1024 / 1024;
+	}
+
+	const showMemoryWarning = memoryUsagePercent > 80;
+
 	return (
 		<Widget
 			title="系统资源"
@@ -31,11 +53,9 @@ export function SystemResourcesWidget({ data }: SystemResourcesWidgetProps) {
 						<Cpu className="h-4 w-4 text-muted-foreground" />
 						<span className="text-sm font-medium">数据库</span>
 					</div>
-					<StatusIndicator
-						status={data.database.status === "connected" ? "healthy" : "error"}
-						variant="badge"
-						label={data.database.status === "connected" ? "已连接" : "未连接"}
-					/>
+					<Badge variant={isDatabaseConnected ? "success" : "error"}>
+						{isDatabaseConnected ? "已连接" : "未连接"}
+					</Badge>
 				</div>
 				{data.database.connectionCount !== undefined && (
 					<div className="text-xs text-muted-foreground">
@@ -51,33 +71,24 @@ export function SystemResourcesWidget({ data }: SystemResourcesWidgetProps) {
 						<Server className="h-4 w-4 text-muted-foreground" />
 						<span className="text-sm font-medium">Redis</span>
 					</div>
-					<StatusIndicator
-						status={data.redis.status === "connected" ? "healthy" : "error"}
-						variant="badge"
-						label={data.redis.status === "connected" ? "已连接" : "未连接"}
-					/>
+					<Badge variant={isRedisConnected ? "success" : "error"}>
+						{isRedisConnected ? "已连接" : "未连接"}
+					</Badge>
 				</div>
-				{data.redis.memoryUsage !== undefined &&
-					data.redis.memoryLimit !== undefined && (
-						<div className="space-y-2">
-							<div className="relative">
-								<Progress
-									value={
-										(data.redis.memoryUsage / data.redis.memoryLimit) * 100
-									}
-									className="h-2"
-								/>
-								{(data.redis.memoryUsage / data.redis.memoryLimit) * 100 >
-									80 && (
-									<AlertTriangle className="absolute -right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-500" />
-								)}
-							</div>
-							<div className="text-xs text-muted-foreground">
-								内存: {(data.redis.memoryUsage / 1024 / 1024).toFixed(2)} MB /{" "}
-								{(data.redis.memoryLimit / 1024 / 1024).toFixed(2)} MB
-							</div>
+				{hasMemoryData && (
+					<div className="space-y-2">
+						<div className="relative">
+							<Progress value={memoryUsagePercent} className="h-2" />
+							{showMemoryWarning && (
+								<AlertTriangle className="absolute -right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-500" />
+							)}
 						</div>
-					)}
+						<div className="text-xs text-muted-foreground">
+							内存: {memoryUsageMB.toFixed(2)} MB / {memoryLimitMB.toFixed(2)}{" "}
+							MB
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* API 统计 */}

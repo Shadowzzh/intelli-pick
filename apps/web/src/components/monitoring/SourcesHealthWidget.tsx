@@ -3,7 +3,6 @@ import { Widget } from "@/components/widgets/Widget";
 import { WidgetEmptyState } from "@/components/widgets/WidgetEmptyState";
 import type { SourceHealthResponseData } from "@intellipick/shared";
 import { Database } from "lucide-react";
-import { StatusIndicator } from "./StatusIndicator";
 import { getTimeStatus } from "./styles";
 
 interface SourcesHealthWidgetProps {
@@ -35,10 +34,6 @@ export function SourcesHealthWidget({ data }: SourcesHealthWidgetProps) {
 							className="p-3 rounded-lg border hover:bg-accent/50 transition-colors"
 						>
 							<div className="flex items-start gap-2">
-								<StatusIndicator
-									status={source.enabled ? "healthy" : "error"}
-									variant="dot"
-								/>
 								<div className="flex-1 min-w-0">
 									<div className="font-medium truncate text-sm">
 										{source.name}

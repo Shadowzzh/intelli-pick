@@ -1,6 +1,5 @@
 // apps/web/src/components/monitoring/JobsTable.tsx
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { QueueJob } from "@intellipick/shared";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
@@ -37,18 +36,21 @@ export function JobsTable({
 	}, [inView, hasMore, isLoadingMore, onLoadMore]);
 
 	const getStatusBadge = (job: QueueJob) => {
-		let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
-		let colorClass = "";
+		let variant: "default" | "secondary" | "destructive" | "outline" =
+			"outline";
+		let icon = null;
 
 		if (job.failedReason) {
 			variant = "destructive";
-			colorClass = "bg-red-500/10 text-red-700";
+			icon = "❌";
 		} else if (job.finishedOn) {
-			colorClass = "bg-green-500/10 text-green-700";
+			variant = "default";
+			icon = "✅";
 		} else if (job.processedOn) {
-			colorClass = "bg-orange-500/10 text-orange-700";
+			variant = "secondary";
+			icon = "⚙️";
 		} else {
-			colorClass = "bg-blue-500/10 text-blue-700";
+			icon = "⏳";
 		}
 
 		let statusLabel = "等待中";
@@ -57,18 +59,19 @@ export function JobsTable({
 		else if (job.processedOn) statusLabel = "处理中";
 
 		return (
-			<Badge variant={variant} className={colorClass}>
-				{statusLabel}
+			<Badge variant={variant} className="gap-1.5">
+				<span>{icon}</span>
+				<span>{statusLabel}</span>
 			</Badge>
 		);
 	};
 
 	if (isLoading) {
 		return (
-			<div className="space-y-2">
+			<div className="space-y-3 p-4">
 				{Array.from({ length: 5 }).map((_, i) => (
-					<div key={i} className="p-4 border-b">
-						<Skeleton className="h-16 w-full" />
+					<div key={i} className="animate-pulse">
+						<div className="h-20 bg-muted rounded-lg" />
 					</div>
 				))}
 			</div>
@@ -77,42 +80,49 @@ export function JobsTable({
 
 	if (jobs.length === 0) {
 		return (
-			<div className="text-center py-8 text-muted-foreground">
-				暂无符合条件的任务
+			<div className="flex flex-col items-center justify-center py-12 text-center">
+				<div className="text-lg font-medium text-muted-foreground">
+					暂无符合条件的任务
+				</div>
+				<div className="text-sm text-muted-foreground mt-1">
+					尝试切换状态筛选器查看其他任务
+				</div>
 			</div>
 		);
 	}
 
 	return (
 		<div className="w-full">
-			{/* 表头 */}
-			<div className="grid grid-cols-[120px_100px_1fr_160px_80px] gap-2 px-4 py-2 bg-muted/50 text-sm font-medium text-muted-foreground">
-				<div>任务ID</div>
-				<div>状态</div>
-				<div>数据摘要</div>
-				<div>创建时间</div>
-				<div>操作</div>
-			</div>
-
 			{/* 表格内容 */}
 			<div className="divide-y">
 				{jobs.map((job) => (
 					<div
 						key={job.id}
 						onClick={() => onJobClick(job)}
-						className="grid grid-cols-[120px_100px_1fr_160px_80px] gap-2 px-4 py-3 hover:bg-accent/50 cursor-pointer items-center"
+						onKeyDown={(e) => e.key === "Enter" && onJobClick(job)}
+						className="grid grid-cols-[140px_120px_1fr_180px_90px] gap-3 px-4 py-3.5 hover:bg-accent/50 cursor-pointer items-center transition-colors"
 					>
 						{/* 任务ID */}
-						<div className="text-xs font-mono truncate" title={job.id || undefined}>
-							{job.id?.slice(0, 8) || "N/A"}
+						<div className="flex flex-col">
+							<div
+								className="text-xs font-mono font-medium truncate"
+								title={job.id || undefined}
+							>
+								{job.id?.slice(0, 8) || "N/A"}
+							</div>
+							{job.attemptsMade > 0 && (
+								<div className="text-xs text-muted-foreground mt-0.5">
+									重试 {job.attemptsMade} 次
+								</div>
+							)}
 						</div>
 
 						{/* 状态 */}
 						<div>{getStatusBadge(job)}</div>
 
 						{/* 数据摘要 */}
-						<div className="text-sm truncate">
-							{job.data ? JSON.stringify(job.data).slice(0, 100) : "N/A"}
+						<div className="text-sm truncate text-muted-foreground">
+							{job.data ? JSON.stringify(job.data).slice(0, 80) : "N/A"}
 						</div>
 
 						{/* 创建时间 */}
@@ -121,14 +131,15 @@ export function JobsTable({
 								? formatDistanceToNow(new Date(job.timestamp), {
 										addSuffix: true,
 										locale: zhCN,
-								  })
+									})
 								: "N/A"}
 						</div>
 
 						{/* 操作 */}
 						<div>
 							<button
-								className="text-xs text-primary hover:underline"
+								type="button"
+								className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
 								onClick={(e) => {
 									e.stopPropagation();
 									onJobClick(job);
@@ -142,9 +153,19 @@ export function JobsTable({
 			</div>
 
 			{/* 加载更多触发器 */}
-			<div ref={loadMoreRef} className="py-4 text-center text-sm text-muted-foreground">
-				{isLoadingMore && "🔄 加载更多..."}
-				{!hasMore && jobs.length > 0 && "✅ 已加载全部任务"}
+			<div ref={loadMoreRef} className="py-6 text-center">
+				{isLoadingMore && (
+					<div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+						<div className="animate-spin">⚙️</div>
+						<span>加载更多...</span>
+					</div>
+				)}
+				{!hasMore && jobs.length > 0 && (
+					<div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+						<span>✅</span>
+						<span>已加载全部任务</span>
+					</div>
+				)}
 			</div>
 		</div>
 	);

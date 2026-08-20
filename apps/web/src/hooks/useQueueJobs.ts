@@ -25,7 +25,10 @@ export function useQueueJobs(status: JobStatus, start = 0, end = 9) {
 export function useQueueJob(jobId: string | null) {
 	return useQuery<QueueJobDetail>({
 		queryKey: ["queue-job", jobId],
-		queryFn: () => getQueueJob(jobId!),
+		queryFn: () => {
+			if (!jobId) throw new Error("jobId is required");
+			return getQueueJob(jobId);
+		},
 		enabled: !!jobId,
 	});
 }

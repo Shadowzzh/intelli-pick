@@ -32,6 +32,16 @@ export const statusStyles = {
 export type StatusType = keyof typeof statusStyles;
 
 /**
+ * 将状态类型映射到 Badge variant
+ */
+export function statusToBadgeVariant(
+	status: StatusType,
+): "success" | "warning" | "error" {
+	if (status === "healthy") return "success";
+	return status;
+}
+
+/**
  * AI 服务成功率映射
  */
 export function getAiStatus(successRate: number): StatusType {

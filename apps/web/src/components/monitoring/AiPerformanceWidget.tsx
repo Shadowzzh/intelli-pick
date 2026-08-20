@@ -1,9 +1,9 @@
+import { Badge } from "@/components/ui/badge";
 import { Widget } from "@/components/widgets/Widget";
 import { WidgetEmptyState } from "@/components/widgets/WidgetEmptyState";
 import type { AiPerformanceMetrics } from "@intellipick/shared";
 import { Zap } from "lucide-react";
-import { StatusIndicator } from "./StatusIndicator";
-import { getAiLabel, getAiStatus } from "./styles";
+import { getAiLabel, getAiStatus, statusToBadgeVariant } from "./styles";
 
 interface AiPerformanceWidgetProps {
 	data?: AiPerformanceMetrics;
@@ -28,11 +28,11 @@ export function AiPerformanceWidget({ data }: AiPerformanceWidgetProps) {
 			<div className="p-3 rounded-lg border bg-muted/30">
 				<div className="flex items-center justify-between mb-2">
 					<span className="text-sm font-medium">过滤服务</span>
-					<StatusIndicator
-						status={getAiStatus(data.filterSuccessRate)}
-						variant="badge"
-						label={getAiLabel(data.filterSuccessRate)}
-					/>
+					<Badge
+						variant={statusToBadgeVariant(getAiStatus(data.filterSuccessRate))}
+					>
+						{getAiLabel(data.filterSuccessRate)}
+					</Badge>
 				</div>
 				<div className="grid grid-cols-2 gap-2">
 					<div>
@@ -52,11 +52,11 @@ export function AiPerformanceWidget({ data }: AiPerformanceWidgetProps) {
 			<div className="p-3 rounded-lg border bg-muted/30">
 				<div className="flex items-center justify-between mb-2">
 					<span className="text-sm font-medium">实体提取</span>
-					<StatusIndicator
-						status={getAiStatus(data.extractSuccessRate)}
-						variant="badge"
-						label={getAiLabel(data.extractSuccessRate)}
-					/>
+					<Badge
+						variant={statusToBadgeVariant(getAiStatus(data.extractSuccessRate))}
+					>
+						{getAiLabel(data.extractSuccessRate)}
+					</Badge>
 				</div>
 				<div className="grid grid-cols-2 gap-2">
 					<div>

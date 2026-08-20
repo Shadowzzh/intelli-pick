@@ -2,10 +2,13 @@ import { Badge } from "@/components/ui/badge";
 import { Widget } from "@/components/widgets/Widget";
 import { WidgetEmptyState } from "@/components/widgets/WidgetEmptyState";
 import { useQueueJobs } from "@/hooks/useQueueJobs";
-import type { JobStatus, QueueJob, QueueStatsResponseData } from "@intellipick/shared";
+import type {
+	JobStatus,
+	QueueJob,
+	QueueStatsResponseData,
+} from "@intellipick/shared";
 import { Layers } from "lucide-react";
 import { useEffect, useState } from "react";
-import { JobDetailDialog } from "./JobDetailDialog";
 import { JobsTable } from "./JobsTable";
 import { StatusFilterBar } from "./StatusFilterBar";
 
@@ -17,14 +20,20 @@ export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
 	const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
 	const [page, setPage] = useState(0);
 	const [allJobs, setAllJobs] = useState<QueueJob[]>([]);
-	const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+	const [_, setSelectedJobId] = useState<string | null>(null);
 	const pageSize = 20;
 
 	// 获取任务列表
-	const { data: jobs, isLoading, isFetching } = useQueueJobs(
-		statusFilter === "all" ? ("waiting" as JobStatus) : (statusFilter as JobStatus),
+	const {
+		data: jobs,
+		isLoading,
+		isFetching,
+	} = useQueueJobs(
+		statusFilter === "all"
+			? ("waiting" as JobStatus)
+			: (statusFilter as JobStatus),
 		page * pageSize,
-		(page + 1) * pageSize - 1
+		(page + 1) * pageSize - 1,
 	);
 
 	// 累加数据
@@ -77,7 +86,10 @@ export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
 				icon={<Layers className="h-4 w-4" />}
 				actions={
 					<div className="flex items-center gap-4">
-						<StatusFilterBar value={statusFilter} onChange={handleStatusChange} />
+						<StatusFilterBar
+							value={statusFilter}
+							onChange={handleStatusChange}
+						/>
 						<Badge variant="outline">{queue.name}</Badge>
 					</div>
 				}
@@ -92,11 +104,11 @@ export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
 				/>
 			</Widget>
 
-			<JobDetailDialog
+			{/* <JobDetailDialog
 				jobId={selectedJobId}
 				open={!!selectedJobId}
 				onOpenChange={(open) => !open && setSelectedJobId(null)}
-			/>
+			/> */}
 		</>
 	);
 }
