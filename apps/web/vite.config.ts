@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
 		server: {
 			port: 5173,
 			host: "0.0.0.0",
+			allowedHosts: ["mini", "mini.local"],
 			proxy: {
 				"/graphql": {
 					target: proxyTarget,
