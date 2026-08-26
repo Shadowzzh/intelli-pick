@@ -1,6 +1,6 @@
 import type { Config } from "@intellipick/config";
 // apps/api/src/pipeline/index.ts
-import type { RawContent } from "@intellipick/shared";
+import type { PipelineJobResult, RawContent } from "@intellipick/shared";
 import type { AiClient } from "../lib/ai";
 import { createLogger, createRequestLogger } from "../lib/logger";
 import { AiExtractStep } from "./ai-extract";
@@ -36,14 +36,17 @@ export class Pipeline {
 		];
 	}
 
-	async process(raw: RawContent, requestId?: string): Promise<boolean> {
+	async process(
+		raw: RawContent,
+		requestId?: string,
+	): Promise<PipelineJobResult> {
 		// 创建带追踪 ID 的 logger
 		const requestLogger = requestId
 			? createRequestLogger("pipeline", requestId)
 			: logger;
 
 		const sourceNames = this.config.sources.map((s) => s.name);
-		let ctx: PipelineContext = { raw, sourceNames };
+		let ctx: PipelineContext = { raw, sourceNames, aiMetrics: {} };
 
 		for (const step of this.steps) {
 			requestLogger.debug(
@@ -61,7 +64,7 @@ export class Pipeline {
 					},
 					"Content filtered out",
 				);
-				return false;
+				return { success: false, aiMetrics: ctx.aiMetrics };
 			}
 
 			if (result.status === StepStatus.Error) {
@@ -69,7 +72,7 @@ export class Pipeline {
 					{ step: step.name, url: raw.url, error: result.error },
 					"Step failed",
 				);
-				return false;
+				return { success: false, aiMetrics: ctx.aiMetrics };
 			}
 
 			if (result.status === StepStatus.Continue && result.context) {
@@ -80,11 +83,11 @@ export class Pipeline {
 					{ step: step.name, url: raw.url, result },
 					"Unexpected step result",
 				);
-				return false;
+				return { success: false, aiMetrics: ctx.aiMetrics };
 			}
 		}
 
-		return true;
+		return { success: true, aiMetrics: ctx.aiMetrics };
 	}
 
 	async processAll(
@@ -100,8 +103,8 @@ export class Pipeline {
 
 		for (const item of items) {
 			processed++;
-			const success = await this.process(item, requestId);
-			if (success) passed++;
+			const result = await this.process(item, requestId);
+			if (result.success) passed++;
 		}
 
 		requestLogger.info({ processed, passed }, "Pipeline batch completed");

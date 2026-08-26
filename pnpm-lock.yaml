@@ -15,6 +15,9 @@ importers:
       '@biomejs/biome':
         specifier: ^1.9.0
         version: 1.9.4
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.3
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
@@ -27,15 +30,18 @@ importers:
 
   apps/api:
     dependencies:
-      '@ai-sdk/openai':
-        specifier: ^1.0.0
-        version: 1.3.24(zod@3.25.76)
+      '@fastify/cookie':
+        specifier: ^11.0.0
+        version: 11.1.2
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0
       '@fastify/rate-limit':
         specifier: ^10.3.0
         version: 10.3.0
+      '@intellipick/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@intellipick/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -66,9 +72,6 @@ importers:
       fastify:
         specifier: ^5.6.2
         version: 5.6.2
-      fastify-socket.io:
-        specifier: ^5.1.0
-        version: 5.1.0(fastify@5.6.2)(socket.io@4.8.3)
       graphql:
         specifier: ^16.12.0
         version: 16.12.0
@@ -215,12 +218,9 @@ importers:
 
   apps/worker:
     dependencies:
-      '@ai-sdk/anthropic':
-        specifier: ^1.0.0
-        version: 1.2.12(zod@3.25.76)
-      '@ai-sdk/openai':
-        specifier: ^1.0.0
-        version: 1.3.24(zod@3.25.76)
+      '@intellipick/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@intellipick/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -285,6 +285,31 @@ importers:
       tsx:
         specifier: ^4.19.0
         version: 4.21.0
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/ai:
+    dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^1.0.0
+        version: 1.2.12(zod@3.25.76)
+      '@ai-sdk/openai':
+        specifier: ^1.0.0
+        version: 1.3.24(zod@3.25.76)
+      '@intellipick/config':
+        specifier: workspace:*
+        version: link:../config
+      ai:
+        specifier: ^4.0.0
+        version: 4.3.19(react@19.2.3)(zod@3.25.76)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.3
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -1369,6 +1394,9 @@ packages:
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
+
+  '@fastify/cookie@11.1.2':
+    resolution: {integrity: sha512-Dtrpk/YOGUsbRMvP/8ZqPpwnMRv0qSqodFdoQ2B589Obc7jw4s4Qla+cV72Bsm7WsZJnqlYFX/i7uSBq0xzg6g==}
 
   '@fastify/cors@11.2.0':
     resolution: {integrity: sha512-LbLHBuSAdGdSFZYTLVA3+Ch2t+sA6nq3Ejc6XLAKiQ6ViS2qFnvicpj0htsx03FyYeLs04HfRNBsz/a8SvbcUw==}
@@ -2461,6 +2489,10 @@ packages:
     resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
     engines: {node: '>=18'}
 
+  cookie@2.0.1:
+    resolution: {integrity: sha512-yuToqVvRrj6pfDXREyQAAv8SkAEk/8GS3jQRTiUMm66TVtBYmqQeoEjL2Lmq8Rpo6271vH76InTChTitEAm65w==}
+    engines: {node: '>=22'}
+
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
     engines: {node: '>= 0.10'}
@@ -2815,17 +2847,11 @@ packages:
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
-  fastify-plugin@4.5.1:
-    resolution: {integrity: sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==}
-
   fastify-plugin@5.1.0:
     resolution: {integrity: sha512-FAIDA8eovSt5qcDgcBvDuX/v0Cjz0ohGhENZ/wpc3y+oZCY2afZ9Baqql3g/lC+OHRnciQol4ww7tuthOb9idw==}
 
-  fastify-socket.io@5.1.0:
-    resolution: {integrity: sha512-GC1gjrxBGeTbMWV779XHF4uw3AtgKwSQJ9MnjGiMp91ZBuPXEdBYa7NnAMDEl3oZPgK9JO4BlNncTV+UAN+1kg==}
-    peerDependencies:
-      fastify: 4.x.x
-      socket.io: '>=4'
+  fastify-plugin@6.0.0:
+    resolution: {integrity: sha512-fZOty7z3O7vOliF6d8bHE3wiEh1KcNnKEQensSgTk9C1DvN6nRLS++XVd86v33Hw/8u9Un8A1zDrQ8ujcQDHEg==}
 
   fastify@5.6.2:
     resolution: {integrity: sha512-dPugdGnsvYkBlENLhCgX8yhyGCsCPrpA8lFWbTNU428l+YOnLgYHR69hzV8HWPC79n536EqzqQtvhtdaCE0dKg==}
@@ -2926,11 +2952,13 @@ packages:
 
   glob@10.5.0:
     resolution: {integrity: sha512-DfXN8DfhJ7NH3Oe7cFmu3NCu1wKbkReJ8TorzSAFbSKrlNaQSKfIzqYqVY8zlbs2NLBbWpRiU52GX2PbaBVNkg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@11.1.0:
     resolution: {integrity: sha512-vuNwKSaKiqm7g0THUBu2x7ckSs3XJLXE+2ssL7/MfTGPLLcrJQ/4Uq1CjPTtO5cCIiRxqvN6Twy1qOwhL0Xjcw==}
     engines: {node: 20 || >=22}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   gopd@1.2.0:
@@ -4904,6 +4932,11 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
+  '@fastify/cookie@11.1.2':
+    dependencies:
+      cookie: 2.0.1
+      fastify-plugin: 6.0.0
+
   '@fastify/cors@11.2.0':
     dependencies:
       fastify-plugin: 5.1.0
@@ -5935,6 +5968,8 @@ snapshots:
 
   cookie@1.1.1: {}
 
+  cookie@2.0.1: {}
+
   cors@2.8.5:
     dependencies:
       object-assign: 4.1.1
@@ -6334,16 +6369,9 @@ snapshots:
 
   fast-uri@3.1.0: {}
 
-  fastify-plugin@4.5.1: {}
-
   fastify-plugin@5.1.0: {}
 
-  fastify-socket.io@5.1.0(fastify@5.6.2)(socket.io@4.8.3):
-    dependencies:
-      fastify: 5.6.2
-      fastify-plugin: 4.5.1
-      socket.io: 4.8.3
-      tslib: 2.8.1
+  fastify-plugin@6.0.0: {}
 
   fastify@5.6.2:
     dependencies:

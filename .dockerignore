@@ -1,67 +1,28 @@
-# ============================================
-# Docker 构建忽略文件（本地编译方案）
-# ============================================
-
-# Dependencies
-node_modules
-.pnp
-.pnp.js
-
-# Environment files
-.env
-.env.local
-.env.development
-.env.production
-
-# Testing
-coverage
-*.log
-
-# Git
 .git
-.gitignore
-
-# IDE
+.github
+.agents
+.claude
 .vscode
 .idea
-*.swp
-*.swo
-*~
-
-# Documentation
-docs
-*.md
-!README.md
-
-# Misc
 .DS_Store
-*.tsbuildinfo
 
-# ============================================
-# 本地编译方案：排除源码，只保留 dist
-# ============================================
-
-# TypeScript 源文件（不需要复制到 Docker）
-**/*.ts
-!**/*.d.ts
-
-# 例外：允许根目录的 config 文件
-!/config*.ts
-
-# Turbo 构建缓存
+node_modules
+**/node_modules
+dist
+**/dist
 .turbo
+**/.turbo
+coverage
+**/coverage
+*.log
 
-# 测试文件
+.env
+.env.*
+!.env.example
+
+docs
+test-data
 **/*.test.ts
+**/*.test.tsx
 **/*.spec.ts
-test
-tests
-__tests__
-
-# 开发配置
-.prettierrc*
-.biomer*
-biome.json
-
-# Git hooks
-.husky
+**/*.spec.tsx

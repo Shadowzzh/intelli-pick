@@ -32,5 +32,9 @@ export type {
 	RssConfig,
 	V2exConfig,
 	AiConfig,
+	AiProviderConfig,
+	AiTaskName,
 	ApiConfig,
+	JobsConfig,
+	JobSourceConfig,
 } from "./schema";

@@ -1,7 +1,10 @@
+import { useAuth } from "@/auth/AuthProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 import { useRefreshAll } from "@/hooks/useRefreshAll";
 import { cn } from "@/lib/utils";
-import { RefreshCw } from "lucide-react";
+import { LoaderCircle, LogOut, RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 interface PageHeaderProps {
@@ -13,27 +16,41 @@ interface PageHeaderProps {
 
 const navItems = [
 	{ href: "/", label: "内容主页" },
+	{ href: "/jobs", label: "工作" },
 	{ href: "/monitoring", label: "系统监控" },
 ];
 
 export function PageHeader({ themeToggle = <ThemeToggle /> }: PageHeaderProps) {
+	const { logout } = useAuth();
 	const { isRefreshing, refreshAll } = useRefreshAll();
 	const location = useLocation();
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+	const handleLogout = async () => {
+		setIsLoggingOut(true);
+		try {
+			await logout();
+		} catch (error) {
+			console.error("退出登录失败", error);
+		} finally {
+			setIsLoggingOut(false);
+		}
+	};
 
 	return (
 		<div className="widget mb-6 px-4 py-2">
-			<div className="flex items-center gap-6">
+			<div className="flex flex-wrap items-center gap-x-6 gap-y-2">
 				{/* Logo */}
 				<Link
 					to="/"
 					className="flex items-center gap-2 hover:opacity-80 transition-opacity"
 				>
-					<div className="text-xl font-bold text-primary">I</div>
-					<span className="text-base font-bold">IntelliPick</span>
+					<div className="text-xl font-bold text-primary">S</div>
+					<span className="text-base font-bold">Sift</span>
 				</Link>
 
 				{/* Navigation */}
-				<nav className="flex items-center gap-4">
+				<nav className="order-3 flex w-full items-center gap-4 md:order-none md:w-auto">
 					{navItems.map((item) => (
 						<Link
 							key={item.href}
@@ -71,6 +88,23 @@ export function PageHeader({ themeToggle = <ThemeToggle /> }: PageHeaderProps) {
 
 					{/* 主题切换 */}
 					{themeToggle}
+
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						onClick={handleLogout}
+						disabled={isLoggingOut}
+						className="text-muted-foreground hover:text-foreground"
+						aria-label="退出登录"
+						title="退出登录"
+					>
+						{isLoggingOut ? (
+							<LoaderCircle className="size-4 animate-spin" />
+						) : (
+							<LogOut className="size-4" />
+						)}
+					</Button>
 				</div>
 			</div>
 		</div>

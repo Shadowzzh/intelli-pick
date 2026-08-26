@@ -12,7 +12,7 @@ export class ApiError extends Error {
 		this.name = "ApiError";
 	}
 
-	// Add statusCode property for Fastify
+	// 将业务错误码映射为对应的 HTTP 状态码
 	get statusCode(): number {
 		if (this.code === ErrorCode.NOT_FOUND) return 404;
 		if (this.code === ErrorCode.VALIDATION_ERROR) return 400;
@@ -34,25 +34,50 @@ export class ValidationError extends ApiError {
 	}
 }
 
+export class UnauthorizedError extends ApiError {
+	constructor(message = "请先登录") {
+		super(ErrorCode.UNAUTHORIZED, message);
+	}
+}
+
 export function handleError(
 	error: FastifyError,
 	request: FastifyRequest,
 	reply: FastifyReply,
 ) {
-	// Handle CORS and other early errors where reply might not be fully initialized
+	// 处理 CORS 等 reply 尚未完全初始化时产生的早期错误
 	if (typeof reply.code !== "function") {
 		request.log.error(error);
 		return;
 	}
 
 	if (error instanceof ApiError) {
-		const statusCode = error.code === ErrorCode.NOT_FOUND ? 404 : 400;
-		reply.code(statusCode).send({
+		reply.code(error.statusCode).send({
 			success: false,
 			error: {
 				code: error.code,
 				message: error.message,
 				details: error.details,
+			},
+		});
+		return;
+	}
+
+	if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
+		let code = ErrorCode.VALIDATION_ERROR;
+		if (error.statusCode === 401) {
+			code = ErrorCode.UNAUTHORIZED;
+		} else if (error.statusCode === 404) {
+			code = ErrorCode.NOT_FOUND;
+		} else if (error.statusCode === 429) {
+			code = ErrorCode.RATE_LIMIT_EXCEEDED;
+		}
+
+		reply.code(error.statusCode).send({
+			success: false,
+			error: {
+				code,
+				message: error.message,
 			},
 		});
 		return;

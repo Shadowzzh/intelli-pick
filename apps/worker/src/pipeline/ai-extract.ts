@@ -12,6 +12,7 @@ import type { Logger } from "pino";
 import { z } from "zod";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
+import { createAiCallMetric } from "./ai-metrics";
 import {
 	type PipelineContext,
 	type PipelineStep,
@@ -20,6 +21,11 @@ import {
 } from "./types";
 
 const logger = createLogger("ai-extract");
+
+const NullableOptionalStringSchema = z
+	.string()
+	.nullable()
+	.transform((value) => value ?? undefined);
 
 const ExtractResultSchema = z.object({
 	title: z.string(),
@@ -30,12 +36,12 @@ const ExtractResultSchema = z.object({
 		z.object({
 			name: z.string(),
 			type: z.string(), // 完全开放,允许 AI 自由定义
-			url: z.string().optional(),
-			description: z.string().optional(),
+			url: NullableOptionalStringSchema,
+			description: NullableOptionalStringSchema,
 		}),
 	),
 	category: z.enum(CONTENT_CATEGORY_VALUES),
-	subCategory: z.string().optional(), // 二级分类，AI 自由生成
+	subCategory: NullableOptionalStringSchema, // 二级分类，AI 自由生成
 	tags: z.array(z.string()),
 });
 
@@ -67,8 +73,8 @@ const EXTRACT_PROMPT = `你是一个内容分析器。从以下内容中提取�
 实体对象数组,每个实体包含:
 - name: 实体名称
 - type: 实体类型 (如 person、company、country、location、organization、product 等)
-- url: (可选) 相关URL
-- description: (可选) 简短描述
+- url: 相关URL，没有时返回 null
+- description: 简短描述，没有时返回 null
 
 注意事项:
 - 只提取明确提到的实体,不要推断
@@ -109,13 +115,13 @@ ${formatCategoriesForTools()}
 
 7. **其他** - 不便分类的内容
 
-### subCategory (可选) - 二级分类
+### subCategory (必需，可为 null) - 二级分类
 推荐使用以下二级分类，但也可以根据内容自由生成：
 ${formatSubCategoriesForPrompt()}
 
 说明：
 - 2-4 个字，简洁明了
-- 如果内容已经很明确，可以省略
+- 如果内容已经很明确，返回 null
 - 如果推荐的二级分类都不合适，可以生成新的
 
 ### tags (必需) - 标签
@@ -155,6 +161,9 @@ export class AiExtractStep implements PipelineStep {
 			};
 		}
 
+		const taskInfo = this.ai.getTaskInfo("extractAndClassify");
+		const startedAt = Date.now();
+
 		// 替换占位符
 		let prompt = EXTRACT_PROMPT.replace("{{content}}", raw.content);
 
@@ -171,13 +180,20 @@ export class AiExtractStep implements PipelineStep {
 		}
 
 		try {
-			const { object } = await generateObject({
+			const generation = await generateObject({
 				model: this.ai.getModel("extractAndClassify"),
 				schema: ExtractResultSchema,
 				prompt,
 			});
 
-			ctx.extractResult = object as ExtractResult;
+			ctx.extractResult = generation.object as ExtractResult;
+			ctx.aiMetrics.extract = createAiCallMetric({
+				task: "extractAndClassify",
+				taskInfo,
+				success: true,
+				durationMs: Date.now() - startedAt,
+				result: generation,
+			});
 
 			log.info(
 				{
@@ -195,9 +211,17 @@ export class AiExtractStep implements PipelineStep {
 				context: ctx,
 			};
 		} catch (err) {
+			ctx.aiMetrics.extract = createAiCallMetric({
+				task: "extractAndClassify",
+				taskInfo,
+				success: false,
+				durationMs: Date.now() - startedAt,
+				result: err,
+			});
 			log.error({ url: raw.url, err }, "AI extract failed");
 			return {
 				status: StepStatus.Error,
+				context: ctx,
 				error: err as Error,
 			};
 		}

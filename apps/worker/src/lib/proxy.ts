@@ -12,9 +12,9 @@ export function initializeProxy(config: Config) {
 	if (proxyUrl) {
 		proxyAgent = new ProxyAgent(proxyUrl);
 		nodeProxyAgent = new HttpsProxyAgent(proxyUrl);
-		console.log("🔧 Proxy config:", { proxyUrl, hasDispatcher: true });
+		console.log("Proxy config:", { proxyUrl, hasDispatcher: true });
 	} else {
-		console.log("🔧 Proxy config:", { proxyUrl: null, hasDispatcher: false });
+		console.log("Proxy config:", { proxyUrl: null, hasDispatcher: false });
 	}
 }
 

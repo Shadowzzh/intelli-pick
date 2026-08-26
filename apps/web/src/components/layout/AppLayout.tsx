@@ -27,7 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 							to="/"
 							className="text-xl font-bold hover:opacity-80 transition-opacity"
 						>
-							IntelliPick
+							Sift
 						</Link>
 
 						{/* Navigation */}

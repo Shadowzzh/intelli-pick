@@ -1,21 +1,30 @@
+import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
+import { createAiClient } from "@intellipick/ai";
 import type { Config } from "@intellipick/config";
 import { db } from "@intellipick/db";
 // apps/api/src/app.ts
 import fastify, { type FastifyInstance } from "fastify";
+import { NoSchemaIntrospectionCustomRule } from "graphql";
 import mercurius from "mercurius";
 import { createGraphQLServer } from "./graphql/index";
-import { handleError } from "./lib/errors";
+import type { AuthService } from "./lib/auth";
+import { readAuthSession } from "./lib/auth";
+import { UnauthorizedError, handleError } from "./lib/errors";
 import {
 	ContentsRepository,
 	EntitiesRepository,
+	JobHistoryRepository,
+	JobsRepository,
 	SourcesRepository,
 } from "./repositories/index";
 import { registerV1Routes } from "./routes/v1/index";
 import {
 	ContentsService,
 	EntitiesService,
+	JobHistoryService,
+	JobsService,
 	MonitoringService,
 	QueueService,
 	SearchService,
@@ -23,15 +32,20 @@ import {
 	StatsService,
 } from "./services/index";
 
-export async function createApp(config?: Config): Promise<FastifyInstance> {
+export async function createApp(
+	config?: Config,
+	auth?: AuthService,
+): Promise<FastifyInstance> {
 	const app = fastify({
 		logger: true,
+		trustProxy: true,
 	});
 
 	// CORS (从配置文件读取)
 	const corsOrigin = config?.api?.corsOrigin || "*";
 	await app.register(cors, {
 		origin: corsOrigin === "*" ? true : corsOrigin,
+		credentials: true,
 	});
 
 	// Rate limiting (从配置文件读取)
@@ -41,25 +55,54 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 		timeWindow: "1 minute",
 	});
 
+	if (auth) {
+		await app.register(cookie, {
+			secret: auth.config.sessionSecret,
+			hook: "onRequest",
+		});
+	}
+
+	// Error handler
+	app.setErrorHandler(handleError);
+
+	if (auth) {
+		app.addHook("onRequest", async (request) => {
+			const path = (request.raw.url || request.url).split("?", 1)[0];
+			const isPublicAuthRoute =
+				path === "/api/v1/auth/login" || path === "/api/v1/auth/logout";
+			const isProtectedRoute = path === "/graphql" || path.startsWith("/api/");
+
+			if (!isProtectedRoute || isPublicAuthRoute) {
+				return;
+			}
+
+			if (!readAuthSession(request, auth)) {
+				throw new UnauthorizedError();
+			}
+		});
+	}
+
 	// Health check
 	app.get("/health", async () => ({
 		success: true,
 		data: { status: "ok", timestamp: new Date().toISOString() },
 	}));
 
-	// Error handler
-	app.setErrorHandler(handleError);
-
 	// Initialize repositories and services
 	const contentsRepo = new ContentsRepository(db);
 	const entitiesRepo = new EntitiesRepository(db);
 	const sourcesRepo = new SourcesRepository(db);
+	const jobHistoryRepo = new JobHistoryRepository(db);
+	const jobsRepo = new JobsRepository(db);
 
 	const contentsService = new ContentsService(contentsRepo);
 	const entitiesService = new EntitiesService(entitiesRepo);
 	const sourcesService = new SourcesService(sourcesRepo);
 	const searchService = new SearchService(db);
 	const statsService = new StatsService();
+	const jobHistoryService = new JobHistoryService(jobHistoryRepo);
+	const jobsService = new JobsService(jobsRepo);
+	const ai = config ? createAiClient(config.ai) : undefined;
 
 	// Initialize queue service (optional, depends on REDIS_URL)
 	const queueService = process.env.REDIS_URL
@@ -73,6 +116,8 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 		sourcesService,
 		contentsService,
 		entitiesService,
+		jobHistoryService,
+		config?.ai,
 	);
 
 	// Register RESTful routes
@@ -84,7 +129,10 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 		statsService,
 		monitoringService,
 		queueService: queueService ?? undefined,
-		config,
+		jobHistoryService,
+		jobsService,
+		ai,
+		auth,
 	});
 
 	// GraphQL
@@ -93,6 +141,11 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 		entitiesService,
 		sourcesService,
 	);
+	const graphqlPlayground = config?.api?.graphql.playground ?? false;
+	const graphqlIntrospection = config?.api?.graphql.introspection ?? true;
+	const validationRules = graphqlIntrospection
+		? []
+		: [NoSchemaIntrospectionCustomRule];
 
 	// 注册 Mercurius GraphQL 插件
 	// 我们通过 declare module 扩展了 MercuriusContext，添加了自定义服务
@@ -100,13 +153,13 @@ export async function createApp(config?: Config): Promise<FastifyInstance> {
 		schema: graphqlConfig.typeDefs,
 		resolvers: graphqlConfig.resolvers,
 		context: graphqlConfig.context,
-		graphiql: true, // 开发模式下启用 GraphiQL IDE
+		graphiql: graphqlPlayground,
+		validationRules,
 		path: "/graphql",
 	});
 
-	// 允许 GraphQL playground 的 CORS
-	if (process.env.NODE_ENV !== "production") {
-		console.log("🔍 GraphQL Playground: http://localhost:3001/graphql");
+	if (graphqlPlayground) {
+		console.log("GraphQL Playground enabled at /graphql");
 	}
 
 	return app;

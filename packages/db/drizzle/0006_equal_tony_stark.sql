@@ -1,0 +1,2 @@
+ALTER TABLE "job_postings" ADD COLUMN "role_categories" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
+CREATE INDEX "job_postings_role_categories_idx" ON "job_postings" USING gin ("role_categories");

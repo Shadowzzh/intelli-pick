@@ -3,6 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import type { QueueJob } from "@intellipick/shared";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
+import {
+	CheckCircle2,
+	CircleDashed,
+	LoaderCircle,
+	XCircle,
+} from "lucide-react";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 
@@ -36,21 +42,18 @@ export function JobsTable({
 	}, [inView, hasMore, isLoadingMore, onLoadMore]);
 
 	const getStatusBadge = (job: QueueJob) => {
-		let variant: "default" | "secondary" | "destructive" | "outline" =
-			"outline";
-		let icon = null;
+		let variant: "outline" | "success" | "warning" | "error" = "outline";
+		let icon = <CircleDashed className="size-3.5" />;
 
 		if (job.failedReason) {
-			variant = "destructive";
-			icon = "❌";
+			variant = "error";
+			icon = <XCircle className="size-3.5" />;
 		} else if (job.finishedOn) {
-			variant = "default";
-			icon = "✅";
+			variant = "success";
+			icon = <CheckCircle2 className="size-3.5" />;
 		} else if (job.processedOn) {
-			variant = "secondary";
-			icon = "⚙️";
-		} else {
-			icon = "⏳";
+			variant = "warning";
+			icon = <LoaderCircle className="size-3.5 animate-spin" />;
 		}
 
 		let statusLabel = "等待中";
@@ -60,7 +63,7 @@ export function JobsTable({
 
 		return (
 			<Badge variant={variant} className="gap-1.5">
-				<span>{icon}</span>
+				{icon}
 				<span>{statusLabel}</span>
 			</Badge>
 		);
@@ -98,9 +101,7 @@ export function JobsTable({
 				{jobs.map((job) => (
 					<div
 						key={job.id}
-						onClick={() => onJobClick(job)}
-						onKeyDown={(e) => e.key === "Enter" && onJobClick(job)}
-						className="grid grid-cols-[140px_120px_1fr_180px_90px] gap-3 px-4 py-3.5 hover:bg-accent/50 cursor-pointer items-center transition-colors"
+						className="grid grid-cols-[140px_120px_1fr_180px_90px] items-center gap-3 px-4 py-3.5 transition-colors hover:bg-accent/50"
 					>
 						{/* 任务ID */}
 						<div className="flex flex-col">
@@ -156,13 +157,13 @@ export function JobsTable({
 			<div ref={loadMoreRef} className="py-6 text-center">
 				{isLoadingMore && (
 					<div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-						<div className="animate-spin">⚙️</div>
+						<LoaderCircle className="size-4 animate-spin" />
 						<span>加载更多...</span>
 					</div>
 				)}
 				{!hasMore && jobs.length > 0 && (
 					<div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-						<span>✅</span>
+						<CheckCircle2 className="size-4" />
 						<span>已加载全部任务</span>
 					</div>
 				)}

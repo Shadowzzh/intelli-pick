@@ -1,8 +1,8 @@
 import { eventEmitter } from "@intellipick/events";
 import type { FastifyInstance } from "fastify";
-import fastifySocketIO from "fastify-socket.io";
 import type { Socket as SocketIOSocket } from "socket.io";
-import type { Server } from "socket.io";
+import { Server } from "socket.io";
+import type { AuthService } from "./auth";
 
 interface ContentData {
 	id: string;
@@ -60,29 +60,60 @@ export interface ClientToServerEvents {
 	"leave:source": (sourceId: string) => void;
 }
 
-declare module "fastify" {
-	interface FastifyInstance {
-		io: Server | null;
-	}
-}
-
 let io: Server | null = null;
 
-export async function initSocket(app: FastifyInstance) {
-	await app.register(fastifySocketIO, {
+function getSocketCorsOrigin(): string | string[] | boolean {
+	const configuredOrigin =
+		process.env.WEB_URL ||
+		process.env.API_CORS_ORIGIN ||
+		"http://localhost:5173";
+	if (configuredOrigin === "*") {
+		return true;
+	}
+
+	const origins = configuredOrigin
+		.split(",")
+		.map((origin) => origin.trim())
+		.filter(Boolean);
+	return origins.length === 1 ? origins[0] : origins;
+}
+
+export async function initSocket(app: FastifyInstance, auth: AuthService) {
+	io = new Server(app.server, {
 		cors: {
-			origin: process.env.WEB_URL || "http://localhost:5173",
+			origin: getSocketCorsOrigin(),
 			methods: ["GET", "POST"],
+			credentials: true,
 		},
 		transports: ["websocket", "polling"],
 	});
 
-	// Access io through app.io after registration
-	io = app.io;
+	io.use((socket, next) => {
+		const cookieHeader = socket.handshake.headers.cookie;
+		if (!cookieHeader) {
+			next(new Error("Unauthorized"));
+			return;
+		}
 
-	if (!io) {
-		throw new Error("Socket.IO not initialized");
-	}
+		const cookies = app.parseCookie(cookieHeader);
+		const signedCookie = cookies[auth.cookieName];
+		if (!signedCookie) {
+			next(new Error("Unauthorized"));
+			return;
+		}
+
+		const unsigned = app.unsignCookie(signedCookie);
+		if (
+			!unsigned.valid ||
+			!unsigned.value ||
+			!auth.verifySession(unsigned.value)
+		) {
+			next(new Error("Unauthorized"));
+			return;
+		}
+
+		next();
+	});
 
 	io.on("connection", (socket: SocketIOSocket) => {
 		console.log("Client connected:", socket.id);
@@ -126,6 +157,18 @@ export async function initSocket(app: FastifyInstance) {
 	});
 
 	console.log("Socket.IO server initialized");
+	app.addHook("onClose", async () => {
+		const socketServer = io;
+		if (!socketServer) {
+			return;
+		}
+
+		await new Promise<void>((resolve) => {
+			socketServer.close(() => resolve());
+		});
+		io = null;
+	});
+
 	return io;
 }
 

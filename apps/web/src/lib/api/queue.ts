@@ -1,9 +1,9 @@
 // apps/web/src/lib/api/queue.ts
 import type {
-	JobStatus,
 	ProcessingRateStats,
 	QueueJob,
 	QueueJobDetail,
+	QueueJobFilter,
 } from "@intellipick/shared";
 import { api } from "../api";
 
@@ -11,7 +11,7 @@ import { api } from "../api";
  * 获取队列任务列表
  */
 export async function getQueueJobs(
-	status: JobStatus,
+	status: QueueJobFilter,
 	start = 0,
 	end = 9,
 ): Promise<QueueJob[]> {

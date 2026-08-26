@@ -6,11 +6,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { JobStatus } from "@intellipick/shared";
+import type { QueueJobFilter } from "@intellipick/shared";
 
 interface StatusFilterBarProps {
-	value: JobStatus | "all";
-	onChange: (value: JobStatus | "all") => void;
+	value: QueueJobFilter;
+	onChange: (value: QueueJobFilter) => void;
 }
 
 const STATUS_OPTIONS = [
@@ -35,7 +35,7 @@ export function StatusFilterBar({ value, onChange }: StatusFilterBarProps) {
 		<div className="flex items-center gap-2">
 			<span className="text-sm text-muted-foreground">状态:</span>
 			<Select value={value} onValueChange={onChange}>
-				<SelectTrigger className="h-8 w-">
+				<SelectTrigger className="h-8 w-24">
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent>

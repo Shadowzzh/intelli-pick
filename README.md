@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧠 IntelliPick
+# Sift（知拾）
 
 ### ✨ AI 驱动的智能内容筛选与价值提取系统
 
@@ -9,7 +9,7 @@
 [![Package Manager](https://img.shields.io/badge/pnpm-9.15.0-blue)](https://pnpm.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org)
 
-**IntelliPick** 从多个来源（RSS、V2EX 等）采集内容，通过 AI 进行质量过滤和实体提取，为你从信息过载中精选有价值的内容。
+**Sift（知拾）** 从多个来源（RSS、V2EX 等）采集内容，通过 AI 进行质量过滤和实体提取，为你从信息过载中精选有价值的内容。
 
 [功能特性](#-核心特性) • [快速开始](#-快速开始) • [架构设计](#-架构设计) • [API 文档](#-api-文档)
 
@@ -32,7 +32,7 @@
 ## 📸 项目截图
 
 ### Web 界面
-![IntelliPick Web UI](public/web-ui.png)
+![Sift Web UI](public/web-ui.png)
 
 ---
 
@@ -142,21 +142,31 @@ graph LR
 git clone https://github.com/zhangziheng/intellipick.git
 cd intellipick
 
-# 启动所有服务（API、Worker、PostgreSQL、Redis、RSSHub）
-docker-compose up -d
+# 准备生产环境变量并填写数据库密码、AI Key 等必需配置
+cp .env.example .env.production
+
+# 构建镜像
+docker compose --env-file .env.production build
+
+# 首次部署先启动基础设施，再执行一次数据库迁移
+docker compose --env-file .env.production up -d intellipick-db intellipick-redis
+docker compose --env-file .env.production --profile tools run --rm intellipick-migrate
+
+# 启动 API、Web、Worker 和 RSSHub
+docker compose --env-file .env.production up -d
 
 # 查看日志
-docker-compose logs -f
+docker compose --env-file .env.production logs -f
 
 # 停止服务
-docker-compose down
+docker compose --env-file .env.production down
 ```
 
 服务启动后：
 - API 服务器：http://localhost:8085
-- Web 应用：http://localhost:5173
-- Drizzle Studio：http://localhost:4983
-- GraphQL Playground：http://localhost:8085/graphql
+- Web 应用：http://localhost:8080
+- RSSHub：http://127.0.0.1:1200
+- GraphQL 端点：http://localhost:8085/graphql（生产环境默认关闭 GraphiQL 和内省）
 
 ### 本地开发
 
@@ -219,7 +229,7 @@ export default defineConfig({
 
 ## 📚 API 文档
 
-IntelliPick 提供三种 API 接口：
+Sift 提供三种 API 接口：
 
 ### RESTful API
 
@@ -345,7 +355,7 @@ socket.on('content:updated', (content) => {
 
 | 类型 | 插件 | 配置示例 |
 |------|------|----------|
-| RSS | `rss` | 标准 RSS/Atom feeds |
+| RSS | `rss` | 标准 RSS/Atom feeds，可选 Node 或 curl 获取方式 |
 | V2EX | `v2ex` | V2EX 最新主题 |
 
 **添加新数据源：**
@@ -370,6 +380,17 @@ socket.on('content:updated', (content) => {
 - 新内容到达时立即推送到前端
 - 支持 WebSocket 长连接，自动重连
 - 事件驱动架构，高效可靠
+
+### 5. AI 性能监控
+
+监控页展示最近 24 小时的真实 AI 调用指标：
+
+- 过滤与实体提取调用次数、成功率和平均响应时间
+- 过滤通过率
+- 输入、输出、缓存、推理和总 token
+- 配置模型与上游实际响应模型
+
+详细口径、运行状态和回滚方法见 [`docs/ai-performance-monitoring.md`](docs/ai-performance-monitoring.md)。
 
 ---
 
@@ -420,4 +441,3 @@ pnpm redis:status       # 查看 Redis 和队列状态
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
-

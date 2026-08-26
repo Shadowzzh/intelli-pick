@@ -220,7 +220,15 @@ export interface QueueStatsResponseData {
 export type QueueStatsResponse = PaginatedResponse<QueueStatsResponseData>;
 
 /** 队列任务状态 */
-export type JobStatus = "waiting" | "active" | "completed" | "failed" | "delayed";
+export type JobStatus =
+	| "waiting"
+	| "active"
+	| "completed"
+	| "failed"
+	| "delayed";
+
+/** 队列任务筛选状态 */
+export type QueueJobFilter = JobStatus | "all";
 
 /** 队列任务基本信息 */
 export interface QueueJob {
@@ -249,6 +257,37 @@ export interface ProcessingRateStats {
 	avgProcessingTime: number;
 }
 
+/** 持久化任务历史状态 */
+export type JobHistoryStatus = "completed" | "failed";
+
+/** 持久化任务历史记录 */
+export interface JobHistoryRecord {
+	id: number;
+	jobId: string;
+	jobName: string;
+	sourceType: string | null;
+	url: string | null;
+	externalId: string | null;
+	status: JobHistoryStatus;
+	success: boolean | null;
+	startedAt: string;
+	finishedAt: string;
+	duration: number | null;
+	failedReason: string | null;
+	stacktrace: string | null;
+	returnValue: unknown;
+	createdAt: string;
+}
+
+/** 任务历史统计 */
+export interface JobHistoryStats {
+	total: number;
+	completed: number;
+	failed: number;
+	successful: number;
+	avgDuration: number | null;
+}
+
 // ============================================================================
 // Monitoring API Types
 // ============================================================================
@@ -264,14 +303,67 @@ export interface SystemOverview {
 	systemStatus: "healthy" | "warning" | "error";
 }
 
+export type AiMetricTask = "filter" | "extractAndClassify";
+
+export type AiMetricProtocol = "responses" | "chat-completions" | "anthropic";
+
+export type AiFilterDecision = "pass" | "reject" | "quarantine";
+
+/** 单次 AI 调用指标 */
+export interface AiCallMetric {
+	task: AiMetricTask;
+	provider: string;
+	protocol: AiMetricProtocol;
+	configuredModel: string;
+	responseModel: string | null;
+	success: boolean;
+	durationMs: number;
+	promptTokens: number | null;
+	completionTokens: number | null;
+	totalTokens: number | null;
+	cachedPromptTokens: number | null;
+	reasoningTokens: number | null;
+	finishReason: string | null;
+	decision: AiFilterDecision | null;
+}
+
+/** 单次内容处理中的 AI 调用指标 */
+export interface PipelineAiMetrics {
+	filter?: AiCallMetric;
+	extract?: AiCallMetric;
+}
+
+/** Worker 写入任务历史的处理结果 */
+export interface PipelineJobResult {
+	success: boolean;
+	aiMetrics: PipelineAiMetrics;
+}
+
+/** 单个 AI 任务在时间窗口内的聚合指标 */
+export interface AiTaskPerformanceMetrics {
+	calls: number;
+	successRate: number | null;
+	avgResponseTime: number | null;
+	promptTokens: number;
+	completionTokens: number;
+	totalTokens: number;
+	cachedPromptTokens: number;
+	reasoningTokens: number;
+	providers: string[];
+	protocols: AiMetricProtocol[];
+	configuredModels: string[];
+	responseModels: string[];
+}
+
 /** AI 处理性能指标 */
 export interface AiPerformanceMetrics {
-	filterCalls: number;
-	filterSuccessRate: number;
-	extractCalls: number;
-	extractSuccessRate: number;
-	avgResponseTime: number;
-	passRate: number;
+	windowHours: number;
+	filter: AiTaskPerformanceMetrics & {
+		passRate: number | null;
+	};
+	extract: AiTaskPerformanceMetrics;
+	avgResponseTime: number | null;
+	totalTokens: number;
 }
 
 /** 系统资源使用情况 */

@@ -43,7 +43,7 @@ export class SourceScheduler {
 	 * 为单个 source 创建调度
 	 */
 	private scheduleSource(source: SourceConfig): void {
-		const cronExpr = convertToCron(source.fetchInterval);
+		const cronExpr = convertToCron(source.fetchInterval, source.scheduleMinute);
 
 		const job = new CronJob(
 			cronExpr,

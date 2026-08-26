@@ -1,6 +1,7 @@
 import type {
 	ExtractResult,
 	FilterResult,
+	PipelineAiMetrics,
 	RawContent,
 } from "@intellipick/shared";
 // apps/api/src/pipeline/types.ts
@@ -11,6 +12,7 @@ export interface PipelineContext {
 	filterResult?: FilterResult;
 	extractResult?: ExtractResult;
 	sourceNames?: string[];
+	aiMetrics: PipelineAiMetrics;
 }
 
 export enum StepStatus {

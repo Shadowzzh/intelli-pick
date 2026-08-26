@@ -12,7 +12,7 @@ export async function queueRoutes(app: FastifyInstance, service: QueueService) {
 	// Get jobs list by status
 	app.get<{
 		Querystring: {
-			status: "waiting" | "active" | "completed" | "failed" | "delayed";
+			status: "all" | "waiting" | "active" | "completed" | "failed" | "delayed";
 			start?: string;
 			end?: string;
 		};
@@ -26,7 +26,14 @@ export async function queueRoutes(app: FastifyInstance, service: QueueService) {
 					properties: {
 						status: {
 							type: "string",
-							enum: ["waiting", "active", "completed", "failed", "delayed"],
+							enum: [
+								"all",
+								"waiting",
+								"active",
+								"completed",
+								"failed",
+								"delayed",
+							],
 						},
 						start: { type: "string" },
 						end: { type: "string" },

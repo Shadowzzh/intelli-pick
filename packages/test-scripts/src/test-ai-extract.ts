@@ -75,7 +75,7 @@ async function main() {
 
 		const start = Date.now();
 		try {
-			const ctx: PipelineContext = { raw: item };
+			const ctx: PipelineContext = { raw: item, aiMetrics: {} };
 			const stepResult = await aiExtractStep.process(ctx);
 			const duration = Date.now() - start;
 

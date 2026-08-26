@@ -3,12 +3,13 @@ import { Widget } from "@/components/widgets/Widget";
 import { WidgetEmptyState } from "@/components/widgets/WidgetEmptyState";
 import { useQueueJobs } from "@/hooks/useQueueJobs";
 import type {
-	JobStatus,
 	QueueJob,
+	QueueJobFilter,
 	QueueStatsResponseData,
 } from "@intellipick/shared";
 import { Layers } from "lucide-react";
 import { useEffect, useState } from "react";
+import { JobDetailDialog } from "./JobDetailDialog";
 import { JobsTable } from "./JobsTable";
 import { StatusFilterBar } from "./StatusFilterBar";
 
@@ -17,10 +18,10 @@ interface QueueDetailWidgetProps {
 }
 
 export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
-	const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
+	const [statusFilter, setStatusFilter] = useState<QueueJobFilter>("all");
 	const [page, setPage] = useState(0);
 	const [allJobs, setAllJobs] = useState<QueueJob[]>([]);
-	const [_, setSelectedJobId] = useState<string | null>(null);
+	const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 	const pageSize = 20;
 
 	// 获取任务列表
@@ -28,13 +29,7 @@ export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
 		data: jobs,
 		isLoading,
 		isFetching,
-	} = useQueueJobs(
-		statusFilter === "all"
-			? ("waiting" as JobStatus)
-			: (statusFilter as JobStatus),
-		page * pageSize,
-		(page + 1) * pageSize - 1,
-	);
+	} = useQueueJobs(statusFilter, page * pageSize, (page + 1) * pageSize - 1);
 
 	// 累加数据
 	useEffect(() => {
@@ -61,7 +56,7 @@ export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
 	const queue = data.queues[0];
 
 	// 筛选切换处理
-	const handleStatusChange = (newStatus: JobStatus | "all") => {
+	const handleStatusChange = (newStatus: QueueJobFilter) => {
 		setStatusFilter(newStatus);
 		setPage(0);
 		setAllJobs([]);
@@ -84,13 +79,16 @@ export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
 			<Widget
 				title="队列详情"
 				icon={<Layers className="h-4 w-4" />}
+				headerClassName="flex-wrap items-start"
 				actions={
-					<div className="flex items-center gap-4">
+					<div className="flex flex-wrap items-center justify-end gap-2">
 						<StatusFilterBar
 							value={statusFilter}
 							onChange={handleStatusChange}
 						/>
-						<Badge variant="outline">{queue.name}</Badge>
+						<Badge variant="outline" className="max-w-40 truncate">
+							{queue.name}
+						</Badge>
 					</div>
 				}
 			>
@@ -104,11 +102,11 @@ export function QueueDetailWidget({ data }: QueueDetailWidgetProps) {
 				/>
 			</Widget>
 
-			{/* <JobDetailDialog
+			<JobDetailDialog
 				jobId={selectedJobId}
 				open={!!selectedJobId}
 				onOpenChange={(open) => !open && setSelectedJobId(null)}
-			/> */}
+			/>
 		</>
 	);
 }

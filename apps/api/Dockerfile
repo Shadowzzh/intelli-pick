@@ -1,63 +1,69 @@
-# ============================================
-# API 应用生产环境镜像（本地编译方案）
-# ============================================
-# 使用前请先在项目根目录执行：pnpm build
-#
-# 本方案特点：
-# 1. 本地编译 TypeScript，Docker 直接复制产物
-# 2. Docker 构建速度快（30秒内）
-# 3. 镜像体积小（~150MB）
-# 4. 启动速度快（直接运行 JS）
-# ============================================
+# syntax=docker/dockerfile:1.7
 
-FROM node:22-alpine
+FROM node:22-alpine AS base
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+
+RUN corepack enable pnpm \
+    && corepack install --global pnpm@9.15.0
 
 WORKDIR /app
 
-# 安装 pnpm
-RUN npm install -g pnpm@9
+FROM base AS manifests
 
-# 从根目录复制所有 package.json 文件（monorepo 需要所有包的元信息）
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/env/package.json ./packages/env/
-COPY packages/shared/package.json ./packages/shared/
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/worker/package.json ./apps/worker/
+COPY apps/web/package.json ./apps/web/
+COPY packages/ai/package.json ./packages/ai/
 COPY packages/config/package.json ./packages/config/
 COPY packages/db/package.json ./packages/db/
+COPY packages/env/package.json ./packages/env/
 COPY packages/events/package.json ./packages/events/
-COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/test-scripts/package.json ./packages/test-scripts/
 
-# 只安装生产依赖（不包含 devDependencies）
-RUN pnpm install --prod --frozen-lockfile
+FROM manifests AS build
 
-# 复制本地编译好的产物（需要先在根目录执行 pnpm build）
-# tsup 保持 workspace 包为 external 引用，所以需要复制它们的 dist
-COPY packages/env/dist ./packages/env/dist
-COPY packages/shared/dist ./packages/shared/dist
-COPY packages/config/dist ./packages/config/dist
-COPY packages/db/dist ./packages/db/dist
-COPY packages/events/dist ./packages/events/dist
-COPY apps/api/dist ./apps/api/dist
+RUN --mount=type=cache,id=intellipick-pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
-# 复制 workspace 包到 node_modules
-RUN mkdir -p /app/apps/api/node_modules/@intellipick && \
-    cp -r ./packages/env/dist/* /app/apps/api/node_modules/@intellipick/env/ && \
-    cp -r ./packages/shared/dist/* /app/apps/api/node_modules/@intellipick/shared/ && \
-    cp -r ./packages/config/dist/* /app/apps/api/node_modules/@intellipick/config/ && \
-    cp -r ./packages/db/dist/* /app/apps/api/node_modules/@intellipick/db/ && \
-    cp -r ./packages/events/dist/* /app/apps/api/node_modules/@intellipick/events/
+COPY . .
 
-# 复制必要的配置文件
-COPY config*.ts ./
+RUN pnpm --filter @intellipick/api... build
 
-# 设置为生产环境
+FROM build AS migrate
+
+WORKDIR /app/packages/db
+
+CMD ["pnpm", "db:migrate"]
+
+FROM manifests AS production-dependencies
+
+RUN --mount=type=cache,id=intellipick-pnpm,target=/pnpm/store \
+    pnpm install --prod --frozen-lockfile
+
+FROM node:22-alpine AS api
+
 ENV NODE_ENV=production
 ENV LOG_LEVEL=info
 
-# 设置工作目录为 API 应用
+WORKDIR /app
+
+COPY --from=production-dependencies --chown=node:node /app /app
+COPY --from=build --chown=node:node /app/packages/ai/dist ./packages/ai/dist
+COPY --from=build --chown=node:node /app/packages/env/dist ./packages/env/dist
+COPY --from=build --chown=node:node /app/packages/shared/dist ./packages/shared/dist
+COPY --from=build --chown=node:node /app/packages/config/dist ./packages/config/dist
+COPY --from=build --chown=node:node /app/packages/db/dist ./packages/db/dist
+COPY --from=build --chown=node:node /app/packages/events/dist ./packages/events/dist
+COPY --from=build --chown=node:node /app/apps/api/dist ./apps/api/dist
+COPY --from=build --chown=node:node /app/config.ts /app/config.sources.ts ./
+
+USER node
 WORKDIR /app/apps/api
 
-# 暴露端口
 EXPOSE 3000
 
-# 运行编译后的 JS
 CMD ["node", "dist/index.js"]

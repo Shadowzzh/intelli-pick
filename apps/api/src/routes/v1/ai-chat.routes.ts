@@ -1,5 +1,4 @@
-import { createOpenAI } from "@ai-sdk/openai";
-import type { Config } from "@intellipick/config";
+import type { AiClient } from "@intellipick/ai";
 import { generateText } from "ai";
 // apps/api/src/routes/v1/ai-chat.routes.ts
 import type { FastifyInstance } from "fastify";
@@ -31,135 +30,142 @@ export async function aiChatRoutes(
 		entitiesService: EntitiesService;
 		searchService: SearchService;
 	},
-	config?: Config,
+	ai?: AiClient,
 ) {
-	// Get AI chat configuration from config
-	const chatConfig = config?.ai.tasks.chat;
-	const chatProviderConfig = chatConfig
-		? config?.ai.providers[chatConfig.provider]
-		: null;
+	app.post(
+		"/ai/chat",
+		{
+			config: {
+				rateLimit: {
+					max: 10,
+					timeWindow: "1 minute",
+				},
+			},
+		},
+		async (req, reply) => {
+			const { message } = req.body as { message: string };
 
-	// Create OpenAI-compatible client for AI chat
-	const deepseek = createOpenAI({
-		baseURL: chatProviderConfig?.baseUrl || "https://api.deepseek.com/v1",
-		apiKey: process.env.DEEPSEEK_API_KEY || "",
-	});
+			if (!message) {
+				reply.status(400).send({
+					success: false,
+					error: { code: "VALIDATION_ERROR", message: "Message is required" },
+				});
+				return;
+			}
+			if (!ai) {
+				reply.status(503).send({
+					success: false,
+					error: { code: "AI_NOT_CONFIGURED", message: "AI is not configured" },
+				});
+				return;
+			}
 
-	app.post("/ai/chat", async (req, reply) => {
-		const { message } = req.body as { message: string };
+			try {
+				const model = ai.getModel("chat");
 
-		if (!message) {
-			reply.status(400).send({
-				success: false,
-				error: { code: "VALIDATION_ERROR", message: "Message is required" },
-			});
-			return;
-		}
-
-		try {
-			const model = chatConfig?.model || "deepseek-chat";
-
-			const result = await generateText({
-				model: deepseek(model),
-				messages: [
-					{
-						role: "system",
-						content:
-							"You are a helpful assistant for querying content from IntelliPick. Use the available tools to search and retrieve information.",
-					},
-					{ role: "user", content: message },
-				],
-				tools: aiTools,
-				maxSteps: 2,
-			});
-
-			// Execute tool calls
-			if (result.toolCalls && result.toolCalls.length > 0) {
-				const toolResults: ToolResult[] = [];
-
-				for (const toolCall of result.toolCalls) {
-					let data: unknown;
-
-					switch (toolCall.toolName) {
-						case "queryContents": {
-							const args = toolCall.args as QueryContentsArgs;
-							const contentsResult =
-								await services.contentsService.findPaginated({
-									page: 1,
-									limit: args.limit || 10,
-									filters: args,
-								});
-							data = contentsResult.data;
-							break;
-						}
-
-						case "searchContents": {
-							const args = toolCall.args as SearchContentsArgs;
-							const searchResult = await services.searchService.searchContents(
-								args.query,
-								args.limit || 10,
-							);
-							data = searchResult;
-							break;
-						}
-
-						case "getTrendingEntities": {
-							const args = toolCall.args as GetTrendingEntitiesArgs;
-							const entitiesResult =
-								await services.entitiesService.findTrending({
-									page: 1,
-									limit: args.limit || 10,
-								});
-							data = entitiesResult.data;
-							break;
-						}
-					}
-
-					toolResults.push({ tool: toolCall.toolName, data });
-				}
-
-				// Generate natural language response
-				const followUp = await generateText({
-					model: deepseek(model),
+				const result = await generateText({
+					model,
 					messages: [
 						{
 							role: "system",
 							content:
-								"Summarize the search results in a friendly, concise way. Use Chinese.",
+								"You are a helpful assistant for querying content from Sift. Use the available tools to search and retrieve information.",
 						},
 						{ role: "user", content: message },
-						{
-							role: "assistant",
-							content: `Tool results: ${JSON.stringify(toolResults, null, 2)}`,
-						},
 					],
+					tools: aiTools,
+					maxSteps: 2,
 				});
 
+				// Execute tool calls
+				if (result.toolCalls && result.toolCalls.length > 0) {
+					const toolResults: ToolResult[] = [];
+
+					for (const toolCall of result.toolCalls) {
+						let data: unknown;
+
+						switch (toolCall.toolName) {
+							case "queryContents": {
+								const args = toolCall.args as QueryContentsArgs;
+								const contentsResult =
+									await services.contentsService.findPaginated({
+										page: 1,
+										limit: args.limit || 10,
+										filters: args,
+									});
+								data = contentsResult.data;
+								break;
+							}
+
+							case "searchContents": {
+								const args = toolCall.args as SearchContentsArgs;
+								const searchResult =
+									await services.searchService.searchContents(
+										args.query,
+										args.limit || 10,
+									);
+								data = searchResult;
+								break;
+							}
+
+							case "getTrendingEntities": {
+								const args = toolCall.args as GetTrendingEntitiesArgs;
+								const entitiesResult =
+									await services.entitiesService.findTrending({
+										page: 1,
+										limit: args.limit || 10,
+									});
+								data = entitiesResult.data;
+								break;
+							}
+						}
+
+						toolResults.push({ tool: toolCall.toolName, data });
+					}
+
+					// Generate natural language response
+					const followUp = await generateText({
+						model,
+						messages: [
+							{
+								role: "system",
+								content:
+									"Summarize the search results in a friendly, concise way. Use Chinese.",
+							},
+							{ role: "user", content: message },
+							{
+								role: "assistant",
+								content: `Tool results: ${JSON.stringify(toolResults, null, 2)}`,
+							},
+						],
+					});
+
+					return {
+						success: true,
+						data: {
+							response: followUp.text,
+							toolResults,
+						},
+					};
+				}
+
+				// No tool calls, just return the text
 				return {
 					success: true,
-					data: {
-						response: followUp.text,
-						toolResults,
-					},
+					data: { response: result.text },
 				};
+			} catch (error: unknown) {
+				req.log.error(error);
+				reply.status(500).send({
+					success: false,
+					error: {
+						code: "INTERNAL_ERROR",
+						message:
+							error instanceof Error ? error.message : "AI processing failed",
+					},
+				});
+				return;
 			}
-
-			// No tool calls, just return the text
-			return {
-				success: true,
-				data: { response: result.text },
-			};
-		} catch (error: unknown) {
-			req.log.error(error);
-			reply.status(500).send({
-				success: false,
-				error: {
-					code: "INTERNAL_ERROR",
-					message:
-						error instanceof Error ? error.message : "AI processing failed",
-				},
-			});
-			return;
-		}
-	});
+		},
+	);
 }

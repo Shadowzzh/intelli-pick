@@ -12,6 +12,8 @@ const TwitterConfigSchema = z.object({
 // RSS 配置
 const RssConfigSchema = z.object({
 	url: z.string().url(),
+	useProxy: z.boolean().default(true),
+	fetchMethod: z.enum(["node", "curl"]).optional(),
 });
 
 // V2EX 配置
@@ -25,22 +27,60 @@ const SourceSchema = z.object({
 	type: z.enum(["twitter", "rss", "v2ex"]),
 	enabled: z.boolean().default(true),
 	fetchInterval: z.number().default(3600),
+	scheduleMinute: z.number().int().min(0).max(59).optional(),
 	config: z.union([TwitterConfigSchema, RssConfigSchema, V2exConfigSchema]),
+});
+
+const JobSourceSchema = z.object({
+	key: z.string().min(1),
+	name: z.string().min(1),
+	type: z.enum(["json-feed", "rss", "curl-rss"]),
+	url: z.string().url(),
+	enabled: z.boolean().default(true),
+	fetchInterval: z
+		.number()
+		.int()
+		.positive()
+		.default(2 * 60 * 60),
+});
+
+const JobsConfigSchema = z.object({
+	enabled: z.boolean().default(true),
+	queueName: z.string().min(1).default("intellipick-jobs"),
+	concurrency: z.number().int().positive().default(2),
+	runInitialCollection: z.boolean().default(true),
+	sources: z.array(JobSourceSchema).default([]),
 });
 
 // AI 任务配置
 const AiTaskSchema = z.object({
-	provider: z.string(),
-	model: z.string(),
+	provider: z.string().min(1),
+	model: z.string().min(1),
 });
+
+const AiProviderBaseSchema = z.object({
+	baseUrl: z.string().url().optional(),
+	baseUrlEnv: z.string().min(1).optional(),
+	apiKeyEnv: z.string().min(1),
+});
+
+const OpenAiProviderSchema = AiProviderBaseSchema.extend({
+	type: z.literal("openai"),
+	protocol: z.enum(["chat-completions", "responses"]),
+});
+
+const AnthropicProviderSchema = AiProviderBaseSchema.extend({
+	type: z.literal("anthropic"),
+});
+
+const AiProviderSchema = z.discriminatedUnion("type", [
+	OpenAiProviderSchema,
+	AnthropicProviderSchema,
+]);
 
 // AI 配置
 const AiConfigSchema = z.object({
-	providers: z.record(
-		z.object({
-			baseUrl: z.string().optional(),
-		}),
-	),
+	providers: z.record(AiProviderSchema),
 	tasks: z.object({
 		filter: AiTaskSchema,
 		extractAndClassify: AiTaskSchema,
@@ -105,6 +145,7 @@ export const ConfigSchema = z.object({
 		lockTimeout: z.number().default(5 * 60 * 1000), // 5分钟，单位毫秒
 	}),
 	queue: QueueConfigSchema,
+	jobs: JobsConfigSchema.optional(),
 	api: ApiConfigSchema.optional(),
 	network: z
 		.object({
@@ -119,5 +160,9 @@ export type TwitterConfig = z.infer<typeof TwitterConfigSchema>;
 export type RssConfig = z.infer<typeof RssConfigSchema>;
 export type V2exConfig = z.infer<typeof V2exConfigSchema>;
 export type AiConfig = z.infer<typeof AiConfigSchema>;
+export type AiProviderConfig = z.infer<typeof AiProviderSchema>;
+export type AiTaskName = keyof AiConfig["tasks"];
 export type QueueConfig = z.infer<typeof QueueConfigSchema>;
 export type ApiConfig = z.infer<typeof ApiConfigSchema>;
+export type JobsConfig = z.infer<typeof JobsConfigSchema>;
+export type JobSourceConfig = z.infer<typeof JobSourceSchema>;

@@ -30,6 +30,10 @@ if (envPath) {
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+const BooleanStringSchema = z
+	.enum(["true", "false"])
+	.transform((value) => value === "true");
+
 export const env = createEnv({
 	server: {
 		// 环境
@@ -55,11 +59,18 @@ export const env = createEnv({
 		// Redis
 		REDIS_URL: z.string().url().default("redis://localhost:6379"),
 
+		// Worker 启动行为
+		CLEAR_QUEUE_ON_START: BooleanStringSchema.default("false"),
+		RUN_INITIAL_COLLECTION: BooleanStringSchema.default("false"),
+
 		// AI Providers
 		DEEPSEEK_API_KEY: z.string().min(1).optional(),
 		DEEPSEEK_BASE_URL: z.string().url().optional(),
 		ANTHROPIC_API_KEY: z.string().min(1).optional(),
 		ANTHROPIC_BASE_URL: z.string().url().optional(),
+		SUB2API_API_KEY: z.string().min(1).optional(),
+		SUB2API_BASE_URL: z.string().url().optional(),
+		SUB2API_MODEL: z.string().min(1).optional(),
 
 		// Twitter（可选）
 		TWITTER_CLIENT_ID: z.string().optional(),

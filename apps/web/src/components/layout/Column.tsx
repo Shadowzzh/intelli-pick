@@ -15,7 +15,13 @@ export function Column({ children, size = "medium", className }: ColumnProps) {
 	};
 
 	return (
-		<div className={cn("flex flex-col gap-5", sizeClasses[size], className)}>
+		<div
+			className={cn(
+				"min-w-0 flex flex-col gap-5",
+				sizeClasses[size],
+				className,
+			)}
+		>
 			{children}
 		</div>
 	);

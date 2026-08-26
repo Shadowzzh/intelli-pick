@@ -1,6 +1,6 @@
-# IntelliPick Web Dashboard
+# Sift Web Dashboard
 
-Real-time web dashboard for IntelliPick content filtering system.
+Real-time web dashboard for the Sift content filtering system.
 
 ## Features
 

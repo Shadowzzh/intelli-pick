@@ -15,8 +15,7 @@
 		"start": "node dist/index.js"
 	},
 	"dependencies": {
-		"@ai-sdk/anthropic": "^1.0.0",
-		"@ai-sdk/openai": "^1.0.0",
+		"@intellipick/ai": "workspace:*",
 		"@intellipick/config": "workspace:*",
 		"@intellipick/db": "workspace:*",
 		"@intellipick/env": "workspace:*",

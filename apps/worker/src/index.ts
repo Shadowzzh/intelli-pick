@@ -2,6 +2,8 @@
 import { loadConfig } from "@intellipick/config";
 import { env } from "@intellipick/env";
 import { createCollectorManager } from "./collector/index";
+import { createJobsRuntime } from "./jobs/runtime";
+import { syncJobSources } from "./jobs/source-sync";
 import { createAiClient } from "./lib/ai";
 import { createLogger } from "./lib/logger";
 import { initializeProxy } from "./lib/proxy";
@@ -29,11 +31,32 @@ async function main() {
 	const collector = createCollectorManager(sourceMap);
 	const queue = createQueue(env.REDIS_URL, config.queue.name);
 
-	// 清空启动前的旧任务（避免 source_id 等配置变更导致的不一致）
-	await queue.drain();
-	logger.info("Cleared old jobs from queue");
+	if (env.CLEAR_QUEUE_ON_START) {
+		await queue.drain();
+		logger.warn("Cleared old jobs from queue");
+	} else {
+		logger.info("Preserved existing jobs on startup");
+	}
 
 	const worker = createWorker(env.REDIS_URL, config, ai);
+	let jobsRuntime: ReturnType<typeof createJobsRuntime> | undefined;
+
+	if (config.jobs?.enabled) {
+		const jobSourceMap = await syncJobSources(config.jobs);
+		jobsRuntime = createJobsRuntime({
+			redisUrl: env.REDIS_URL,
+			config: config.jobs,
+			sourceMap: jobSourceMap,
+			ai,
+			timezone: config.scheduler.timezone,
+			logger,
+		});
+
+		if (config.jobs.runInitialCollection) {
+			await jobsRuntime.initialCollection();
+		}
+		await jobsRuntime.backfillMissingCategories();
+	}
 
 	// 创建调度器
 	const scheduler = new SourceScheduler(
@@ -47,15 +70,21 @@ async function main() {
 	// 启动调度器（创建 CronJob）
 	scheduler.start();
 
-	// 首次运行所有 source
-	await scheduler.initialCollection();
+	if (env.RUN_INITIAL_COLLECTION) {
+		await scheduler.initialCollection();
+	} else {
+		logger.info("Skipped initial collection on startup");
+	}
 
 	// 优雅关闭
 	process.on("SIGTERM", async () => {
 		logger.info("Shutting down...");
 		scheduler.stop();
+		jobsRuntime?.stopScheduler();
 		await worker.close();
 		await queue.close();
+		await jobsRuntime?.worker.close();
+		await jobsRuntime?.queue.close();
 		process.exit(0);
 	});
 }

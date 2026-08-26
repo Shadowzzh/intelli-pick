@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/AuthProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,19 +11,58 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, LoaderCircle, LogIn } from "lucide-react";
 import { type FormEvent, useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+
+interface LoginLocationState {
+	from?: {
+		pathname: string;
+		search?: string;
+		hash?: string;
+	};
+}
 
 export function LoginPage() {
+	const { user, isLoading: isCheckingSession, login } = useAuth();
+	const location = useLocation();
+	const navigate = useNavigate();
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+	const [remember, setRemember] = useState(true);
 	const [showPassword, setShowPassword] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const passwordType = showPassword ? "text" : "password";
 	const passwordToggleLabel = showPassword ? "隐藏密码" : "显示密码";
 	const PasswordToggleIcon = showPassword ? EyeOff : Eye;
 
-	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+		setErrorMessage(null);
+		setIsSubmitting(true);
+
+		try {
+			await login({ username, password, remember });
+			const state = location.state as LoginLocationState | null;
+			const from = state?.from;
+			const destination = from
+				? `${from.pathname}${from.search || ""}${from.hash || ""}`
+				: "/";
+			navigate(destination, { replace: true });
+		} catch (error) {
+			setErrorMessage(
+				error instanceof Error ? error.message : "登录失败，请稍后重试",
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
+
+	if (!isCheckingSession && user) {
+		return <Navigate to="/" replace />;
+	}
 
 	return (
 		<div className="min-h-svh bg-background text-foreground">
@@ -61,6 +101,15 @@ export function LoginPage() {
 						</CardHeader>
 						<CardContent className="px-[20px] pb-[20px] pt-0 sm:px-[24px] sm:pb-[24px]">
 							<form className="space-y-[20px]" onSubmit={handleSubmit}>
+								{errorMessage && (
+									<div
+										className="flex items-start gap-[8px] rounded-[6px] border border-destructive/40 bg-destructive/10 px-[12px] py-[10px] text-[12px] leading-[16px] text-destructive"
+										role="alert"
+									>
+										<AlertCircle className="mt-px size-[14px] shrink-0" />
+										<span>{errorMessage}</span>
+									</div>
+								)}
 								<div className="flex flex-col gap-[10px]">
 									<Label
 										htmlFor="username"
@@ -72,8 +121,12 @@ export function LoginPage() {
 										id="username"
 										name="username"
 										type="text"
+										value={username}
+										onChange={(event) => setUsername(event.target.value)}
 										autoComplete="username"
 										placeholder="请输入用户名"
+										autoFocus
+										disabled={isSubmitting}
 										className="h-[40px] rounded-[6px] px-[12px] py-[8px] text-[13px] transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-0"
 										required
 									/>
@@ -91,8 +144,11 @@ export function LoginPage() {
 											id="password"
 											name="password"
 											type={passwordType}
+											value={password}
+											onChange={(event) => setPassword(event.target.value)}
 											autoComplete="current-password"
 											placeholder="请输入密码"
+											disabled={isSubmitting}
 											className="h-[40px] rounded-[6px] px-[12px] py-[8px] pr-[40px] text-[13px] transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-0"
 											required
 										/>
@@ -102,6 +158,7 @@ export function LoginPage() {
 											size="icon-sm"
 											className="absolute right-[4px] top-1/2 size-[32px] -translate-y-1/2 text-muted-foreground hover:text-foreground"
 											onClick={() => setShowPassword((current) => !current)}
+											disabled={isSubmitting}
 											aria-label={passwordToggleLabel}
 											title={passwordToggleLabel}
 										>
@@ -115,7 +172,9 @@ export function LoginPage() {
 										id="remember"
 										name="remember"
 										className="size-[16px] rounded-[3px]"
-										defaultChecked
+										checked={remember}
+										onCheckedChange={(checked) => setRemember(checked === true)}
+										disabled={isSubmitting}
 									/>
 									<Label
 										htmlFor="remember"
@@ -128,9 +187,14 @@ export function LoginPage() {
 								<Button
 									type="submit"
 									className="h-[40px] w-full rounded-[6px] text-[13px]"
+									disabled={isSubmitting || isCheckingSession}
 								>
-									<LogIn className="size-[16px]" />
-									登录
+									{isSubmitting ? (
+										<LoaderCircle className="size-[16px] animate-spin" />
+									) : (
+										<LogIn className="size-[16px]" />
+									)}
+									{isSubmitting ? "正在登录" : "登录"}
 								</Button>
 							</form>
 						</CardContent>

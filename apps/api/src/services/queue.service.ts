@@ -1,4 +1,5 @@
 import type {
+	QueueJobFilter,
 	QueueMetrics,
 	QueueStatsResponseData,
 	WorkerStats,
@@ -98,18 +99,18 @@ export class QueueService {
 	/**
 	 * 获取任务列表
 	 */
-	async getJobs(
-		status: "waiting" | "active" | "completed" | "failed" | "delayed",
-		start = 0,
-		end = 9,
-	) {
+	async getJobs(status: QueueJobFilter, start = 0, end = 9) {
 		if (!this.queue) {
 			return { success: true, data: [] };
 		}
 
 		// BullMQ 的 getJobs 方法：start 和 end 是索引范围（包含 start 和 end）
 		// 例如：start=0, end=9 返回 10 个任务（索引 0-9）
-		const jobs = await this.queue.getJobs([status], start, end, true);
+		const statuses =
+			status === "all"
+				? (["waiting", "active", "completed", "failed", "delayed"] as const)
+				: [status];
+		const jobs = await this.queue.getJobs([...statuses], start, end, true);
 
 		return {
 			success: true,

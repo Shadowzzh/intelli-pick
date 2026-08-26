@@ -6,6 +6,7 @@ import type { Logger } from "pino";
 import { z } from "zod";
 import type { AiClient } from "../lib/ai";
 import { createLogger } from "../lib/logger";
+import { createAiCallMetric } from "./ai-metrics";
 import {
 	type PipelineContext,
 	type PipelineStep,
@@ -103,19 +104,22 @@ export class AiFilterStep implements PipelineStep {
 	): Promise<StepResult> {
 		const log = stepLogger || logger;
 		const { raw } = ctx;
+		const taskInfo = this.ai.getTaskInfo("filter");
+		const startedAt = Date.now();
 
 		const prompt = FILTER_PROMPT.replace("{{author}}", raw.author || "unknown")
 			.replace("{{sourceType}}", raw.sourceType)
 			.replace("{{content}}", raw.content);
 
 		try {
-			const { object } = await generateObject({
+			const generation = await generateObject({
 				model: this.ai.getModel("filter"),
 				schema: FilterResultSchema,
 				prompt,
 			});
 
-			const result = object as FilterResult;
+			const durationMs = Date.now() - startedAt;
+			const result = generation.object as FilterResult;
 			log.info(
 				{
 					url: raw.url,
@@ -159,6 +163,14 @@ export class AiFilterStep implements PipelineStep {
 			}
 
 			ctx.filterResult = result;
+			ctx.aiMetrics.filter = createAiCallMetric({
+				task: "filter",
+				taskInfo,
+				success: true,
+				durationMs,
+				result: generation,
+				decision: result.decision,
+			});
 
 			if (result.decision === "reject") {
 				return {
@@ -172,9 +184,17 @@ export class AiFilterStep implements PipelineStep {
 				context: ctx,
 			};
 		} catch (err) {
+			ctx.aiMetrics.filter = createAiCallMetric({
+				task: "filter",
+				taskInfo,
+				success: false,
+				durationMs: Date.now() - startedAt,
+				result: err,
+			});
 			log.error({ url: raw.url, err }, "AI filter failed");
 			return {
 				status: StepStatus.Error,
+				context: ctx,
 				error: err as Error,
 			};
 		}

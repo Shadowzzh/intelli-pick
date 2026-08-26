@@ -1,131 +1,148 @@
-// import { Badge } from "@/components/ui/badge";
-// import {
-// 	Dialog,
-// 	DialogContent,
-// 	DialogDescription,
-// 	DialogHeader,
-// 	DialogTitle,
-// } from "@/components/ui/dialog";
-// import { useQueueJob } from "@/hooks/useQueueJobs";
-// import { format } from "date-fns";
-// import { AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { useQueueJob } from "@/hooks/useQueueJobs";
+import { format } from "date-fns";
+import {
+	AlertCircle,
+	CheckCircle2,
+	Clock3,
+	ExternalLink,
+	XCircle,
+} from "lucide-react";
 
-// interface JobDetailDialogProps {
-// 	jobId: string | null;
-// 	open: boolean;
-// 	onOpenChange: (open: boolean) => void;
-// }
+interface JobDetailDialogProps {
+	jobId: string | null;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+}
 
-// export function JobDetailDialog({
-// 	jobId,
-// 	open,
-// 	onOpenChange,
-// }: JobDetailDialogProps) {
-// 	const { data: job, isLoading } = useQueueJob(jobId);
+function formatTimestamp(value: number | undefined): string {
+	if (!value) return "未记录";
+	return format(new Date(value), "yyyy-MM-dd HH:mm:ss");
+}
 
-// 	return (
-// 		<Dialog open={open} onOpenChange={onOpenChange}>
-// 			<DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-// 				<DialogHeader>
-// 					<DialogTitle>任务详情</DialogTitle>
-// 					<DialogDescription>查看任务的完整信息</DialogDescription>
-// 				</DialogHeader>
+export function JobDetailDialog({
+	jobId,
+	open,
+	onOpenChange,
+}: JobDetailDialogProps) {
+	const { data: job, isLoading, isError } = useQueueJob(jobId);
 
-// 				{isLoading && (
-// 					<div className="text-center py-8 text-muted-foreground">
-// 						加载中...
-// 					</div>
-// 				)}
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle>实时任务详情</DialogTitle>
+					<DialogDescription>
+						查看当前 BullMQ 队列中仍保留的任务信息
+					</DialogDescription>
+				</DialogHeader>
 
-// 				{job && (
-// 					<div className="space-y-4">
-// 						{/* 基本信息 */}
-// 						<div className="grid grid-cols-2 gap-4">
-// 							<div>
-// 								<div className="text-sm text-muted-foreground mb-1">
-// 									任务 ID
-// 								</div>
-// 								<Badge variant="outline">{job.id || "N/A"}</Badge>
-// 							</div>
-// 							<div>
-// 								<div className="text-sm text-muted-foreground mb-1">
-// 									重试次数
-// 								</div>
-// 								<Badge variant="secondary">{job.attemptsMade}</Badge>
-// 							</div>
-// 						</div>
+				{isLoading && (
+					<div className="py-8 text-center text-sm text-muted-foreground">
+						加载中...
+					</div>
+				)}
 
-// 						{/* 时间信息 */}
-// 						<div className="space-y-2">
-// 							<h3 className="font-semibold flex items-center gap-2">
-// 								<Clock className="h-4 w-4" />
-// 								时间线
-// 							</h3>
-// 							<div className="space-y-2 pl-6">
-// 								{job.timestamp && (
-// 									<div className="text-sm">
-// 										<span className="text-muted-foreground">创建时间: </span>
-// 										<span>
-// 											{format(new Date(job.timestamp), "yyyy-MM-dd HH:mm:ss")}
-// 										</span>
-// 									</div>
-// 								)}
-// 								{job.processedOn && (
-// 									<div className="text-sm">
-// 										<span className="text-muted-foreground">开始处理: </span>
-// 										<span>
-// 											{format(new Date(job.processedOn), "yyyy-MM-dd HH:mm:ss")}
-// 										</span>
-// 									</div>
-// 								)}
-// 								{job.finishedOn && (
-// 									<div className="text-sm">
-// 										<span className="text-muted-foreground">完成时间: </span>
-// 										<span>
-// 											{format(new Date(job.finishedOn), "yyyy-MM-dd HH:mm:ss")}
-// 										</span>
-// 									</div>
-// 								)}
-// 							</div>
-// 						</div>
+				{isError && (
+					<div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+						<AlertCircle className="size-4" />
+						任务已从实时队列移除，请在执行历史中查看。
+					</div>
+				)}
 
-// 						{job.stacktrace &&
-// 							Array.isArray(job.stacktrace) &&
-// 							job.stacktrace.length > 0 && (
-// 								<div className="space-y-2">
-// 									<h3 className="font-semibold flex items-center gap-2">
-// 										<AlertCircle className="h-4 w-4" />
-// 										堆栈跟踪
-// 									</h3>
-// 									<pre className="p-3 rounded-lg bg-muted text-xs overflow-x-auto">
-// 										{job.stacktrace.join("\n")}
-// 									</pre>
-// 								</div>
-// 							)}
+				{job && (
+					<div className="space-y-5">
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							<div>
+								<div className="mb-1 text-xs text-muted-foreground">
+									任务 ID
+								</div>
+								<Badge variant="outline">{job.id || "N/A"}</Badge>
+							</div>
+							<div>
+								<div className="mb-1 text-xs text-muted-foreground">
+									尝试次数
+								</div>
+								<Badge variant="secondary">{job.attemptsMade}</Badge>
+							</div>
+						</div>
 
-// 						{/* 任务数据 */}
-// 						<div className="space-y-2">
-// 							<h3 className="font-semibold">任务数据</h3>
-// 							<pre className="p-3 rounded-lg bg-muted text-xs overflow-x-auto">
-// 								{JSON.stringify(job.data, null, 2)}
-// 							</pre>
-// 						</div>
+						<div className="space-y-2">
+							<h3 className="flex items-center gap-2 text-sm font-semibold">
+								<Clock3 className="size-4" />
+								时间线
+							</h3>
+							<div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+								<div>
+									<span className="text-muted-foreground">创建：</span>
+									{formatTimestamp(job.timestamp)}
+								</div>
+								<div>
+									<span className="text-muted-foreground">开始：</span>
+									{formatTimestamp(job.processedOn)}
+								</div>
+								<div>
+									<span className="text-muted-foreground">结束：</span>
+									{formatTimestamp(job.finishedOn)}
+								</div>
+							</div>
+						</div>
 
-// 						{/* 返回值 */}
-// 						{job.returnvalue && (
-// 							<div className="space-y-2">
-// 								<h3 className="font-semibold flex items-center gap-2 text-green-500">
-// 									<CheckCircle className="h-4 w-4" />
-// 									返回值
-// 								</h3>
-// 								<pre className="p-3 rounded-lg bg-green-500/5 border border-green-500/20 text-xs overflow-x-auto">
-// 									{JSON.stringify(job.returnvalue, null, 2)}
-// 								</pre>
-// 							</div>
-// 						)}
-// 					</div>
-// 				)}
-// 			</DialogContent>
-// 		</Dialog>
-// 	);
-// }
+						{job.failedReason && (
+							<div className="space-y-2">
+								<h3 className="flex items-center gap-2 text-sm font-semibold text-destructive">
+									<XCircle className="size-4" />
+									失败原因
+								</h3>
+								<p className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+									{job.failedReason}
+								</p>
+							</div>
+						)}
+
+						{job.stacktrace && job.stacktrace.length > 0 && (
+							<div className="space-y-2">
+								<h3 className="flex items-center gap-2 text-sm font-semibold">
+									<AlertCircle className="size-4" />
+									堆栈跟踪
+								</h3>
+								<pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
+									{job.stacktrace.join("\n")}
+								</pre>
+							</div>
+						)}
+
+						<div className="space-y-2">
+							<h3 className="flex items-center gap-2 text-sm font-semibold">
+								<ExternalLink className="size-4" />
+								任务数据
+							</h3>
+							<pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
+								{JSON.stringify(job.data, null, 2)}
+							</pre>
+						</div>
+
+						{job.returnvalue !== undefined && (
+							<div className="space-y-2">
+								<h3 className="flex items-center gap-2 text-sm font-semibold text-green-700 dark:text-green-400">
+									<CheckCircle2 className="size-4" />
+									返回值
+								</h3>
+								<pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
+									{JSON.stringify(job.returnvalue, null, 2)}
+								</pre>
+							</div>
+						)}
+					</div>
+				)}
+			</DialogContent>
+		</Dialog>
+	);
+}

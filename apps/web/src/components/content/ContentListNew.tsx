@@ -2,6 +2,7 @@ import { FilterDisplay } from "@/components/content/FilterDisplay";
 import { SearchBox } from "@/components/content/SearchBox";
 import { ViewModeToggle } from "@/components/content/ViewModeToggle";
 import { Pagination } from "@/components/ui/Pagination";
+import { Button } from "@/components/ui/button";
 import {
 	WidgetEmptyState,
 	WidgetErrorState,
@@ -14,7 +15,10 @@ import type { Content } from "@intellipick/db";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { Newspaper } from "lucide-react";
+import { ChevronDown, ChevronUp, Newspaper } from "lucide-react";
+import { useState } from "react";
+
+type ContentViewMode = "compact" | "detailed";
 
 interface ContentListProps {
 	className?: string;
@@ -142,12 +146,11 @@ export function ContentListNew({
 			{/* Content items */}
 			{!isLoading && !error && items.length > 0 && (
 				<div className="space-y-3">
-					{items.map((item: Content, index: number) => (
+					{items.map((item: Content) => (
 						<ContentListItem
-							key={item.id}
+							key={`${item.id}:${viewMode}`}
 							item={item}
 							viewMode={viewMode}
-							index={index}
 						/>
 					))}
 				</div>
@@ -158,16 +161,48 @@ export function ContentListNew({
 
 interface ContentListItemProps {
 	item: Content;
-	viewMode: "compact" | "detailed";
-	index: number;
+	viewMode: ContentViewMode;
 }
 
 function ContentListItem({ item, viewMode }: ContentListItemProps) {
-	if (viewMode === "detailed") {
-		return <ContentDetailedCard item={item} />;
-	}
+	const [itemViewMode, setItemViewMode] = useState<ContentViewMode>(viewMode);
 
-	return <ContentCompactCard item={item} />;
+	const isDetailed = itemViewMode === "detailed";
+	const toggleLabel = isDetailed ? "切换为简略视图" : "切换为详细视图";
+
+	const handleToggleView = () => {
+		let nextViewMode: ContentViewMode = "detailed";
+		if (isDetailed) {
+			nextViewMode = "compact";
+		}
+
+		setItemViewMode(nextViewMode);
+	};
+
+	return (
+		<div className="relative">
+			<Button
+				type="button"
+				variant="ghost"
+				size="icon-sm"
+				className="absolute right-3 top-3 z-10 size-8 bg-transparent text-muted-foreground shadow-none hover:bg-muted/60 hover:text-foreground"
+				onClick={handleToggleView}
+				aria-label={toggleLabel}
+				title={toggleLabel}
+			>
+				{isDetailed ? (
+					<ChevronUp className="h-4 w-4" />
+				) : (
+					<ChevronDown className="h-4 w-4" />
+				)}
+			</Button>
+			{isDetailed ? (
+				<ContentDetailedCard item={item} />
+			) : (
+				<ContentCompactCard item={item} />
+			)}
+		</div>
+	);
 }
 
 function ContentCompactCard({ item }: { item: Content }) {
@@ -180,7 +215,7 @@ function ContentCompactCard({ item }: { item: Content }) {
 	return (
 		<button
 			type="button"
-			className="group p-4 border border-border/60 bg-card/50 rounded-lg hover:border-primary/60 hover:shadow-md hover:bg-card transition-all duration-200 cursor-pointer text-left w-full"
+			className="group w-full cursor-pointer rounded-lg border border-border/60 bg-card/50 p-4 pr-14 text-left transition-all duration-200 hover:border-primary/60 hover:bg-card hover:shadow-md"
 			onClick={handleClick}
 		>
 			{/* Title */}
@@ -210,7 +245,7 @@ function ContentDetailedCard({ item }: { item: Content }) {
 	return (
 		<button
 			type="button"
-			className="group p-5 border border-border/60 bg-card/50 rounded-lg hover:border-primary/60 hover:shadow-md hover:bg-card transition-all duration-200 cursor-pointer text-left w-full"
+			className="group w-full cursor-pointer rounded-lg border border-border/60 bg-card/50 p-5 pr-14 text-left transition-all duration-200 hover:border-primary/60 hover:bg-card hover:shadow-md"
 			onClick={handleClick}
 		>
 			{/* Title */}

@@ -10,6 +10,8 @@ export default defineConfig({
 		"schema/entity-mentions": "src/schema/entity-mentions.ts",
 		"schema/tags": "src/schema/tags.ts",
 		"schema/quarantine": "src/schema/quarantine.ts",
+		"schema/job-history": "src/schema/job-history.ts",
+		"schema/jobs": "src/schema/jobs.ts",
 		client: "src/client.ts",
 	},
 	format: ["esm"],

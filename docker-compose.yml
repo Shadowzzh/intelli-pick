@@ -1,85 +1,35 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
 services:
-  # ============================================
-  # 应用服务
-  # ============================================
-  intellipick-api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    container_name: intellipick-api
-    restart: unless-stopped
-    depends_on:
-      intellipick-db:
-        condition: service_healthy
-      intellipick-redis:
-        condition: service_started
-    env_file:
-      - .env.production
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "8085:3000"
-    networks:
-      - intellipick-network
-    # 日志配置：限制单个日志文件大小和数量
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  intellipick-worker:
-    build:
-      context: .
-      dockerfile: apps/worker/Dockerfile
-    container_name: intellipick-worker
-    restart: unless-stopped
-    depends_on:
-      intellipick-db:
-        condition: service_healthy
-      intellipick-redis:
-        condition: service_started
-      intellipick-rsshub:
-        condition: service_healthy
-    env_file:
-      - .env.production
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - intellipick-network
-    # 日志配置：限制单个日志文件大小和数量
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # ============================================
-  # PostgreSQL 数据库
-  # ============================================
   intellipick-db:
     image: postgres:16-alpine
     container_name: intellipick-db
     restart: unless-stopped
-    ports:
-      - "${DB_PORT_MAPPING:-15432:5432}"  # 暴露数据库到宿主机端口
+    env_file:
+      - .env.production
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-intellipick}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456}
+    ports:
+      - "127.0.0.1:${DB_PORT_MAPPING:-15432:5432}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - intellipick-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d intellipick"]
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    logging: *default-logging
 
-  # ============================================
-  # Redis 缓存
-  # ============================================
   intellipick-redis:
     image: redis:7-alpine
     container_name: intellipick-redis
@@ -90,53 +40,153 @@ services:
     networks:
       - intellipick-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [CMD, redis-cli, ping]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 5s
+    logging: *default-logging
 
-  # ============================================
-  # RSSHub - RSS 生成服务
-  # ============================================
   intellipick-rsshub:
     image: diygod/rsshub:chromium-bundled
     container_name: intellipick-rsshub
     restart: unless-stopped
-    ports:
-      - '1200:1200'
-    depends_on:
-      intellipick-redis:
-        condition: service_healthy
     env_file:
       - .env.production
     environment:
       NODE_ENV: production
       CACHE_TYPE: redis
-      # 使用生产环境的 Redis(在 Docker 网络中通过服务名访问)
-      REDIS_URL: 'redis://intellipick-redis:6379/'
-      # 代理配置（访问外网需要）
-      HTTP_PROXY: 'http://host.docker.internal:7890'
-      HTTPS_PROXY: 'http://host.docker.internal:7890'
-      NO_PROXY: 'localhost,127.0.0.1,intellipick-redis,intellipick-db,intellipick-app'
+      REDIS_URL: redis://intellipick-redis:6379/
+      HTTP_PROXY: ${RSSHUB_HTTP_PROXY:-http://host.docker.internal:7890}
+      HTTPS_PROXY: ${RSSHUB_HTTPS_PROXY:-http://host.docker.internal:7890}
+      NO_PROXY: localhost,127.0.0.1,intellipick-redis,intellipick-db,intellipick-rsshub
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "127.0.0.1:${RSSHUB_PORT_MAPPING:-1200:1200}"
+    depends_on:
+      intellipick-redis:
+        condition: service_healthy
     networks:
       - intellipick-network
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:1200/healthz']
+      test: [CMD, curl, -f, http://localhost:1200/healthz]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    logging: *default-logging
 
-# ============================================
-# 网络配置
-# ============================================
+  intellipick-migrate:
+    image: intellipick-migrate:${INTELLIPICK_TAG:-local}
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migrate
+    container_name: intellipick-migrate
+    profiles: [tools]
+    env_file:
+      - .env.production
+    depends_on:
+      intellipick-db:
+        condition: service_healthy
+    networks:
+      - intellipick-network
+    restart: "no"
+    logging: *default-logging
+
+  intellipick-api:
+    image: intellipick-api:${INTELLIPICK_TAG:-local}
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: api
+    container_name: intellipick-api
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: 3000
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "127.0.0.1:${API_PORT_MAPPING:-8085}:3000"
+    depends_on:
+      intellipick-db:
+        condition: service_healthy
+      intellipick-redis:
+        condition: service_healthy
+    networks:
+      - intellipick-network
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging: *default-logging
+
+  intellipick-worker:
+    image: intellipick-worker:${INTELLIPICK_TAG:-local}
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+      target: worker
+    container_name: intellipick-worker
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      RSSHUB_BASE_URL: http://intellipick-rsshub:1200
+      CLEAR_QUEUE_ON_START: ${CLEAR_QUEUE_ON_START:-false}
+      RUN_INITIAL_COLLECTION: ${RUN_INITIAL_COLLECTION:-false}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      intellipick-db:
+        condition: service_healthy
+      intellipick-redis:
+        condition: service_healthy
+      intellipick-rsshub:
+        condition: service_healthy
+    networks:
+      - intellipick-network
+    logging: *default-logging
+
+  intellipick-web:
+    image: intellipick-web:${INTELLIPICK_TAG:-local}
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: web
+    container_name: intellipick-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    depends_on:
+      intellipick-api:
+        condition: service_healthy
+    networks:
+      - intellipick-network
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1:8080/healthz]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging: *default-logging
+
 networks:
   intellipick-network:
     driver: bridge
 
-# ============================================
-# 数据卷
-# ============================================
 volumes:
   postgres_data:
     driver: local

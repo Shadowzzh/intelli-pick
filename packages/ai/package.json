@@ -1,0 +1,30 @@
+{
+	"name": "@intellipick/ai",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsup",
+		"typecheck": "tsc --noEmit",
+		"dev": "tsup --watch"
+	},
+	"dependencies": {
+		"@ai-sdk/anthropic": "^1.0.0",
+		"@ai-sdk/openai": "^1.0.0",
+		"@intellipick/config": "workspace:*",
+		"ai": "^4.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.0.0",
+		"tsup": "^8.5.1",
+		"typescript": "^5.7.0"
+	}
+}

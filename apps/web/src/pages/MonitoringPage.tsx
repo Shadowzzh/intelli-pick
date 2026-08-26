@@ -1,6 +1,7 @@
 import { Column } from "@/components/layout/Column";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AiPerformanceWidget } from "@/components/monitoring/AiPerformanceWidget";
+import { JobHistoryWidget } from "@/components/monitoring/JobHistoryWidget";
 import { OverviewWidget } from "@/components/monitoring/OverviewWidget";
 import { QueueDetailWidget } from "@/components/monitoring/QueueDetailWidget";
 import { SourcesHealthWidget } from "@/components/monitoring/SourcesHealthWidget";
@@ -27,7 +28,10 @@ export function MonitoringPage() {
 
 					{/* 第2列：队列详情 */}
 					<Column size="medium">
-						<QueueDetailWidget data={data?.queue} />
+						<div className="space-y-5">
+							<QueueDetailWidget data={data?.queue} />
+							<JobHistoryWidget />
+						</div>
 					</Column>
 
 					{/* 第3列：数据源健康 */}

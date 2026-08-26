@@ -198,6 +198,106 @@ docs/                   # 项目文档（API 文档、设计文档等）
 
 ## 开发注意事项
 
+### 代码规范
+
+#### 避免嵌套三元运算符
+
+**禁止使用嵌套三元运算符**，这会严重降低代码可读性。应该使用以下替代方案：
+
+**❌ 错误示例**：
+```typescript
+// 嵌套三元运算符 - 难以阅读
+const size = type === "sm" ? "w-1 h-1" : type === "md" ? "w-1.5 h-1.5" : "w-2 h-2";
+
+// 在 JSX 中嵌套 - 更难阅读
+{label || (status === "healthy" ? "正常" : status === "warning" ? "警告" : "错误")}
+```
+
+**✅ 正确示例**：
+
+1. **使用 if-else 语句**（推荐用于简单逻辑）：
+```typescript
+const getSize = () => {
+  if (type === "sm") return "w-1 h-1";
+  if (type === "md") return "w-1.5 h-1.5";
+  return "w-2 h-2";
+};
+const size = getSize();
+```
+
+2. **使用对象映射**（推荐用于固定映射）：
+```typescript
+const sizeMap = {
+  sm: "w-1 h-1",
+  md: "w-1.5 h-1.5",
+  lg: "w-2 h-2",
+};
+const size = sizeMap[type];
+```
+
+3. **提前计算变量**（推荐用于 JSX）：
+```typescript
+const getDefaultLabel = () => {
+  if (status === "healthy") return "正常";
+  if (status === "warning") return "警告";
+  return "错误";
+};
+const displayLabel = label || getDefaultLabel();
+
+// 在 JSX 中使用
+return <span>{displayLabel}</span>;
+```
+
+4. **使用 switch 语句**（适用于多分支）：
+```typescript
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "healthy": return "正常";
+    case "warning": return "警告";
+    case "error": return "错误";
+    default: return "未知";
+  }
+};
+```
+
+#### 复杂表达式提取为变量
+
+将复杂的计算表达式提取为有意义的变量名，提高代码可读性。
+
+**❌ 错误示例**：
+```typescript
+<Progress value={(data.redis.memoryUsage / data.redis.memoryLimit) * 100} />
+{(data.redis.memoryUsage / data.redis.memoryLimit) * 100 > 80 && <AlertTriangle />}
+```
+
+**✅ 正确示例**：
+```typescript
+const memoryUsagePercent = (data.redis.memoryUsage / data.redis.memoryLimit) * 100;
+const showMemoryWarning = memoryUsagePercent > 80;
+
+<Progress value={memoryUsagePercent} />
+{showMemoryWarning && <AlertTriangle />}
+```
+
+#### 避免重复计算
+
+将重复使用的计算结果缓存到变量中。
+
+**❌ 错误示例**：
+```typescript
+<div>内存: {(data.redis.memoryUsage / 1024 / 1024).toFixed(2)} MB</div>
+<div>限制: {(data.redis.memoryLimit / 1024 / 1024).toFixed(2)} MB</div>
+```
+
+**✅ 正确示例**：
+```typescript
+const memoryUsageMB = data.redis.memoryUsage / 1024 / 1024;
+const memoryLimitMB = data.redis.memoryLimit / 1024 / 1024;
+
+<div>内存: {memoryUsageMB.toFixed(2)} MB</div>
+<div>限制: {memoryLimitMB.toFixed(2)} MB</div>
+```
+
 ### 添加新数据源
 
 1. 在 `apps/worker/src/collector/plugins/` 创建新插件

@@ -28,7 +28,7 @@ export function Widget({
 	return (
 		<div
 			className={cn(
-				"widget rounded-lg border bg-card text-card-foreground overflow-hidden",
+				"widget min-w-0 rounded-lg border bg-card text-card-foreground overflow-hidden",
 				"flex flex-col",
 				className,
 			)}

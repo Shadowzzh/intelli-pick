@@ -21,6 +21,7 @@ import axios, {
 // 开发环境：VITE_API_URL=/ 使用相对路径，由 Vite proxy 转发
 // 生产环境：VITE_API_URL=http://your-api.com 直接访问后端
 const API_URL = import.meta.env.VITE_API_URL || "/";
+export const AUTH_UNAUTHORIZED_EVENT = "sift:auth-unauthorized";
 
 // ========== 类型定义 ==========
 // 注意: GraphQL 相关类型已移至 @intellipick/shared
@@ -44,6 +45,7 @@ const axiosInstance: AxiosInstance = axios.create({
 		"Content-Type": "application/json",
 	},
 	timeout: 30000,
+	withCredentials: true,
 });
 
 // ========== 请求拦截器 ==========
@@ -89,6 +91,15 @@ axiosInstance.interceptors.response.use(
 	(error: AxiosError<ApiError>) => {
 		// 处理错误响应
 		if (error.response) {
+			const isLoginRequest = error.config?.url?.endsWith("/auth/login");
+			if (
+				error.response.status === 401 &&
+				!isLoginRequest &&
+				typeof window !== "undefined"
+			) {
+				window.dispatchEvent(new Event(AUTH_UNAUTHORIZED_EVENT));
+			}
+
 			// 服务器返回错误状态码
 			const apiError = error.response.data;
 
@@ -214,6 +225,19 @@ export const api = {
 		config?: AxiosRequestConfig,
 	): Promise<T> {
 		const response = await axiosInstance.put<ApiResponse<T>>(
+			path,
+			data,
+			config,
+		);
+		return response.data.data;
+	},
+
+	async patch<T>(
+		path: string,
+		data?: unknown,
+		config?: AxiosRequestConfig,
+	): Promise<T> {
+		const response = await axiosInstance.patch<ApiResponse<T>>(
 			path,
 			data,
 			config,

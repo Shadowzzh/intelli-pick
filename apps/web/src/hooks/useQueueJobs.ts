@@ -1,17 +1,17 @@
 // apps/web/src/hooks/useQueueJobs.ts
 import { getProcessingRate, getQueueJob, getQueueJobs } from "@/lib/api/queue";
 import type {
-	JobStatus,
 	ProcessingRateStats,
 	QueueJob,
 	QueueJobDetail,
+	QueueJobFilter,
 } from "@intellipick/shared";
 import { useQuery } from "@tanstack/react-query";
 
 /**
  * 获取队列任务列表
  */
-export function useQueueJobs(status: JobStatus, start = 0, end = 9) {
+export function useQueueJobs(status: QueueJobFilter, start = 0, end = 9) {
 	return useQuery<QueueJob[]>({
 		queryKey: ["queue-jobs", status, start, end],
 		queryFn: () => getQueueJobs(status, start, end),

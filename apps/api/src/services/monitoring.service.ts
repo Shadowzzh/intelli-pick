@@ -1,12 +1,15 @@
 // apps/api/src/services/monitoring.service.ts
+import type { AiConfig, AiTaskName } from "@intellipick/config";
 import type {
 	AiPerformanceMetrics,
+	AiTaskPerformanceMetrics,
 	MonitoringData,
 	SystemOverview,
 	SystemResourceMetrics,
 } from "@intellipick/shared";
 import type { ContentsService } from "./contents.service";
 import type { EntitiesService } from "./entities.service";
+import type { JobHistoryService } from "./job-history.service";
 import type { QueueService } from "./queue.service";
 import type { SourcesService } from "./sources.service";
 import type { StatsService } from "./stats.service";
@@ -18,6 +21,8 @@ export class MonitoringService {
 		private sourcesService: SourcesService,
 		private contentsService: ContentsService,
 		private entitiesService: EntitiesService,
+		private jobHistoryService: JobHistoryService,
+		private aiConfig?: AiConfig,
 	) {}
 
 	/**
@@ -108,23 +113,47 @@ export class MonitoringService {
 
 	/**
 	 * 获取 AI 处理性能指标
-	 * 注意：这里返回模拟数据，实际应该从日志或统计表中获取
 	 */
 	private async getAiPerformance(): Promise<AiPerformanceMetrics> {
-		// TODO: 实现真实的 AI 性能统计
-		// 可以考虑：
-		// 1. 在 Pipeline 中记录每次 AI 调用的结果和耗时
-		// 2. 存储到 Redis 或专门的统计表
-		// 3. 这里从存储中读取并计算统计数据
+		const metrics = await this.jobHistoryService.getAiPerformance(24);
+		this.addConfiguredTaskInfo(metrics.filter, "filter");
+		this.addConfiguredTaskInfo(metrics.extract, "extractAndClassify");
+		return metrics;
+	}
 
-		return {
-			filterCalls: 0,
-			filterSuccessRate: 0,
-			extractCalls: 0,
-			extractSuccessRate: 0,
-			avgResponseTime: 0,
-			passRate: 0,
-		};
+	private addConfiguredTaskInfo(
+		metrics: AiTaskPerformanceMetrics,
+		taskName: AiTaskName,
+	): void {
+		const task = this.aiConfig?.tasks[taskName];
+		if (!task) {
+			return;
+		}
+
+		metrics.configuredModels = [
+			task.model,
+			...metrics.configuredModels.filter((model) => model !== task.model),
+		];
+		metrics.providers = [
+			task.provider,
+			...metrics.providers.filter((provider) => provider !== task.provider),
+		];
+
+		const providerConfig = this.aiConfig?.providers[task.provider];
+		if (!providerConfig) {
+			return;
+		}
+
+		let protocol: "responses" | "chat-completions" | "anthropic";
+		if (providerConfig.type === "anthropic") {
+			protocol = "anthropic";
+		} else {
+			protocol = providerConfig.protocol;
+		}
+		metrics.protocols = [
+			protocol,
+			...metrics.protocols.filter((item) => item !== protocol),
+		];
 	}
 
 	/**
