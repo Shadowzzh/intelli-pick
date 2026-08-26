@@ -1,11 +1,16 @@
 // apps/web/src/hooks/useQueueJobs.ts
-import { getProcessingRate, getQueueJob, getQueueJobs } from "@/lib/api/queue";
+import {
+	type ResolvedJobDetail,
+	getProcessingRate,
+	getQueueJobs,
+	getResolvedJobDetail,
+} from "@/lib/api/queue";
 import type {
 	ProcessingRateStats,
 	QueueJob,
-	QueueJobDetail,
 	QueueJobFilter,
 } from "@intellipick/shared";
+import { ApiRequestError, ErrorCode } from "@intellipick/shared";
 import { useQuery } from "@tanstack/react-query";
 
 /**
@@ -22,14 +27,34 @@ export function useQueueJobs(status: QueueJobFilter, start = 0, end = 9) {
 /**
  * 获取单个任务详情
  */
-export function useQueueJob(jobId: string | null) {
-	return useQuery<QueueJobDetail>({
-		queryKey: ["queue-job", jobId],
+export function useJobDetail(jobId: string | null) {
+	return useQuery<ResolvedJobDetail>({
+		queryKey: ["job-detail", jobId],
 		queryFn: () => {
 			if (!jobId) throw new Error("jobId is required");
-			return getQueueJob(jobId);
+			return getResolvedJobDetail(jobId);
 		},
 		enabled: !!jobId,
+		retry: (failureCount, error) => {
+			if (
+				error instanceof ApiRequestError &&
+				error.code === ErrorCode.NOT_FOUND
+			) {
+				return false;
+			}
+			return failureCount < 1;
+		},
+		refetchInterval: (query) => {
+			const detail = query.state.data;
+			if (
+				detail?.origin === "queue" &&
+				!detail.job.finishedOn &&
+				!detail.job.failedReason
+			) {
+				return 2000;
+			}
+			return false;
+		},
 	});
 }
 

@@ -1,5 +1,6 @@
 import type { JobHistoryStatus } from "@intellipick/shared";
 import type { FastifyInstance } from "fastify";
+import { NotFoundError } from "../../lib/errors";
 import type { JobHistoryService } from "../../services/job-history.service";
 
 interface JobHistoryQuery {
@@ -86,9 +87,11 @@ export async function jobHistoryRoutes(
 
 	app.get<{ Params: { jobId: string } }>(
 		"/job-history/job/:jobId",
-		async (req, reply) => {
+		async (req) => {
 			const result = await service.findByJobId(req.params.jobId);
-			if (!result.success) reply.code(404);
+			if (!result.success) {
+				throw new NotFoundError("Job history", req.params.jobId);
+			}
 			return result;
 		},
 	);

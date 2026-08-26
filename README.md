@@ -398,6 +398,12 @@ socket.on('content:updated', (content) => {
 
 详细状态口径、API 和回滚方法见 [`docs/source-health-control.md`](docs/source-health-control.md)。
 
+### 7. 统一任务详情
+
+队列任务仍存在时展示实时 BullMQ 信息；任务完成并移除后自动回退到 PostgreSQL 执行历史，不需要用户手动切换位置查找。
+
+详细查询流程、重试策略和验证记录见 [`docs/task-detail-fallback.md`](docs/task-detail-fallback.md)。
+
 ---
 
 ## 🔧 常用命令

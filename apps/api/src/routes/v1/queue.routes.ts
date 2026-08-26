@@ -1,5 +1,6 @@
 // apps/api/src/routes/v1/queue.routes.ts
 import type { FastifyInstance } from "fastify";
+import { NotFoundError } from "../../lib/errors";
 import type { QueueService } from "../../services/queue.service";
 
 export async function queueRoutes(app: FastifyInstance, service: QueueService) {
@@ -58,6 +59,9 @@ export async function queueRoutes(app: FastifyInstance, service: QueueService) {
 	}>("/queue/jobs/:jobId", async (req) => {
 		const { jobId } = req.params;
 		const result = await service.getJob(jobId);
+		if (!result.success) {
+			throw new NotFoundError("Queue job", jobId);
+		}
 		return result;
 	});
 

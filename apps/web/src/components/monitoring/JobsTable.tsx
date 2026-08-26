@@ -1,11 +1,13 @@
 // apps/web/src/components/monitoring/JobsTable.tsx
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { QueueJob } from "@intellipick/shared";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import {
 	CheckCircle2,
 	CircleDashed,
+	Eye,
 	LoaderCircle,
 	XCircle,
 } from "lucide-react";
@@ -101,7 +103,7 @@ export function JobsTable({
 				{jobs.map((job) => (
 					<div
 						key={job.id}
-						className="grid grid-cols-[140px_120px_1fr_180px_90px] items-center gap-3 px-4 py-3.5 transition-colors hover:bg-accent/50"
+						className="grid grid-cols-[140px_120px_1fr_180px_120px] items-center gap-3 px-4 py-3.5 transition-colors hover:bg-accent/50"
 					>
 						{/* 任务ID */}
 						<div className="flex flex-col">
@@ -138,16 +140,19 @@ export function JobsTable({
 
 						{/* 操作 */}
 						<div>
-							<button
+							<Button
 								type="button"
-								className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+								size="sm"
+								className="cursor-pointer"
+								title="查看任务详情"
 								onClick={(e) => {
 									e.stopPropagation();
 									onJobClick(job);
 								}}
 							>
-								详情
-							</button>
+								<Eye />
+								任务详情
+							</Button>
 						</div>
 					</div>
 				))}
