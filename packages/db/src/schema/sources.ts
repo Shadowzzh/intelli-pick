@@ -41,11 +41,35 @@ export const sources = pgTable("sources", {
 	/** 是否启用该数据源。禁用的数据源不会被采集 */
 	enabled: boolean("enabled").default(true),
 
+	/** 是否仍存在于当前配置文件中 */
+	isConfigured: boolean("is_configured").notNull().default(true),
+
 	/** 采集间隔时间（秒），默认 3600 秒（1 小时） */
 	fetchInterval: integer("fetch_interval").default(3600),
 
+	/** 小时间隔任务在每小时的第几分钟执行 */
+	scheduleMinute: integer("schedule_minute").default(0),
+
+	/** 最近一次开始尝试采集的时间 */
+	lastAttemptedAt: timestamp("last_attempted_at", { withTimezone: true }),
+
 	/** 上次成功采集的时间（存储为 UTC），用于调度器判断是否需要再次采集 */
 	lastFetchedAt: timestamp("last_fetched_at", { withTimezone: true }),
+
+	/** 最近一次采集状态：never、running、success 或 failed */
+	lastFetchStatus: text("last_fetch_status").notNull().default("never"),
+
+	/** 最近一次采集失败原因 */
+	lastFetchError: text("last_fetch_error"),
+
+	/** 最近一次拉取到的条目数量 */
+	lastItemCount: integer("last_item_count"),
+
+	/** 最近一次新增入队的条目数量 */
+	lastNewCount: integer("last_new_count"),
+
+	/** 最近一次采集耗时，单位为毫秒 */
+	lastDurationMs: integer("last_duration_ms"),
 
 	/** 创建时间，数据源首次添加到系统的时间（存储为 UTC） */
 	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

@@ -154,8 +154,11 @@ export enum SourceHealthStatus {
 	HEALTHY = "healthy",
 	DELAYED = "delayed",
 	ERROR = "error",
+	PENDING = "pending",
 	DISABLED = "disabled",
 }
+
+export type SourceFetchStatus = "never" | "running" | "success" | "failed";
 
 /** 数据源状态信息 */
 export interface SourceStatus {
@@ -164,10 +167,17 @@ export interface SourceStatus {
 	type: string;
 	url?: string;
 	enabled: boolean;
+	isConfigured: boolean;
 	fetchInterval: number;
+	scheduleMinute: number;
+	lastAttemptedAt: Date | null;
 	lastFetchedAt: Date | null;
 	lastCollectedAt?: Date | null;
-	lastFetchStatus: string;
+	lastFetchStatus: SourceFetchStatus;
+	lastFetchError: string | null;
+	lastItemCount: number | null;
+	lastNewCount: number | null;
+	lastDurationMs: number | null;
 	healthStatus: SourceHealthStatus;
 	nextFetchAt: Date | null;
 }
@@ -178,6 +188,7 @@ export interface SourceHealthSummary {
 	healthy: number;
 	delayed: number;
 	error: number;
+	pending: number;
 	disabled: number;
 }
 

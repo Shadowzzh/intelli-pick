@@ -1,7 +1,7 @@
 // apps/api/src/lib/sources.ts
 import type { Config } from "@intellipick/config";
 import { db, sources } from "@intellipick/db";
-import { eq } from "drizzle-orm";
+import { and, eq, notInArray, or } from "drizzle-orm";
 import { createLogger } from "./logger";
 
 const logger = createLogger("sources");
@@ -30,8 +30,9 @@ export async function syncSources(
 				.set({
 					type: sourceConfig.type,
 					config: sourceConfig.config,
-					enabled: sourceConfig.enabled,
+					isConfigured: true,
 					fetchInterval: sourceConfig.fetchInterval,
+					scheduleMinute: sourceConfig.scheduleMinute ?? 0,
 					updatedAt: new Date(),
 				})
 				.where(eq(sources.id, existing.id));
@@ -50,7 +51,9 @@ export async function syncSources(
 					type: sourceConfig.type,
 					config: sourceConfig.config,
 					enabled: sourceConfig.enabled,
+					isConfigured: true,
 					fetchInterval: sourceConfig.fetchInterval,
+					scheduleMinute: sourceConfig.scheduleMinute ?? 0,
 				})
 				.returning();
 
@@ -60,6 +63,42 @@ export async function syncSources(
 				"Created source",
 			);
 		}
+	}
+
+	const configuredNames = config.sources.map((source) => source.name);
+	let retiredSources: { name: string }[];
+	if (configuredNames.length > 0) {
+		retiredSources = await db
+			.update(sources)
+			.set({
+				enabled: false,
+				isConfigured: false,
+				updatedAt: new Date(),
+			})
+			.where(
+				and(
+					notInArray(sources.name, configuredNames),
+					or(eq(sources.isConfigured, true), eq(sources.enabled, true)),
+				),
+			)
+			.returning({ name: sources.name });
+	} else {
+		retiredSources = await db
+			.update(sources)
+			.set({
+				enabled: false,
+				isConfigured: false,
+				updatedAt: new Date(),
+			})
+			.where(or(eq(sources.isConfigured, true), eq(sources.enabled, true)))
+			.returning({ name: sources.name });
+	}
+
+	if (retiredSources.length > 0) {
+		logger.info(
+			{ sources: retiredSources.map((source) => source.name) },
+			"Retired sources missing from config",
+		);
 	}
 
 	return sourceMap;

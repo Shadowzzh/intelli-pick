@@ -1,6 +1,8 @@
 import type { SourceConfig } from "@intellipick/config";
+import { db, sources } from "@intellipick/db";
 import type { Queue } from "bullmq";
 import { CronJob } from "cron";
+import { eq } from "drizzle-orm";
 import type { CollectorManager } from "../collector/index";
 import { filterExistingContent } from "../lib/dedup";
 import { createLogger } from "../lib/logger";
@@ -14,6 +16,7 @@ export class SourceScheduler {
 
 	constructor(
 		private sources: SourceConfig[],
+		private sourceMap: Map<string, string>,
 		private collector: CollectorManager,
 		private queue: Queue,
 		private timezone: string,
@@ -24,15 +27,13 @@ export class SourceScheduler {
 	 * 启动所有调度器
 	 */
 	start(): void {
-		const enabledSources = this.sources.filter((s) => s.enabled);
-
-		for (const source of enabledSources) {
+		for (const source of this.sources) {
 			this.scheduleSource(source);
 		}
 
 		logger.info(
 			{
-				totalSources: enabledSources.length,
+				totalSources: this.sources.length,
 				timezone: this.timezone,
 			},
 			"Scheduler started",
@@ -65,10 +66,8 @@ export class SourceScheduler {
 	 * 立即执行所有 source 的首次采集
 	 */
 	async initialCollection(): Promise<void> {
-		const enabledSources = this.sources.filter((s) => s.enabled);
-
 		await Promise.allSettled(
-			enabledSources.map((source) => this.collectOne(source)),
+			this.sources.map((source) => this.collectOne(source)),
 		);
 	}
 
@@ -77,6 +76,36 @@ export class SourceScheduler {
 	 */
 	private async collectOne(source: SourceConfig): Promise<void> {
 		const startTime = Date.now();
+		const sourceId = this.sourceMap.get(source.name);
+		if (!sourceId) {
+			logger.error({ source: source.name }, "Source ID not found");
+			return;
+		}
+
+		let runtimeState:
+			| { enabled: boolean | null; isConfigured: boolean }
+			| undefined;
+		try {
+			[runtimeState] = await db
+				.select({
+					enabled: sources.enabled,
+					isConfigured: sources.isConfigured,
+				})
+				.from(sources)
+				.where(eq(sources.id, sourceId))
+				.limit(1);
+		} catch (err) {
+			logger.error(
+				{ source: source.name, err },
+				"Failed to read source runtime state",
+			);
+			return;
+		}
+
+		if (!runtimeState?.isConfigured || !runtimeState.enabled) {
+			logger.info({ source: source.name }, "Skipping disabled source");
+			return;
+		}
 
 		// 检查锁
 		if (!this.acquireLock(source.name)) {
@@ -88,6 +117,16 @@ export class SourceScheduler {
 		}
 
 		try {
+			await db
+				.update(sources)
+				.set({
+					lastAttemptedAt: new Date(startTime),
+					lastFetchStatus: "running",
+					lastFetchError: null,
+					updatedAt: new Date(),
+				})
+				.where(eq(sources.id, sourceId));
+
 			logger.info({ source: source.name }, "Starting collection...");
 
 			// 采集单个 source（带15秒超时保护）
@@ -114,6 +153,19 @@ export class SourceScheduler {
 			}
 
 			const duration = Date.now() - startTime;
+			await db
+				.update(sources)
+				.set({
+					lastFetchedAt: new Date(),
+					lastFetchStatus: "success",
+					lastFetchError: null,
+					lastItemCount: items.length,
+					lastNewCount: newItems.length,
+					lastDurationMs: duration,
+					updatedAt: new Date(),
+				})
+				.where(eq(sources.id, sourceId));
+
 			logger.info(
 				{
 					source: source.name,
@@ -127,6 +179,26 @@ export class SourceScheduler {
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : String(err);
 			const isTimeout = errorMessage.includes("timeout");
+			const duration = Date.now() - startTime;
+
+			try {
+				await db
+					.update(sources)
+					.set({
+						lastFetchStatus: "failed",
+						lastFetchError: errorMessage,
+						lastItemCount: null,
+						lastNewCount: null,
+						lastDurationMs: duration,
+						updatedAt: new Date(),
+					})
+					.where(eq(sources.id, sourceId));
+			} catch (statusError) {
+				logger.error(
+					{ source: source.name, err: statusError },
+					"Failed to update source health",
+				);
+			}
 
 			logger.error(
 				{

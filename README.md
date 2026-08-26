@@ -392,6 +392,12 @@ socket.on('content:updated', (content) => {
 
 详细口径、运行状态和回滚方法见 [`docs/ai-performance-monitoring.md`](docs/ai-performance-monitoring.md)。
 
+### 6. 数据源健康与运行控制
+
+监控页支持直接启用或停用数据源。运行状态持久化到数据库，容器重启不会覆盖用户选择；采集成功、失败、错误、数量和耗时会实时回写。
+
+详细状态口径、API 和回滚方法见 [`docs/source-health-control.md`](docs/source-health-control.md)。
+
 ---
 
 ## 🔧 常用命令

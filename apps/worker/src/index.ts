@@ -61,6 +61,7 @@ async function main() {
 	// 创建调度器
 	const scheduler = new SourceScheduler(
 		config.sources,
+		sourceMap,
 		collector,
 		queue,
 		config.scheduler.timezone,

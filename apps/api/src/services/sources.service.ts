@@ -1,6 +1,11 @@
 // apps/api/src/services/sources.service.ts
 import type { Source } from "@intellipick/db";
-import type { SourceHealthStatus, SourceStatus } from "@intellipick/shared";
+import {
+	type SourceFetchStatus,
+	SourceHealthStatus,
+	type SourceStatus,
+} from "@intellipick/shared";
+import { NotFoundError, ValidationError } from "../lib/errors";
 import type { SourcesRepository } from "../repositories/sources.repository";
 
 export class SourcesService {
@@ -14,20 +19,41 @@ export class SourcesService {
 		return await this.sourcesRepo.findAll();
 	}
 
+	async setEnabled(id: string, enabled: boolean): Promise<SourceStatus> {
+		const source = await this.sourcesRepo.findById(id);
+		if (!source) {
+			throw new NotFoundError("Source", id);
+		}
+		if (!source.isConfigured) {
+			throw new ValidationError("已从配置移除的数据源不能重新启用");
+		}
+
+		const updated = await this.sourcesRepo.updateEnabled(id, enabled);
+		if (!updated) {
+			throw new NotFoundError("Source", id);
+		}
+		return this.getSourceStatus(updated);
+	}
+
 	/**
 	 * 计算数据源的健康状态
 	 * - healthy: 最后采集时间 < 1.5 × fetchInterval
 	 * - delayed: 最后采集时间 > 1.5 × fetchInterval 但 < 3 × fetchInterval
-	 * - error: 最后采集时间 > 3 × fetchInterval
+	 * - error: 最近一次失败，或最后采集时间 > 3 × fetchInterval
+	 * - pending: 启用但尚未完成过采集
 	 * - disabled: enabled = false
 	 */
 	private calculateHealthStatus(source: Source): SourceHealthStatus {
 		if (!source.enabled) {
-			return "disabled" as SourceHealthStatus;
+			return SourceHealthStatus.DISABLED;
+		}
+
+		if (source.lastFetchStatus === "failed") {
+			return SourceHealthStatus.ERROR;
 		}
 
 		if (!source.lastFetchedAt) {
-			return "error" as SourceHealthStatus;
+			return SourceHealthStatus.PENDING;
 		}
 
 		const now = new Date();
@@ -37,14 +63,21 @@ export class SourcesService {
 		const fetchIntervalMs = fetchInterval * 1000;
 
 		if (timeSinceLastFetch > 3 * fetchIntervalMs) {
-			return "error" as SourceHealthStatus;
+			return SourceHealthStatus.ERROR;
 		}
 
 		if (timeSinceLastFetch > 1.5 * fetchIntervalMs) {
-			return "delayed" as SourceHealthStatus;
+			return SourceHealthStatus.DELAYED;
 		}
 
-		return "healthy" as SourceHealthStatus;
+		return SourceHealthStatus.HEALTHY;
+	}
+
+	private normalizeFetchStatus(value: string): SourceFetchStatus {
+		if (value === "running" || value === "success" || value === "failed") {
+			return value;
+		}
+		return "never";
 	}
 
 	/**
@@ -55,10 +88,11 @@ export class SourcesService {
 
 		// 计算下次采集时间
 		let nextFetchAt: Date | null = null;
-		if (source.lastFetchedAt && source.enabled) {
+		const lastScheduledAt = source.lastAttemptedAt || source.lastFetchedAt;
+		if (lastScheduledAt && source.enabled) {
 			const fetchInterval = source.fetchInterval ?? 3600; // 默认 3600 秒
 			nextFetchAt = new Date(
-				new Date(source.lastFetchedAt).getTime() + fetchInterval * 1000,
+				new Date(lastScheduledAt).getTime() + fetchInterval * 1000,
 			);
 		}
 
@@ -72,10 +106,17 @@ export class SourcesService {
 			type: source.type,
 			url,
 			enabled: source.enabled ?? true,
+			isConfigured: source.isConfigured,
 			fetchInterval: source.fetchInterval ?? 3600,
+			scheduleMinute: source.scheduleMinute ?? 0,
+			lastAttemptedAt: source.lastAttemptedAt,
 			lastFetchedAt: source.lastFetchedAt,
 			lastCollectedAt: source.lastFetchedAt,
-			lastFetchStatus: healthStatus === "error" ? "failed" : "success",
+			lastFetchStatus: this.normalizeFetchStatus(source.lastFetchStatus),
+			lastFetchError: source.lastFetchError,
+			lastItemCount: source.lastItemCount,
+			lastNewCount: source.lastNewCount,
+			lastDurationMs: source.lastDurationMs,
 			healthStatus,
 			nextFetchAt,
 		};
@@ -96,6 +137,8 @@ export class SourcesService {
 			delayed: sourceStatuses.filter((s) => s.healthStatus === "delayed")
 				.length,
 			error: sourceStatuses.filter((s) => s.healthStatus === "error").length,
+			pending: sourceStatuses.filter((s) => s.healthStatus === "pending")
+				.length,
 			disabled: sourceStatuses.filter((s) => s.healthStatus === "disabled")
 				.length,
 		};
