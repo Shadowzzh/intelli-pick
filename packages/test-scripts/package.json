@@ -17,11 +17,9 @@
 		"collect": "tsx src/collect-twitter.ts",
 		"collect:geekpark": "tsx src/collect-geekpark.ts",
 		"audit:dedup": "tsx src/audit-content-dedup.ts",
-		"test:filter": "tsx src/test-ai-filter.ts",
-		"test:filter-verbose": "tsx src/test-ai-filter-verbose.ts",
 		"test:extract": "tsx src/test-ai-extract.ts",
 		"test:dedup": "tsx --test src/content-dedup.test.ts",
-		"test": "echo 'Please specify which test to run: test:filter, test:filter-verbose or test:extract'"
+		"test": "echo 'Please specify which test to run: test:extract or test:dedup'"
 	},
 	"dependencies": {
 		"@intellipick/worker": "workspace:*",

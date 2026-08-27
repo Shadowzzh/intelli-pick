@@ -26,7 +26,6 @@ function parseCorsOrigin(value: string | undefined): string | string[] {
 
 const isProduction = process.env.NODE_ENV === "production";
 const legacySub2ApiModel = process.env.SUB2API_MODEL;
-const filterProvider = process.env.AI_FILTER_PROVIDER?.trim() || "codex";
 const extractProvider =
 	process.env.AI_EXTRACT_AND_CLASSIFY_PROVIDER?.trim() || "codex";
 
@@ -45,11 +44,6 @@ function resolveAiTaskModel(
 	return codexModel;
 }
 
-const filterModel = resolveAiTaskModel(
-	filterProvider,
-	process.env.AI_FILTER_MODEL,
-	process.env.SUB2API_FILTER_MODEL || legacySub2ApiModel || "gpt-5.6-luna",
-);
 const extractModel = resolveAiTaskModel(
 	extractProvider,
 	process.env.AI_EXTRACT_AND_CLASSIFY_MODEL,
@@ -90,10 +84,6 @@ export default defineConfig({
 			},
 		},
 		tasks: {
-			filter: {
-				provider: filterProvider,
-				model: filterModel,
-			},
 			extractAndClassify: {
 				provider: extractProvider,
 				model: extractModel,
@@ -168,12 +158,5 @@ export default defineConfig({
 			blacklistDomains: [], // 只保留技术性校验，不做语义拦截
 			spamKeywords: [], // 福利、群组、优惠等内容允许正常入库
 		},
-		thresholds: {
-			passMinValueScore: 50, // 达到此分数才允许通过
-			rejectMaxValueScore: 29, // 不高于此分数可直接拒绝
-			quarantineOnSafety: true, // 安全性低于阈值时隔离
-		},
-		promptVersion: "v2.0", // 使用的提示词版本
-		quarantineTTLDays: 30, // 隔离内容保存天数
 	},
 });

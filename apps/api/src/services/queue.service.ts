@@ -12,7 +12,7 @@ export class QueueService {
 	private queue: Queue<unknown> | null = null;
 	private queueName: string;
 
-	constructor(redisUrl?: string, queueName = "ai-filter-pipeline") {
+	constructor(redisUrl?: string, queueName = "intellipick-pipeline") {
 		this.queueName = queueName;
 		if (redisUrl) {
 			this.queue = new Queue<unknown>(queueName, {

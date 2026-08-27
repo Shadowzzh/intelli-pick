@@ -7,7 +7,6 @@ export default defineConfig({
 		"lib/ai": "src/lib/ai.ts",
 		pipeline: "src/pipeline.ts",
 		"pipeline/ai-extract": "src/pipeline/ai-extract.ts",
-		"pipeline/ai-filter": "src/pipeline/ai-filter.ts",
 		"pipeline/dedup": "src/pipeline/dedup.ts",
 		"pipeline/hard-filter": "src/pipeline/hard-filter.ts",
 		"pipeline/storage": "src/pipeline/storage.ts",

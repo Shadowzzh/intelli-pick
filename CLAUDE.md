@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-IntelliPick（智选）是一个基于 AI 的智能内容筛选和价值提取系统。它从多个来源（RSS、Twitter、V2EX 等）采集内容，通过 AI 进行质量过滤和实体提取，最终将有价值的内容存储到数据库中。
+Sift（知拾，仓库内部包名仍为 IntelliPick）是一个内容与职位聚合系统。它从 RSS、Twitter、V2EX 等来源采集内容，先执行硬规则校验和精确去重，再通过 AI 生成摘要、分类、标签和实体信息并存储到数据库。
 
 ## 技术栈
 
@@ -15,7 +15,7 @@ IntelliPick（智选）是一个基于 AI 的智能内容筛选和价值提取�
 - **运行时**: Node.js 18+
 - **语言**: TypeScript 5.7
 - **数据库**: PostgreSQL 16 + Drizzle ORM
-- **队列**: BullMQ + Redis 7
+- **队列**: BullMQ 5 + Redis 7
 - **AI SDK**: Vercel AI SDK 4 (支持 DeepSeek、Anthropic 等)
 - **代码风格**: Biome 1
 - **前端**: React 18 + Vite 6 + Tailwind CSS 4
@@ -88,7 +88,7 @@ docker-compose down     # 停止所有服务
 
 ```
 apps/
-  api/                  # HTTP API 服务器 (Fastify + GraphQL Yoga + Socket.IO)
+  api/                  # HTTP API 服务器 (Fastify + Mercurius + Socket.IO)
   worker/               # 后台处理系统 (Collector + Pipeline + Scheduler)
   web/                  # React 前端应用 (Vite + React Router + TanStack Query)
 packages/
@@ -111,12 +111,11 @@ docs/                   # 项目文档（API 文档、设计文档等）
 2. **处理管道 (Pipeline)**: `apps/worker/src/pipeline/`
    - 顺序执行的步骤链，每个步骤可以过滤或增强内容
    - 步骤顺序:
-     1. `DedupStep` - 去重检查
-     2. `HardFilterStep` - 硬规则过滤（黑名单域名、垃圾关键词）
-     3. `AiFilterStep` - AI 质量评分和安全检查
-     4. `AiExtractStep` - AI 实体提取和分类
-     5. `StorageStep` - 存储到数据库或隔离区
-   - 如果任何步骤返回 null，内容被过滤掉，管道终止
+     1. `HardFilterStep` - 硬规则校验（黑名单域名、垃圾关键词）
+     2. `DedupStep` - URL 与同源外部 ID 精确去重
+     3. `AiExtractStep` - AI 摘要、实体提取和分类
+     4. `StorageStep` - 存储到数据库并记录重复候选
+   - 活动 Pipeline 不再执行 AI 质量评分，也不再写入隔离区
 
 3. **队列处理 (Worker)**: `apps/worker/src/worker.ts`
    - BullMQ worker 从队列中取出 RawContent
@@ -126,14 +125,14 @@ docs/                   # 项目文档（API 文档、设计文档等）
 4. **调度器**: `apps/worker/src/scheduler/`
    - Cron 定时任务触发采集
    - 支持每个数据源独立的采集间隔
-   - 启动时立即执行一次采集
+   - 是否在启动时立即采集由 `RUN_INITIAL_COLLECTION` 控制
    - 优雅关闭处理
 
 ### API 服务器
 
 **位置**: `apps/api/src/`
 - **Fastify** - RESTful API
-- **GraphQL Yoga** - GraphQL 查询接口
+- **Mercurius** - GraphQL 查询接口
 - **Socket.IO** - WebSocket 实时推送新内容
 - **事件系统**: Worker 通过 `@intellipick/events` 发送事件，API 广播到客户端
 - **服务层**：
@@ -153,7 +152,7 @@ docs/                   # 项目文档（API 文档、设计文档等）
 - `entities` - 提取的实体（人、组织、产品等）
 - `entity-mentions` - 内容中提到的实体
 - `tags` - 内容标签
-- `quarantine` - 未通过过滤但未明确拒绝的内容（有 TTL）
+- `quarantine` - 历史隔离数据，当前活动 Pipeline 不再写入
 
 ### 配置系统
 
@@ -170,9 +169,9 @@ docs/                   # 项目文档（API 文档、设计文档等）
 
 - 使用 Vercel AI SDK 统一接口
 - 支持多个提供商（DeepSeek、Anthropic 等）
-- 两个主要任务:
-  - `filter` - 内容质量评分 (0-100) 和安全检查
-  - `extractAndClassify` - 实体提取和内容分类
+- 主要任务:
+  - `extractAndClassify` - 摘要、实体提取和内容分类
+  - `chat` - 可选的 AI Chat 查询
 - 内容分类体系:
   - 一级分类: 技术、商业、产品、职场、资讯、生活、其他
   - 二级分类: AI 自由生成
@@ -194,7 +193,7 @@ docs/                   # 项目文档（API 文档、设计文档等）
 
 - 通过 `config.network.httpProxy` 配置
 - 使用 `undici` 的 ProxyAgent
-- 在应用启动时初始化: `apps/api/src/lib/proxy.ts`
+- 在 Worker 启动时初始化: `apps/worker/src/lib/proxy.ts`
 
 ## 开发注意事项
 
@@ -362,14 +361,14 @@ const displayTime = format(new Date(publishedAt), 'yyyy-MM-dd HH:mm:ss');
 ### 测试
 
 ```bash
-# 运行所有测试
-pnpm test
+# API 测试
+pnpm --filter @intellipick/api test
 
-# 运行单个测试文件
-pnpm test apps/api/src/__tests__/example.test.ts
+# Worker 单元测试
+pnpm --filter @intellipick/worker exec tsx --test src/collector/*.test.ts src/pipeline/*.test.ts
 
-# 监听模式
-pnpm test:watch
+# 去重算法测试
+pnpm --filter @intellipick/test-scripts run test:dedup
 ```
 
 ## 项目文档

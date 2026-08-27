@@ -3,7 +3,6 @@
 
 export { DedupStep } from "./pipeline/dedup";
 export { HardFilterStep } from "./pipeline/hard-filter";
-export { AiFilterStep } from "./pipeline/ai-filter";
 export { AiExtractStep } from "./pipeline/ai-extract";
 export { StorageStep } from "./pipeline/storage";
 export { Pipeline } from "./pipeline/index";

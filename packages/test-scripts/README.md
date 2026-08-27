@@ -1,197 +1,54 @@
-# @intellipick/test-scripts
+# IntelliPick 测试与审计脚本
 
-IntelliPick 测试脚本包。用于测试 AI filter 和 AI extract 功能。
+该包提供数据采集样本、AI 结构化提取验证和本地去重审计工具。活动内容 Pipeline 已移除 AI Filter，因此不再提供质量评分或隔离决策测试脚本。
 
-## 可用脚本
+## 可用命令
 
-### 1. collect-twitter.ts
-采集 Twitter 数据并保存为测试样本。
-
-**特点**：
-- 每次运行创建带时间戳的新文件，不会覆盖历史数据
-- 文件命名格式：`twitter-samples-{timestamp}.json`
+### 采集 Twitter 样本
 
 ```bash
 pnpm --filter @intellipick/test-scripts run collect
 ```
 
-### 2. test-ai-filter.ts
-测试 AI 质量评分和安全检查功能。
+需要在环境变量中配置 Twitter 凭据。输出保存在 `test-data/`，默认不会提交 Git。
 
-```bash
-# 使用最新的测试数据
-pnpm --filter @intellipick/test-scripts run test:filter
+### 采集极客公园样本
 
-# 指定测试数据文件
-pnpm --filter @intellipick/test-scripts run test:filter test-data/twitter-samples-2026-01-07T10-30-45-123Z.json
-```
-
-### 3. test-ai-extract.ts
-测试 AI 实体提取和分类功能。
-
-```bash
-# 使用最新的测试数据
-pnpm --filter @intellipick/test-scripts run test:extract
-
-# 指定测试数据文件
-pnpm --filter @intellipick/test-scripts run test:extract test-data/twitter-samples-2026-01-07T10-30-45-123Z.json
-```
-
-## 完整工作流程
-
-### 1. 采集测试数据
-
-#### Twitter 采集
-```bash
-pnpm --filter @intellipick/test-scripts run collect
-```
-输出：`test-data/twitter-samples-{timestamp}.json`
-
-#### 极客公园 RSS 采集
 ```bash
 pnpm --filter @intellipick/test-scripts run collect:geekpark
 ```
-采集极客公园的最新文章并保存到 `test-data/` 目录。
 
-### 2. 运行 AI 测试
+### 验证 AI 提取
 
-#### 测试 AI Filter（质量评分和安全检查）
 ```bash
-# 方式 1: 自动使用最新的测试数据（推荐）
-pnpm --filter @intellipick/test-scripts run test:filter
-
-# 方式 2: 指定某个特定的测试数据文件
-pnpm --filter @intellipick/test-scripts run test:filter test-data/twitter-samples-2026-01-07T10-30-45-123Z.json
-```
-
-#### 测试 AI Extract（实体提取和分类）
-```bash
-# 方式 1: 自动使用最新的测试数据（推荐）
 pnpm --filter @intellipick/test-scripts run test:extract
-
-# 方式 2: 指定某个特定的测试数据文件
-pnpm --filter @intellipick/test-scripts run test:extract test-data/twitter-samples-2026-01-07T10-30-45-123Z.json
+pnpm --filter @intellipick/test-scripts run test:extract test-data/twitter-samples.json
 ```
 
-## 文件查找逻辑
+脚本验证 `extractAndClassify` 的标题、摘要、关键要点、数据点、分类、标签和实体输出。
 
-测试脚本会按以下优先级查找测试数据文件：
-
-1. **命令行指定的文件** - 如果提供了文件路径参数
-2. **默认文件** - `test-data/twitter-samples.json`（如果存在）
-3. **最新文件** - 自动查找 `test-data/twitter-samples-*.json` 中最新的文件
-4. **报错** - 如果找不到任何测试数据文件
-
-## 输出文件
-
-所有测试相关文件保存在 `test-data/` 目录：
-
-### 测试数据文件
-- `twitter-samples-{timestamp}.json` - 采集的 Twitter 测试样本（每次运行生成新文件）
-- `twitter-samples.json` - 默认测试数据文件（可选）
-
-### 测试结果文件
-- `test-results-{timestamp}.json` - AI 测试结果（每次运行生成新文件）
-
-## 前置要求
-
-### 环境变量
-在项目根目录的 `.env` 文件中配置：
+### 验证内容去重
 
 ```bash
-# Twitter API 凭据
-TWITTER_CLIENT_ID=your_client_id
-TWITTER_CLIENT_SECRET=your_client_secret
-TWITTER_ACCESS_TOKEN=your_access_token
-TWITTER_REFRESH_TOKEN=your_refresh_token
-
-# AI 提供商 API Key（根据你的配置选择）
-ANTHROPIC_API_KEY=your_anthropic_key
-# 或
-DEEPSEEK_API_KEY=your_deepseek_key
+pnpm --filter @intellipick/test-scripts run test:dedup
 ```
 
-### 配置文件
-在项目根目录的 `config.ts` 文件中配置 Twitter 数据源：
+### 审计生产内容候选
 
-```typescript
-export default defineConfig({
-  sources: [
-    {
-      type: "twitter",
-      config: {
-        mode: "home",  // 或 "user"、"list"
-        maxResults: 10,
-        usernames: ["elonmusk", "OpenAI"],  // mode: "user" 时需要
-        listId: "12345678",  // mode: "list" 时需要
-      },
-    },
-  ],
-  // ... 其他配置
-});
-```
+审计命令从标准输入读取 JSON 数组，不会直接连接或修改数据库：
 
-## 使用场景示例
-
-### 场景 1: 快速测试
 ```bash
-# 采集最新数据
-pnpm --filter @intellipick/test-scripts run collect
-
-# 使用最新数据测试 AI Filter
-pnpm --filter @intellipick/test-scripts run test:filter
-
-# 使用最新数据测试 AI Extract
-pnpm --filter @intellipick/test-scripts run test:extract
+pnpm --filter @intellipick/test-scripts audit:dedup < contents.json
 ```
 
-### 场景 2: 对比不同时间的测试结果
-```bash
-# 第一次采集
-pnpm --filter @intellipick/test-scripts run collect
-# 生成: test-data/twitter-samples-2026-01-07T10-00-00-000Z.json
+阈值和生产验收说明见 `docs/content-dedup-audit.md`。
 
-# 第二次采集（修改配置后）
-pnpm --filter @intellipick/test-scripts run collect
-# 生成: test-data/twitter-samples-2026-01-07T14-00-00-000Z.json
+## 数据文件选择
 
-# 对比测试
-pnpm --filter @intellipick/test-scripts run test:filter test-data/twitter-samples-2026-01-07T10-00-00-000Z.json
-pnpm --filter @intellipick/test-scripts run test:filter test-data/twitter-samples-2026-01-07T14-00-00-000Z.json
-```
+AI 提取脚本按以下顺序选择输入：
 
-### 场景 3: 只运行测试，不采集新数据
-```bash
-# 脚本会自动使用 test-data/ 目录中最新的测试数据
-pnpm --filter @intellipick/test-scripts run test:filter
-```
+1. 命令行指定的文件。
+2. `test-data/twitter-samples.json`。
+3. `test-data/` 中最新的 `twitter-samples-*.json`。
 
-## 常见问题
-
-### Q: 如何查看有哪些测试数据文件？
-```bash
-ls -lh test-data/twitter-samples-*.json
-```
-
-### Q: 如何找到最新的测试数据文件？
-```bash
-ls -t test-data/twitter-samples-*.json | head -1
-```
-
-### Q: 测试脚本找不到测试数据文件怎么办？
-确保先运行采集脚本：
-```bash
-pnpm --filter @intellipick/test-scripts run collect
-```
-
-### Q: 如何清理旧的测试数据文件？
-```bash
-# 删除所有测试数据文件
-rm test-data/twitter-samples-*.json
-
-# 删除所有测试结果文件
-rm test-data/test-results-*.json
-
-# 或只保留最新的 N 个文件
-ls -t test-data/twitter-samples-*.json | tail -n +4 | xargs rm
-```
+没有可用样本时，脚本会退出并提示先执行采集命令。

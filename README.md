@@ -2,14 +2,14 @@
 
 # Sift（知拾）
 
-### ✨ AI 驱动的智能内容筛选与价值提取系统
+### AI 驱动的内容聚合与结构化提取系统
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org)
 [![Package Manager](https://img.shields.io/badge/pnpm-9.15.0-blue)](https://pnpm.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org)
 
-**Sift（知拾）** 从多个来源（RSS、V2EX 等）采集内容，通过 AI 进行质量过滤和实体提取，为你从信息过载中精选有价值的内容。
+**Sift（知拾）** 从 RSS、V2EX 等来源采集内容，通过硬规则与精确去重清理重复数据，再使用 AI 生成摘要、分类、标签和实体信息。
 
 [功能特性](#-核心特性) • [快速开始](#-快速开始) • [架构设计](#-架构设计) • [API 文档](#-api-文档)
 
@@ -19,13 +19,13 @@
 
 ## 🌟 项目亮点
 
-- 🤖 **智能过滤** - 基于 AI 的内容质量评分（0-100），自动过滤噪声和低价值信息
-- 🔍 **实体提取** - 自动识别人物、公司、产品、项目等关键实体并建立关联
-- 🔌 **插件化架构** - 轻松扩展新的数据源和处理步骤
-- 🛡️ **安全检测** - 内置 NSFW、诈骗、骚扰等安全风险检测
-- 📊 **双 API 接口** - RESTful + GraphQL + AI Chat，满足不同集成需求
-- ⚡ **高性能** - BullMQ 队列处理，并发度可配置，轻松应对海量内容
-- 🎨 **现代化前端** - React 18 + Vite 6 + Tailwind CSS 4，极致用户体验
+- **内容净化** - 硬规则校验、同源精确去重和跨来源重复候选识别
+- **AI 结构化** - 自动生成摘要、关键要点、分类、标签和实体关联
+- **职位聚合** - 采集招聘信息并支持岗位方向、技能、收藏和投递状态管理
+- **插件化架构** - 可扩展新的数据源和处理步骤
+- **多种接口** - RESTful、GraphQL、AI Chat 和 WebSocket 实时推送
+- **异步处理** - BullMQ 队列支持并发、限速和失败记录
+- **现代化前端** - React 18、Vite 6 和 Tailwind CSS 4
 
 ---
 
@@ -48,7 +48,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-C26F6D?style=for-the-badge)](https://orm.drizzle.team)
-[![BullMQ](https://img.shields.io/badge/BullMQ-4.0-EF4444?style=for-the-badge)](https://docs.bullmq.io)
+[![BullMQ](https://img.shields.io/badge/BullMQ-5.0-EF4444?style=for-the-badge)](https://docs.bullmq.io)
 
 ### AI 与机器学习
 [![Vercel AI SDK](https://img.shields.io/badge/Vercel_AI_SDK-4.0-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://sdk.vercel.ai)
@@ -56,7 +56,7 @@
 
 ### 后端框架
 [![Fastify](https://img.shields.io/badge/Fastify-4.0-000000?style=for-the-badge&logo=fastify&logoColor=white)](https://fastify.io)
-[![GraphQL Yoga](https://img.shields.io/badge/GraphQL_Yoga-5.0-FF5C9D?style=for-the-badge&logo=graphql&logoColor=white)](https://the-guild.dev/graphql/yoga-server)
+[![Mercurius](https://img.shields.io/badge/Mercurius-16.0-FF5C9D?style=for-the-badge&logo=graphql&logoColor=white)](https://mercurius.dev)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-4.0-010101?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io)
 
 ### 前端技术
@@ -97,14 +97,13 @@ graph LR
     B --> C[BullMQ Queue]
     C --> D[Pipeline Worker]
 
-    D --> E1[去重检查]
-    E1 --> E2[硬规则过滤]
-    E2 --> E3[AI 质量评分]
-    E3 --> E4[AI 实体提取]
-    E4 --> E5[存储到 DB]
+    D --> E1[硬规则校验]
+    E1 --> E2[精确去重]
+    E2 --> E3[AI 提取与分类]
+    E3 --> E4[存储到 DB]
+    E4 --> E5[重复候选标记]
 
-    E5 --> F[PostgreSQL]
-    E5 --> G[隔离区 Quarantine]
+    E4 --> F[PostgreSQL]
 ```
 
 **Worker（后台处理）:**
@@ -139,7 +138,7 @@ graph LR
 
 ```bash
 # 克隆仓库
-git clone https://github.com/zhangziheng/intellipick.git
+git clone https://github.com/Shadowzzh/intelli-pick.git intellipick
 cd intellipick
 
 # 准备生产环境变量并填写数据库密码、AI Key 等必需配置
@@ -193,19 +192,18 @@ pnpm dev
 export default defineConfig({
   ai: {
     providers: {
-      deepseek: {
-        apiKey: process.env.DEEPSEEK_API_KEY!,
-        baseUrl: "https://api.deepseek.com/v1",
+      codex: {
+        type: "openai",
+        protocol: "responses",
+        baseUrl: "http://127.0.0.1:18090",
+        baseUrlEnv: "SUB2API_BASE_URL",
+        apiKeyEnv: "SUB2API_API_KEY",
       },
     },
     tasks: {
-      filter: {
-        provider: "deepseek",
-        model: "deepseek-chat",
-      },
       extractAndClassify: {
-        provider: "deepseek",
-        model: "deepseek-chat",
+        provider: "codex",
+        model: "gpt-5.6-terra",
       },
     },
   },
@@ -221,6 +219,13 @@ export default defineConfig({
     },
     // 添加更多数据源...
   ],
+  filter: {
+    hardRules: {
+      enabled: true,
+      blacklistDomains: [],
+      spamKeywords: [],
+    },
+  },
   // ...更多配置
 });
 ```
@@ -307,25 +312,16 @@ socket.on('content:updated', (content) => {
 
 ## 🎯 核心功能
 
-### 1. 智能内容过滤
+### 1. 内容净化与结构化
 
-基于 AI 的质量评分系统，自动识别和过滤低价值内容：
+普通内容进入 Worker 后依次执行：
 
-```typescript
-// AI 质量评分示例
-{
-  score: 85,           // 质量分数 0-100
-  reason: "内容原创，分析深入，有实用价值",
-  isSafe: true,        // 安全检测通过
-  risks: []            // 无安全风险
-}
-```
+1. 硬规则校验域名、关键词和内容完整性。
+2. 按 URL 或同一来源的外部 ID 执行精确去重。
+3. 调用一次 `extractAndClassify`，生成标题、摘要、关键要点、分类、标签和实体。
+4. 内容入库后记录跨来源近似重复候选，不自动删除或合并内容。
 
-**过滤维度：**
-- 原创性和深度
-- 信息价值
-- 可读性和完整性
-- 安全风险检测（NSFW、诈骗、骚扰等）
+活动 Pipeline 不再执行 AI 质量评分，也不会把内容写入隔离区。数据库中的历史过滤字段继续保留，用于兼容旧数据。
 
 ### 2. 实体提取与关联
 
@@ -385,8 +381,7 @@ socket.on('content:updated', (content) => {
 
 监控页展示最近 24 小时的真实 AI 调用指标：
 
-- 过滤与实体提取调用次数、成功率和平均响应时间
-- 过滤通过率
+- 实体提取与分类的调用次数、成功率和平均响应时间
 - 输入、输出、缓存、推理和总 token
 - 配置模型与上游实际响应模型
 
@@ -444,10 +439,10 @@ pnpm redis:status       # 查看 Redis 和队列状态
 
 ## 📊 项目统计
 
-![GitHub Stars](https://img.shields.io/github/stars/zhangziheng/intellipick?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/zhangziheng/intellipick?style=social)
-![GitHub Issues](https://img.shields.io/github/issues/zhangziheng/intellipick)
-![GitHub License](https://img.shields.io/github/license/zhangziheng/intellipick)
+![GitHub Stars](https://img.shields.io/github/stars/Shadowzzh/intelli-pick?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/Shadowzzh/intelli-pick?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/Shadowzzh/intelli-pick)
+![GitHub License](https://img.shields.io/github/license/Shadowzzh/intelli-pick)
 
 
 ## 📄 许可证

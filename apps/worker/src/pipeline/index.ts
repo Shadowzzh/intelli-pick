@@ -31,7 +31,7 @@ export class Pipeline {
 			new HardFilterStep(config.filter.hardRules),
 			new DedupStep(),
 			new AiExtractStep(ai, sourceNames),
-			new StorageStep(config.filter),
+			new StorageStep(),
 		];
 	}
 
@@ -60,11 +60,7 @@ export class Pipeline {
 
 			if (result.status === StepStatus.Filtered) {
 				requestLogger.debug(
-					{
-						step: step.name,
-						url: raw.url,
-						reason: result.context?.filterResult?.oneLineWhy,
-					},
+					{ step: step.name, url: raw.url },
 					"Content filtered out",
 				);
 				return { success: false, aiMetrics: ctx.aiMetrics };

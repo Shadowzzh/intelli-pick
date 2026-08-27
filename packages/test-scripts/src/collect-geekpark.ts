@@ -175,7 +175,7 @@ async function main() {
 	console.log("\n✅ 测试数据采集完成!");
 	console.log(`\n📊 测试数据文件: ${OUTPUT_FILE}`);
 	console.log("\n下一步: 运行 AI 测试脚本");
-	console.log("   pnpm --filter @intellipick/test-scripts run test:filter");
+	console.log("   pnpm --filter @intellipick/test-scripts run test:extract");
 }
 
 main().catch((err) => {

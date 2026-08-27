@@ -1,4 +1,3 @@
-import type { Config } from "@intellipick/config";
 // apps/api/src/pipeline/storage.ts
 import { contents, db, entities, entityMentions } from "@intellipick/db";
 import {
@@ -23,14 +22,12 @@ const logger = createLogger("storage");
 export class StorageStep implements PipelineStep {
 	name = "storage";
 
-	constructor(private config: Config["filter"]) {}
-
 	async process(
 		ctx: PipelineContext,
 		stepLogger?: Logger,
 	): Promise<StepResult> {
 		const log = stepLogger || logger;
-		const { raw, filterResult, extractResult } = ctx;
+		const { raw, extractResult } = ctx;
 
 		// 存储内容
 		const [content] = await db
@@ -48,8 +45,6 @@ export class StorageStep implements PipelineStep {
 				contentType: "single",
 				category: extractResult?.category,
 				tags: extractResult?.tags,
-				filterVersion: filterResult ? this.config.promptVersion : null,
-				filterResult: filterResult,
 				// publishedAt 是 UTC ISO 字符串，需要转换为 Date 对象
 				publishedAt: raw.publishedAt ? new Date(raw.publishedAt) : null,
 			})

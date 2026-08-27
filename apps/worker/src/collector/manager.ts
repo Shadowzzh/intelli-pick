@@ -19,18 +19,21 @@ export class CollectorManager {
 	async collectSource(source: SourceConfig): Promise<RawContent[]> {
 		const plugin = this.plugins.get(source.type);
 		if (!plugin) {
-			logger.warn({ type: source.type }, "No plugin found for source type");
-			return [];
+			const error = new Error(
+				`No collector plugin registered for source type ${source.type}`,
+			);
+			logger.error({ type: source.type, err: error }, error.message);
+			throw error;
 		}
 
 		// 获取数据库中的 source ID
 		const sourceId = this.sourceMap.get(source.name);
 		if (!sourceId) {
-			logger.error(
-				{ name: source.name },
-				"Source not found in database, skipping",
+			const error = new Error(
+				`Source ${source.name} was not synchronized to the database`,
 			);
-			return [];
+			logger.error({ name: source.name, err: error }, error.message);
+			throw error;
 		}
 
 		try {
@@ -46,7 +49,7 @@ export class CollectorManager {
 			return results;
 		} catch (err) {
 			logger.error({ err, name: source.name }, "Failed to collect from source");
-			return [];
+			throw err;
 		}
 	}
 

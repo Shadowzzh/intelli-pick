@@ -5,7 +5,7 @@
 本文记录 2026-08-26 上线的两项能力：
 
 - 通过 `https://linux.do/hot.rss` 采集 Linux.do 热门主题。
-- 记录并展示内容过滤与实体提取的真实 AI 调用指标。
+- 记录并展示实体提取与分类的真实 AI 调用指标，并保留历史过滤指标的兼容口径。
 
 正式运行环境为 NAS：`/home/ziheng/intellipick`。Compose 使用：
 
@@ -35,13 +35,12 @@
 
 - 调用次数：实际发起 AI 请求的次数。
 - 成功率：AI 返回并通过结构化 Schema 校验的调用数除以调用总数。
-- 通过率：最终过滤决策为 `pass` 的次数除以成功过滤次数。
-- `reject` 和 `quarantine` 是正常业务决策，不属于 AI 调用失败。
+- 历史通过率：AI Filter 停用前，最终决策为 `pass` 的次数除以成功过滤次数。当前不再产生新样本。
 
 ### 响应时间
 
 - 单任务平均响应：该任务全部 AI 调用耗时的平均值。
-- 综合平均响应：过滤与实体提取全部调用耗时的平均值。
+- 综合平均响应：当前等于实体提取与分类任务的平均调用耗时；历史窗口内可能包含旧过滤调用。
 - 单位为毫秒。
 
 ### Token
@@ -83,18 +82,15 @@ NAS 原配置：
 `extractAndClassify`，监控页只展示“实体提取与分类”。近 24 小时 API
 仍会保留切换前的过滤历史指标，但前端不再展示；窗口过期后过滤调用自然归零。
 
-两个任务可通过环境变量独立切换：
+当前活动的实体提取任务通过以下环境变量切换：
 
 ```text
-AI_FILTER_PROVIDER=volcAgentPlan
-AI_FILTER_MODEL=deepseek-v4-flash
 AI_EXTRACT_AND_CLASSIFY_PROVIDER=volcAgentPlan
 AI_EXTRACT_AND_CLASSIFY_MODEL=deepseek-v4-flash
 ```
 
-回退到原模型时，将 Provider 分别改为 `codex`，并把模型恢复为
-`gpt-5.6-luna` 与 `gpt-5.6-terra`。Agent Plan 凭据只保存在部署环境，
-不写入仓库。
+回退到原模型时，将 Provider 改为 `codex`，并把模型恢复为
+`gpt-5.6-terra`。Agent Plan 凭据只保存在部署环境，不写入仓库。
 
 切换前使用 3 条真实内容与 2 条合成安全样本完成隔离测试：
 
@@ -119,7 +115,7 @@ AI_EXTRACT_AND_CLASSIFY_MODEL=deepseek-v4-flash
 部署后尚未产生新格式任务时：
 
 - 调用次数显示 0。
-- 成功率、通过率和平均响应显示 `--`。
+- 成功率和平均响应显示 `--`。
 - 状态显示“暂无数据”，不显示“需关注”。
 - 配置模型、provider 和协议仍正常显示。
 

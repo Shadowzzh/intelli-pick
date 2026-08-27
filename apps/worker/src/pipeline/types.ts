@@ -1,6 +1,5 @@
 import type {
 	ExtractResult,
-	FilterResult,
 	PipelineAiMetrics,
 	RawContent,
 } from "@intellipick/shared";
@@ -9,7 +8,6 @@ import type { Logger } from "pino";
 
 export interface PipelineContext {
 	raw: RawContent;
-	filterResult?: FilterResult;
 	extractResult?: ExtractResult;
 	sourceNames?: string[];
 	aiMetrics: PipelineAiMetrics;

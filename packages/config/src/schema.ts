@@ -82,7 +82,6 @@ const AiProviderSchema = z.discriminatedUnion("type", [
 const AiConfigSchema = z.object({
 	providers: z.record(AiProviderSchema),
 	tasks: z.object({
-		filter: AiTaskSchema,
 		extractAndClassify: AiTaskSchema,
 		chat: AiTaskSchema.optional(),
 	}),
@@ -93,13 +92,6 @@ const HardRulesSchema = z.object({
 	enabled: z.boolean().default(true),
 	blacklistDomains: z.array(z.string()).default([]),
 	spamKeywords: z.array(z.string()).default([]),
-});
-
-// 过滤阈值配置
-const ThresholdsSchema = z.object({
-	passMinValueScore: z.number().default(50),
-	rejectMaxValueScore: z.number().default(29),
-	quarantineOnSafety: z.boolean().default(true),
 });
 
 // 队列配置
@@ -135,9 +127,6 @@ export const ConfigSchema = z.object({
 	sources: z.array(SourceSchema),
 	filter: z.object({
 		hardRules: HardRulesSchema,
-		thresholds: ThresholdsSchema,
-		promptVersion: z.string().default("v1.0"),
-		quarantineTTLDays: z.number().default(30),
 	}),
 	scheduler: z.object({
 		timezone: z.string().default("Asia/Shanghai"),

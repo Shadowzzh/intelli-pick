@@ -14,13 +14,6 @@ describe("content pipeline", () => {
 					blacklistDomains: [],
 					spamKeywords: [],
 				},
-				thresholds: {
-					passMinValueScore: 50,
-					rejectMaxValueScore: 29,
-					quarantineOnSafety: true,
-				},
-				promptVersion: "v2.0",
-				quarantineTTLDays: 30,
 			},
 		} as unknown as Config;
 		const pipeline = new Pipeline(config, {} as AiClient);
