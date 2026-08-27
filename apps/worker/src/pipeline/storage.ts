@@ -5,11 +5,11 @@ import {
 	emitNewContent,
 	emitStatsUpdate,
 } from "@intellipick/events";
-import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import type { Logger } from "pino";
 import { recordDuplicateCandidates } from "../lib/duplicate-candidates";
 import { createLogger } from "../lib/logger";
+import { getContentStats } from "./content-stats";
 import {
 	type PipelineContext,
 	type PipelineStep,
@@ -141,24 +141,8 @@ export class StorageStep implements PipelineStep {
 			);
 		}
 
-		// 发送统计更新事件
-		const stats = {
-			totalContents: await db
-				.select()
-				.from(contents)
-				.then((rows) => rows.length),
-			todayNew: await db
-				.select()
-				.from(contents)
-				.where(eq(contents.sourceId, raw.sourceId))
-				.then(
-					(rows) =>
-						rows.filter(
-							(r) =>
-								r.publishedAt && dayjs(r.publishedAt).isSame(dayjs(), "day"),
-						).length,
-				),
-		};
+		// 统计与 API 首页口径一致：全局内容总数和上海自然日内的新增入库数。
+		const stats = await getContentStats();
 		emitStatsUpdate(stats);
 
 		return {
