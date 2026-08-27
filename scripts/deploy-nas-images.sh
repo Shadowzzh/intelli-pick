@@ -34,7 +34,7 @@ trap cleanup EXIT
 require_command docker
 require_command gzip
 require_command git
-require_command scp
+require_command rsync
 require_command ssh
 require_command shasum
 require_command tar
@@ -137,7 +137,7 @@ printf '%s  %s\n' "${archive_sha}" "${archive_name}" > "${checksum_path}"
 release_dir="${remote_release_root}/${revision}"
 log "上传 release 到 ${deploy_host}:${release_dir}"
 ssh "${deploy_host}" "mkdir -p '${release_dir}'"
-scp "${archive_path}" "${checksum_path}" "${manifest_path}" "${deploy_host}:${release_dir}/"
+rsync -a "${archive_path}" "${checksum_path}" "${manifest_path}" "${deploy_host}:${release_dir}/"
 
 log "在 NAS 校验、加载镜像并切换 Compose"
 ssh "${deploy_host}" bash -s -- \
