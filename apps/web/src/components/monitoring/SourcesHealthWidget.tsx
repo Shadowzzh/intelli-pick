@@ -8,7 +8,7 @@ import {
 	SourceHealthStatus,
 	type SourceStatus,
 } from "@intellipick/shared";
-import { Database, Loader2, Power } from "lucide-react";
+import { Database, Loader2, Power, PowerOff } from "lucide-react";
 
 interface SourcesHealthWidgetProps {
 	data?: SourceHealthResponseData;
@@ -95,11 +95,22 @@ export function SourcesHealthWidget({ data }: SourcesHealthWidgetProps) {
 			</Widget>
 		);
 	}
+	const enabledCount = data.sources.filter((source) => source.enabled).length;
 
 	return (
 		<Widget
 			title="数据源健康"
 			icon={<Database className="h-4 w-4" />}
+			actions={
+				<div className="flex items-center gap-1.5">
+					<Badge variant="outline" className="text-xs">
+						总数 {data.summary.total}
+					</Badge>
+					<Badge variant="success" className="text-xs">
+						启用 {enabledCount}
+					</Badge>
+				</div>
+			}
 			contentClassName="space-y-2"
 		>
 			{toggleMutation.isError && (
@@ -118,61 +129,80 @@ export function SourcesHealthWidget({ data }: SourcesHealthWidgetProps) {
 						toggleMutation.isPending &&
 						toggleMutation.variables?.id === source.id;
 					const duration = formatDuration(source.lastDurationMs);
-					const buttonVariant = source.enabled ? "outline" : "default";
+					const actionLabel = source.enabled
+						? `停用 ${source.name}`
+						: `启用 ${source.name}`;
+					let buttonClassName =
+						"cursor-pointer text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300";
+					if (!source.enabled) {
+						buttonClassName =
+							"cursor-pointer text-green-600 hover:bg-green-500/10 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300";
+					}
+					let actionIcon = <Power />;
+					if (isPending) {
+						actionIcon = <Loader2 className="animate-spin" />;
+					} else if (source.enabled) {
+						actionIcon = <PowerOff />;
+					}
 
 					return (
 						<div
 							key={source.id}
-							className="p-3 rounded-lg border hover:bg-accent/50 transition-colors space-y-2"
+							className="p-3 rounded-lg border hover:bg-accent/50 transition-colors"
 						>
-							<div className="flex items-start gap-2">
-								<div className="flex-1 min-w-0">
-									<div className="font-medium truncate text-sm">
-										{source.name}
+							<div className="flex items-start gap-3">
+								<div className="flex-1 min-w-0 space-y-2">
+									<div>
+										<div className="font-medium truncate text-sm">
+											{source.name}
+										</div>
+										<div className="text-xs text-muted-foreground truncate">
+											{source.type} · 每 {formatInterval(source.fetchInterval)}
+										</div>
 									</div>
-									<div className="text-xs text-muted-foreground truncate">
-										{source.type} · 每 {formatInterval(source.fetchInterval)}
+
+									<div className="text-xs text-muted-foreground space-y-1">
+										<div>
+											最后成功：{formatRelativeTime(source.lastFetchedAt)}
+										</div>
+										{source.lastItemCount !== null && (
+											<div>
+												拉取 {source.lastItemCount} 条，新增{" "}
+												{source.lastNewCount ?? 0}
+												{duration ? `，耗时 ${duration}` : ""}
+											</div>
+										)}
+										{source.lastFetchError && (
+											<div className="text-red-600 dark:text-red-400 line-clamp-2">
+												{source.lastFetchError}
+											</div>
+										)}
 									</div>
 								</div>
-								<Badge variant={health.variant} className="shrink-0 text-xs">
-									{health.label}
-								</Badge>
-							</div>
 
-							<div className="text-xs text-muted-foreground space-y-1">
-								<div>最后成功：{formatRelativeTime(source.lastFetchedAt)}</div>
-								{source.lastItemCount !== null && (
-									<div>
-										拉取 {source.lastItemCount} 条，新增{" "}
-										{source.lastNewCount ?? 0}
-										{duration ? `，耗时 ${duration}` : ""}
-									</div>
-								)}
-								{source.lastFetchError && (
-									<div className="text-red-600 dark:text-red-400 line-clamp-2">
-										{source.lastFetchError}
-									</div>
-								)}
+								<div className="flex shrink-0 flex-col items-end gap-2">
+									<Badge variant={health.variant} className="text-xs">
+										{health.label}
+									</Badge>
+									<Button
+										type="button"
+										size="icon-sm"
+										variant="ghost"
+										className={buttonClassName}
+										disabled={toggleMutation.isPending}
+										aria-label={actionLabel}
+										title={actionLabel}
+										onClick={() =>
+											toggleMutation.mutate({
+												id: source.id,
+												enabled: !source.enabled,
+											})
+										}
+									>
+										{actionIcon}
+									</Button>
+								</div>
 							</div>
-
-							<Button
-								type="button"
-								size="sm"
-								variant={buttonVariant}
-								className="w-full cursor-pointer"
-								disabled={toggleMutation.isPending}
-								aria-pressed={source.enabled}
-								title={source.enabled ? "停用此数据源" : "启用此数据源"}
-								onClick={() =>
-									toggleMutation.mutate({
-										id: source.id,
-										enabled: !source.enabled,
-									})
-								}
-							>
-								{isPending ? <Loader2 className="animate-spin" /> : <Power />}
-								{source.enabled ? "停用" : "启用"}
-							</Button>
 						</div>
 					);
 				})}

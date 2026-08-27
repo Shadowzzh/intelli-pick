@@ -9,6 +9,7 @@ import { createLogger } from "../lib/logger";
 import { convertToCron } from "./cron-converter";
 
 const logger = createLogger("source-scheduler");
+const COLLECTION_TIMEOUT_MS = 35 * 1000;
 
 export class SourceScheduler {
 	private cronJobs: CronJob[] = [];
@@ -129,13 +130,13 @@ export class SourceScheduler {
 
 			logger.info({ source: source.name }, "Starting collection...");
 
-			// 采集单个 source（带15秒超时保护）
+			// 外层超时略长于采集插件的 30 秒请求超时，避免误判成功响应。
 			const items = await Promise.race([
 				this.collector.collectSource(source),
 				new Promise<never>((_, reject) =>
 					setTimeout(
-						() => reject(new Error("Collection timeout after 15s")),
-						15000,
+						() => reject(new Error("Collection timeout after 35s")),
+						COLLECTION_TIMEOUT_MS,
 					),
 				),
 			]);

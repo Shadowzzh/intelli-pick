@@ -135,18 +135,20 @@ export const sources: SourceConfig[] = [
 		type: "rss",
 		enabled: true,
 		fetchInterval: INFOQ_INTERVAL,
+		scheduleMinute: 5,
 		config: {
-			url: createRssHubUrl("infoq/recommend"),
+			url: createRssHubUrl("infoq/recommend?limit=10"),
 			useProxy: false,
 		},
 	},
 	{
 		name: NAMES.GEEKPARK,
 		type: "rss",
-		enabled: true, // 禁用原因：网站存在 TLS/SSL 连接问题（Client network socket disconnected before secure TLS connection was established）
+		enabled: true,
 		fetchInterval: GEEKPARK_INTERVAL,
+		scheduleMinute: 10,
 		config: {
-			url: createRssHubUrl("geekpark"),
+			url: "https://www.geekpark.net/rss",
 			useProxy: false,
 		},
 	},

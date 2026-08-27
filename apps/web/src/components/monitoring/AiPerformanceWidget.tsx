@@ -13,6 +13,13 @@ interface AiPerformanceWidgetProps {
 }
 
 const numberFormatter = new Intl.NumberFormat("zh-CN");
+const compactNumberFormatter = new Intl.NumberFormat("zh-CN", {
+	notation: "compact",
+	maximumFractionDigits: 1,
+});
+const decimalFormatter = new Intl.NumberFormat("zh-CN", {
+	maximumFractionDigits: 1,
+});
 
 function formatNumber(value: number): string {
 	return numberFormatter.format(Math.round(value));
@@ -30,6 +37,35 @@ function formatDuration(value: number | null): string {
 		return "--";
 	}
 	return `${formatNumber(value)}ms`;
+}
+
+function formatCompactNumber(value: number): string {
+	if (Math.abs(value) < 10_000) {
+		return formatNumber(value);
+	}
+	return compactNumberFormatter.format(value);
+}
+
+function formatCompactDuration(value: number | null): string {
+	if (value === null) {
+		return "--";
+	}
+
+	if (value < 1_000) {
+		return `${formatNumber(value)}ms`;
+	}
+
+	const seconds = value / 1_000;
+	if (seconds < 60) {
+		return `${decimalFormatter.format(seconds)}秒`;
+	}
+
+	const minutes = seconds / 60;
+	if (minutes < 60) {
+		return `${decimalFormatter.format(minutes)}分钟`;
+	}
+
+	return `${decimalFormatter.format(minutes / 60)}小时`;
 }
 
 function AiStatusBadge({ successRate }: { successRate: number | null }) {
@@ -126,22 +162,31 @@ export function AiPerformanceWidget({ data }: AiPerformanceWidgetProps) {
 			<AiTaskCard title="过滤服务" data={data.filter} />
 			<AiTaskCard title="实体提取" data={data.extract} />
 
-			<div className="pt-3 border-t grid grid-cols-3 gap-3">
-				<div className="text-center p-2 rounded bg-muted/20">
+			<div className="pt-3 border-t grid min-w-0 grid-cols-2 gap-2">
+				<div
+					className="col-span-full min-w-0 overflow-hidden text-center p-2 rounded bg-muted/20"
+					title={`总 Token：${formatNumber(data.totalTokens)}`}
+				>
 					<div className="text-xs text-muted-foreground">总 Token</div>
-					<div className="text-xl font-bold">
-						{formatNumber(data.totalTokens)}
+					<div className="truncate whitespace-nowrap text-xl font-bold tabular-nums">
+						{formatCompactNumber(data.totalTokens)}
 					</div>
 				</div>
-				<div className="text-center p-2 rounded bg-muted/20">
+				<div
+					className="min-w-0 overflow-hidden text-center p-2 rounded bg-muted/20"
+					title={`平均响应：${formatDuration(data.avgResponseTime)}`}
+				>
 					<div className="text-xs text-muted-foreground">平均响应</div>
-					<div className="text-xl font-bold">
-						{formatDuration(data.avgResponseTime)}
+					<div className="truncate whitespace-nowrap text-lg font-bold tabular-nums">
+						{formatCompactDuration(data.avgResponseTime)}
 					</div>
 				</div>
-				<div className="text-center p-2 rounded bg-muted/20">
+				<div
+					className="min-w-0 overflow-hidden text-center p-2 rounded bg-muted/20"
+					title={`通过率：${formatRate(data.filter.passRate)}`}
+				>
 					<div className="text-xs text-muted-foreground">通过率</div>
-					<div className="text-xl font-bold">
+					<div className="truncate whitespace-nowrap text-lg font-bold tabular-nums">
 						{formatRate(data.filter.passRate)}
 					</div>
 				</div>
