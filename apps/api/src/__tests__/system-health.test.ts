@@ -18,7 +18,6 @@ function createHealthyInput(
 		sourceDelayed: 0,
 		sourceErrors: 0,
 		sourcePending: 0,
-		filterSuccessRate: 1,
 		extractSuccessRate: 1,
 		apiRequestCount: 20,
 		apiErrorRate: 0,
@@ -42,7 +41,7 @@ describe("system health", () => {
 			"warning",
 		);
 		expect(
-			deriveSystemStatus(createHealthyInput({ filterSuccessRate: 0.9 })),
+			deriveSystemStatus(createHealthyInput({ extractSuccessRate: 0.9 })),
 		).toBe("warning");
 	});
 

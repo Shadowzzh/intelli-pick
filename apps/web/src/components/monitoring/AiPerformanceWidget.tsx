@@ -159,35 +159,34 @@ export function AiPerformanceWidget({ data }: AiPerformanceWidgetProps) {
 			icon={<Zap className="h-4 w-4" />}
 			contentClassName="space-y-3"
 		>
-			<AiTaskCard title="过滤服务" data={data.filter} />
-			<AiTaskCard title="实体提取" data={data.extract} />
+			<AiTaskCard title="实体提取与分类" data={data.extract} />
 
 			<div className="pt-3 border-t grid min-w-0 grid-cols-2 gap-2">
 				<div
 					className="col-span-full min-w-0 overflow-hidden text-center p-2 rounded bg-muted/20"
-					title={`总 Token：${formatNumber(data.totalTokens)}`}
+					title={`总 Token：${formatNumber(data.extract.totalTokens)}`}
 				>
 					<div className="text-xs text-muted-foreground">总 Token</div>
 					<div className="truncate whitespace-nowrap text-xl font-bold tabular-nums">
-						{formatCompactNumber(data.totalTokens)}
+						{formatCompactNumber(data.extract.totalTokens)}
 					</div>
 				</div>
 				<div
 					className="min-w-0 overflow-hidden text-center p-2 rounded bg-muted/20"
-					title={`平均响应：${formatDuration(data.avgResponseTime)}`}
+					title={`平均响应：${formatDuration(data.extract.avgResponseTime)}`}
 				>
 					<div className="text-xs text-muted-foreground">平均响应</div>
 					<div className="truncate whitespace-nowrap text-lg font-bold tabular-nums">
-						{formatCompactDuration(data.avgResponseTime)}
+						{formatCompactDuration(data.extract.avgResponseTime)}
 					</div>
 				</div>
 				<div
 					className="min-w-0 overflow-hidden text-center p-2 rounded bg-muted/20"
-					title={`通过率：${formatRate(data.filter.passRate)}`}
+					title={`成功率：${formatRate(data.extract.successRate)}`}
 				>
-					<div className="text-xs text-muted-foreground">通过率</div>
+					<div className="text-xs text-muted-foreground">成功率</div>
 					<div className="truncate whitespace-nowrap text-lg font-bold tabular-nums">
-						{formatRate(data.filter.passRate)}
+						{formatRate(data.extract.successRate)}
 					</div>
 				</div>
 			</div>

@@ -4,7 +4,6 @@ import type { PipelineJobResult, RawContent } from "@intellipick/shared";
 import type { AiClient } from "../lib/ai";
 import { createLogger, createRequestLogger } from "../lib/logger";
 import { AiExtractStep } from "./ai-extract";
-import { AiFilterStep } from "./ai-filter";
 import { DedupStep } from "./dedup";
 import { HardFilterStep } from "./hard-filter";
 import { StorageStep } from "./storage";
@@ -30,10 +29,14 @@ export class Pipeline {
 
 		this.steps = [
 			new HardFilterStep(config.filter.hardRules),
-			new AiFilterStep(ai, config.filter),
+			new DedupStep(),
 			new AiExtractStep(ai, sourceNames),
 			new StorageStep(config.filter),
 		];
+	}
+
+	getStepNames(): string[] {
+		return this.steps.map((step) => step.name);
 	}
 
 	async process(

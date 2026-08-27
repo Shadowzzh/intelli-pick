@@ -27,7 +27,6 @@ export interface SystemStatusInput {
 	sourceDelayed: number;
 	sourceErrors: number;
 	sourcePending: number;
-	filterSuccessRate: number | null;
 	extractSuccessRate: number | null;
 	apiRequestCount: number;
 	apiErrorRate: number;
@@ -53,15 +52,8 @@ export function deriveSystemStatus(
 		return "error";
 	}
 
-	let aiNeedsAttention = false;
-	for (const successRate of [
-		input.filterSuccessRate,
-		input.extractSuccessRate,
-	]) {
-		if (successRate !== null && successRate < 0.95) {
-			aiNeedsAttention = true;
-		}
-	}
+	const aiNeedsAttention =
+		input.extractSuccessRate !== null && input.extractSuccessRate < 0.95;
 
 	if (
 		input.queueFailed > 10 ||
@@ -146,7 +138,6 @@ export class MonitoringService {
 			sourceDelayed: sourceSummary.delayed,
 			sourceErrors: sourceSummary.error,
 			sourcePending: sourceSummary.pending,
-			filterSuccessRate: params.aiPerformance.filter.successRate,
 			extractSuccessRate: params.aiPerformance.extract.successRate,
 			apiRequestCount: params.systemResources.api.requestCount,
 			apiErrorRate: params.systemResources.api.errorRate,
@@ -198,7 +189,6 @@ export class MonitoringService {
 	 */
 	private async getAiPerformance(): Promise<AiPerformanceMetrics> {
 		const metrics = await this.jobHistoryService.getAiPerformance(24);
-		this.addConfiguredTaskInfo(metrics.filter, "filter");
 		this.addConfiguredTaskInfo(metrics.extract, "extractAndClassify");
 		return metrics;
 	}

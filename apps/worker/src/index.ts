@@ -14,7 +14,7 @@ import { createQueue, createWorker } from "./worker";
 const logger = createLogger("main");
 
 async function main() {
-	logger.info("Starting AI Filter...");
+	logger.info("Starting IntelliPick Worker...");
 
 	const config = await loadConfig("../../config.ts");
 	logger.info({ sources: config.sources.length }, "Loaded config");

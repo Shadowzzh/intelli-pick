@@ -71,13 +71,17 @@ NAS 原配置：
 - Provider：`codex`
 - 协议：OpenAI Responses
 
-2026-08-27 起，过滤与实体提取切换为：
+2026-08-27 起，过滤与实体提取曾切换为：
 
 - 过滤：`deepseek-v4-flash`
 - 实体提取：`deepseek-v4-flash`
 - Provider：`volcAgentPlan`
 - 协议：OpenAI Chat Completions
 - AI Chat 保持 `codex` 与 `gpt-5.6-luna`
+
+随后活动内容 Pipeline 移除 AI Filter。当前普通内容只调用一次
+`extractAndClassify`，监控页只展示“实体提取与分类”。近 24 小时 API
+仍会保留切换前的过滤历史指标，但前端不再展示；窗口过期后过滤调用自然归零。
 
 两个任务可通过环境变量独立切换：
 
@@ -102,7 +106,7 @@ AI_EXTRACT_AND_CLASSIFY_MODEL=deepseek-v4-flash
 
 ## 数据流
 
-1. `AiFilterStep` 和 `AiExtractStep` 记录调用结果、耗时、token 和模型信息。
+1. `AiExtractStep` 记录调用结果、耗时、token 和模型信息。
 2. `Pipeline.process()` 将本次内容处理的指标返回给 BullMQ Worker。
 3. Worker 把完整结果写入现有 `job_history.return_value` JSONB。
 4. API 查询最近 24 小时的任务结果并聚合。
@@ -121,7 +125,7 @@ AI_EXTRACT_AND_CLASSIFY_MODEL=deepseek-v4-flash
 
 ## 上线验证
 
-2026-08-26 使用一条尚未处理的真实 Block Beats 快讯完成端到端验证：
+2026-08-26 曾使用一条尚未处理的真实 Block Beats 快讯完成双阶段端到端验证：
 
 - URL：`https://www.theblockbeats.info/flash/363720`
 - 过滤模型：`gpt-5.6-luna`

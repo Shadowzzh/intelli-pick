@@ -153,14 +153,6 @@ export class AiExtractStep implements PipelineStep {
 		const log = stepLogger || logger;
 		const { raw, sourceNames } = ctx;
 
-		// 如果是 quarantine，跳过提取
-		if (ctx.filterResult?.decision === "quarantine") {
-			return {
-				status: StepStatus.Continue,
-				context: ctx,
-			};
-		}
-
 		const taskInfo = this.ai.getTaskInfo("extractAndClassify");
 		const startedAt = Date.now();
 

@@ -1,5 +1,5 @@
 // apps/api/src/lib/dedup.ts
-import { contents, db, quarantine } from "@intellipick/db";
+import { contents, db } from "@intellipick/db";
 import type { RawContent } from "@intellipick/shared";
 import { type SQL, and, eq, inArray, or } from "drizzle-orm";
 import { createLogger } from "./logger";
@@ -24,7 +24,6 @@ export async function filterExistingContent(
 		externalIdsBySource.set(item.sourceId, ids);
 	}
 	const contentIdentityConditions: SQL[] = [];
-	const quarantineIdentityConditions: SQL[] = [];
 	for (const [sourceId, externalIds] of externalIdsBySource) {
 		contentIdentityConditions.push(
 			and(
@@ -32,36 +31,16 @@ export async function filterExistingContent(
 				inArray(contents.externalId, externalIds),
 			) as SQL,
 		);
-		quarantineIdentityConditions.push(
-			and(
-				eq(quarantine.sourceId, sourceId),
-				inArray(quarantine.externalId, externalIds),
-			) as SQL,
-		);
 	}
 
-	const [existingContents, existingQuarantine] = await Promise.all([
-		db
-			.select({
-				sourceId: contents.sourceId,
-				url: contents.url,
-				externalId: contents.externalId,
-			})
-			.from(contents)
-			.where(or(inArray(contents.url, urls), ...contentIdentityConditions)),
-		db
-			.select({
-				sourceId: quarantine.sourceId,
-				url: quarantine.url,
-				externalId: quarantine.externalId,
-			})
-			.from(quarantine)
-			.where(
-				or(inArray(quarantine.url, urls), ...quarantineIdentityConditions),
-			),
-	]);
-
-	const existing = [...existingContents, ...existingQuarantine];
+	const existing = await db
+		.select({
+			sourceId: contents.sourceId,
+			url: contents.url,
+			externalId: contents.externalId,
+		})
+		.from(contents)
+		.where(or(inArray(contents.url, urls), ...contentIdentityConditions));
 	const existingUrls = new Set(existing.map((item) => item.url));
 	const existingIdentities = new Set(
 		existing.map((item) => `${item.sourceId}\0${item.externalId}`),

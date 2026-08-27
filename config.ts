@@ -165,8 +165,8 @@ export default defineConfig({
 	filter: {
 		hardRules: {
 			enabled: true, // 启用硬规则过滤
-			blacklistDomains: ["bit.ly/spam"], // 黑名单域名
-			spamKeywords: ["微信群", "返利", "优惠码", "开户", "代投", "包赚"], // 垃圾内容关键词
+			blacklistDomains: [], // 只保留技术性校验，不做语义拦截
+			spamKeywords: [], // 福利、群组、优惠等内容允许正常入库
 		},
 		thresholds: {
 			passMinValueScore: 50, // 达到此分数才允许通过
