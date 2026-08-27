@@ -7,11 +7,13 @@
 - 总内容数：`contents` 表的实时总行数。
 - 今日新增：按 `contents.created_at` 统计上海时间当日新入库内容。
 - 队列中任务：BullMQ 当前 `waiting + active` 数量。
-- 系统状态：综合数据库、Redis、队列、数据源、AI 和 API 指标。
+- Worker 数：通过 BullMQ `Queue.getWorkers()` 读取 Redis 中注册的 Worker，队列空闲时仍能识别在线 Worker。
+- 系统状态：综合数据库、Redis、Worker、队列、数据源、AI 和 API 指标。
 
 系统状态为“异常”的条件：
 
 - 数据库或 Redis 无法连接。
+- 存在启用的数据源但没有注册中的 Worker。
 - 队列失败数超过 50，或等待数超过 500。
 - 全部启用数据源均处于错误状态。
 - API 至少有 5 个样本且服务端错误率不低于 20%。
@@ -47,3 +49,9 @@ API 指标保存在 API 进程内存中，使用最近 10 分钟滚动窗口：
 - `/socket.io` 实时连接请求。
 
 API 容器重启后窗口数据从零重新累计，不写入数据库。
+
+## Worker 外部心跳
+
+Worker 可选向 Uptime Kuma Push monitor 周期上报心跳。Push URL 只保存在生产环境变量中，不写入仓库；未配置时心跳功能保持关闭。
+
+环境变量和验证方法见 [`worker-heartbeat.md`](worker-heartbeat.md)。

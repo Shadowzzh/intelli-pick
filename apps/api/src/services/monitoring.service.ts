@@ -22,6 +22,7 @@ export interface SystemStatusInput {
 	redisConnected: boolean;
 	queueWaiting: number;
 	queueFailed: number;
+	workerTotal: number;
 	sourceTotal: number;
 	sourceDisabled: number;
 	sourceDelayed: number;
@@ -40,12 +41,14 @@ export function deriveSystemStatus(
 	}
 
 	const activeSources = input.sourceTotal - input.sourceDisabled;
+	const workerMissing = activeSources > 0 && input.workerTotal === 0;
 	const allActiveSourcesFailed =
 		activeSources > 0 && input.sourceErrors >= activeSources;
 	const apiHasEnoughSamples = input.apiRequestCount >= 5;
 	if (
 		input.queueFailed > 50 ||
 		input.queueWaiting > 500 ||
+		workerMissing ||
 		allActiveSourcesFailed ||
 		(apiHasEnoughSamples && input.apiErrorRate >= 0.2)
 	) {
@@ -133,6 +136,7 @@ export class MonitoringService {
 			redisConnected: params.systemResources.redis.status === "connected",
 			queueWaiting,
 			queueFailed,
+			workerTotal: params.queueStats.workers.total,
 			sourceTotal: sourceSummary.total,
 			sourceDisabled: sourceSummary.disabled,
 			sourceDelayed: sourceSummary.delayed,

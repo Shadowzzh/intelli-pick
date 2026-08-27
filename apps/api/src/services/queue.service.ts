@@ -35,11 +35,10 @@ export class QueueService {
 			};
 		}
 
-		// 获取队列指标
-		const queueMetrics = await this.getQueueMetrics();
-
-		// 获取 worker 统计（估算值，因为 API 无法直接访问 Worker 实例）
-		const workerStats = await this.getWorkerStats();
+		const [queueMetrics, workerStats] = await Promise.all([
+			this.getQueueMetrics(),
+			this.getWorkerStats(),
+		]);
 
 		return {
 			success: true,
@@ -104,22 +103,19 @@ export class QueueService {
 	}
 
 	/**
-	 * 获取 worker 统计
-	 * 注意：由于 BullMQ 的 worker 是独立进程，这里使用 Redis 来估算
+	 * 获取 BullMQ 当前注册的 Worker 和正在处理的任务数量
 	 */
 	private async getWorkerStats(): Promise<WorkerStats> {
 		if (!this.queue) {
 			return { active: 0, total: 0 };
 		}
 
-		// 使用 active 任务数量作为估算
-		// 注意：这不是精确的 worker 数量，而是一个近似值
-		const counts = await this.queue.getJobCounts("active");
+		const [workers, counts] = await Promise.all([
+			this.queue.getWorkers(),
+			this.queue.getJobCounts("active"),
+		]);
 
-		return {
-			active: counts.active, // 使用 active 任务数作为近似
-			total: counts.active, // 同样使用 active 任务数
-		};
+		return deriveWorkerStats(workers.length, counts.active);
 	}
 
 	/**
@@ -251,6 +247,16 @@ export class QueueService {
 			this.queue = null;
 		}
 	}
+}
+
+export function deriveWorkerStats(
+	totalWorkers: number,
+	activeJobs: number,
+): WorkerStats {
+	return {
+		total: totalWorkers,
+		active: Math.min(totalWorkers, activeJobs),
+	};
 }
 
 export function parseRedisMemoryInfo(info: string): {

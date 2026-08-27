@@ -34,6 +34,13 @@ const BooleanStringSchema = z
 	.enum(["true", "false"])
 	.transform((value) => value === "true");
 
+const OptionalUrlSchema = z.preprocess((value) => {
+	if (typeof value === "string" && value.trim() === "") {
+		return undefined;
+	}
+	return value;
+}, z.string().url().optional());
+
 export const env = createEnv({
 	server: {
 		// 环境
@@ -62,6 +69,19 @@ export const env = createEnv({
 		// Worker 启动行为
 		CLEAR_QUEUE_ON_START: BooleanStringSchema.default("false"),
 		RUN_INITIAL_COLLECTION: BooleanStringSchema.default("false"),
+		UPTIME_KUMA_PUSH_URL: OptionalUrlSchema,
+		UPTIME_KUMA_PUSH_INTERVAL_SECONDS: z.coerce
+			.number()
+			.int()
+			.min(20)
+			.max(3600)
+			.default(30),
+		UPTIME_KUMA_PUSH_TIMEOUT_MS: z.coerce
+			.number()
+			.int()
+			.min(1000)
+			.max(60000)
+			.default(10000),
 
 		// AI Providers
 		DEEPSEEK_API_KEY: z.string().min(1).optional(),

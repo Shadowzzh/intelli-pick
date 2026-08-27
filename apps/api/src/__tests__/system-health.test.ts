@@ -13,6 +13,7 @@ function createHealthyInput(
 		redisConnected: true,
 		queueWaiting: 0,
 		queueFailed: 0,
+		workerTotal: 1,
 		sourceTotal: 12,
 		sourceDisabled: 1,
 		sourceDelayed: 0,
@@ -34,6 +35,12 @@ describe("system health", () => {
 		expect(
 			deriveSystemStatus(createHealthyInput({ redisConnected: false })),
 		).toBe("error");
+	});
+
+	it("returns error when active sources have no registered worker", () => {
+		expect(deriveSystemStatus(createHealthyInput({ workerTotal: 0 }))).toBe(
+			"error",
+		);
 	});
 
 	it("returns warning for source or AI degradation", () => {

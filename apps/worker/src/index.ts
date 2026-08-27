@@ -8,6 +8,7 @@ import { createAiClient } from "./lib/ai";
 import { createLogger } from "./lib/logger";
 import { initializeProxy } from "./lib/proxy";
 import { syncSources } from "./lib/sources";
+import { startUptimeKumaHeartbeat } from "./lib/uptime-heartbeat";
 import { SourceScheduler } from "./scheduler";
 import { createQueue, createWorker } from "./worker";
 
@@ -39,6 +40,21 @@ async function main() {
 	}
 
 	const worker = createWorker(env.REDIS_URL, config, ai);
+	let uptimeHeartbeat: ReturnType<typeof startUptimeKumaHeartbeat> | undefined;
+	if (env.UPTIME_KUMA_PUSH_URL) {
+		uptimeHeartbeat = startUptimeKumaHeartbeat({
+			pushUrl: env.UPTIME_KUMA_PUSH_URL,
+			intervalMs: env.UPTIME_KUMA_PUSH_INTERVAL_SECONDS * 1000,
+			timeoutMs: env.UPTIME_KUMA_PUSH_TIMEOUT_MS,
+			logger,
+		});
+		logger.info(
+			{ intervalSeconds: env.UPTIME_KUMA_PUSH_INTERVAL_SECONDS },
+			"Uptime Kuma Worker heartbeat enabled",
+		);
+	} else {
+		logger.info("Uptime Kuma Worker heartbeat disabled");
+	}
 	let jobsRuntime: ReturnType<typeof createJobsRuntime> | undefined;
 
 	if (config.jobs?.enabled) {
@@ -80,6 +96,7 @@ async function main() {
 	// 优雅关闭
 	process.on("SIGTERM", async () => {
 		logger.info("Shutting down...");
+		uptimeHeartbeat?.stop();
 		scheduler.stop();
 		jobsRuntime?.stopScheduler();
 		await worker.close();
