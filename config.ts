@@ -26,6 +26,37 @@ function parseCorsOrigin(value: string | undefined): string | string[] {
 
 const isProduction = process.env.NODE_ENV === "production";
 const legacySub2ApiModel = process.env.SUB2API_MODEL;
+const filterProvider = process.env.AI_FILTER_PROVIDER?.trim() || "codex";
+const extractProvider =
+	process.env.AI_EXTRACT_AND_CLASSIFY_PROVIDER?.trim() || "codex";
+
+function resolveAiTaskModel(
+	provider: string,
+	explicitModel: string | undefined,
+	codexModel: string,
+): string {
+	const model = explicitModel?.trim();
+	if (model) {
+		return model;
+	}
+	if (provider === "volcAgentPlan") {
+		return "deepseek-v4-flash";
+	}
+	return codexModel;
+}
+
+const filterModel = resolveAiTaskModel(
+	filterProvider,
+	process.env.AI_FILTER_MODEL,
+	process.env.SUB2API_FILTER_MODEL || legacySub2ApiModel || "gpt-5.6-luna",
+);
+const extractModel = resolveAiTaskModel(
+	extractProvider,
+	process.env.AI_EXTRACT_AND_CLASSIFY_MODEL,
+	process.env.SUB2API_EXTRACT_AND_CLASSIFY_MODEL ||
+		legacySub2ApiModel ||
+		"gpt-5.6-terra",
+);
 
 export default defineConfig({
 	ai: {
@@ -44,6 +75,13 @@ export default defineConfig({
 				baseUrlEnv: "DEEPSEEK_BASE_URL",
 				apiKeyEnv: "DEEPSEEK_API_KEY",
 			},
+			volcAgentPlan: {
+				type: "openai",
+				protocol: "chat-completions",
+				baseUrl: "https://ark.cn-beijing.volces.com/api/plan/v3",
+				baseUrlEnv: "VOLC_AGENT_PLAN_BASE_URL",
+				apiKeyEnv: "VOLC_AGENT_PLAN_API_KEY",
+			},
 			anthropic: {
 				type: "anthropic",
 				baseUrl: "https://open.bigmodel.cn/api/anthropic/v1",
@@ -53,18 +91,12 @@ export default defineConfig({
 		},
 		tasks: {
 			filter: {
-				provider: "codex",
-				model:
-					process.env.SUB2API_FILTER_MODEL ||
-					legacySub2ApiModel ||
-					"gpt-5.6-luna",
+				provider: filterProvider,
+				model: filterModel,
 			},
 			extractAndClassify: {
-				provider: "codex",
-				model:
-					process.env.SUB2API_EXTRACT_AND_CLASSIFY_MODEL ||
-					legacySub2ApiModel ||
-					"gpt-5.6-terra",
+				provider: extractProvider,
+				model: extractModel,
 			},
 			chat: {
 				provider: "codex",
@@ -137,12 +169,11 @@ export default defineConfig({
 			spamKeywords: ["微信群", "返利", "优惠码", "开户", "代投", "包赚"], // 垃圾内容关键词
 		},
 		thresholds: {
-			passMinValueScore: 60, // 及格分数线
-			rejectMaxValueScore: 40, // 拒绝分数线
+			passMinValueScore: 50, // 达到此分数才允许通过
+			rejectMaxValueScore: 29, // 不高于此分数可直接拒绝
 			quarantineOnSafety: true, // 安全性低于阈值时隔离
-			rejectToQuarantineMinScore: 30, // 拒绝但保留观察的最低分数
 		},
-		promptVersion: "v1.0", // 使用的提示词版本
+		promptVersion: "v2.0", // 使用的提示词版本
 		quarantineTTLDays: 30, // 隔离内容保存天数
 	},
 });

@@ -63,13 +63,42 @@
 - `provider`：任务配置使用的 provider。
 - `protocol`：`responses`、`chat-completions` 或 `anthropic`。
 
-当前 NAS 配置：
+NAS 原配置：
 
 - 过滤：`gpt-5.6-luna`
 - 实体提取：`gpt-5.6-terra`
 - AI Chat：`gpt-5.6-luna`
 - Provider：`codex`
 - 协议：OpenAI Responses
+
+2026-08-27 起，过滤与实体提取切换为：
+
+- 过滤：`deepseek-v4-flash`
+- 实体提取：`deepseek-v4-flash`
+- Provider：`volcAgentPlan`
+- 协议：OpenAI Chat Completions
+- AI Chat 保持 `codex` 与 `gpt-5.6-luna`
+
+两个任务可通过环境变量独立切换：
+
+```text
+AI_FILTER_PROVIDER=volcAgentPlan
+AI_FILTER_MODEL=deepseek-v4-flash
+AI_EXTRACT_AND_CLASSIFY_PROVIDER=volcAgentPlan
+AI_EXTRACT_AND_CLASSIFY_MODEL=deepseek-v4-flash
+```
+
+回退到原模型时，将 Provider 分别改为 `codex`，并把模型恢复为
+`gpt-5.6-luna` 与 `gpt-5.6-terra`。Agent Plan 凭据只保存在部署环境，
+不写入仓库。
+
+切换前使用 3 条真实内容与 2 条合成安全样本完成隔离测试：
+
+- 过滤 5/5 次通过结构化 Schema 校验。
+- 实体提取 3/3 次通过结构化 Schema 校验。
+- 3 条真实内容的过滤决策与一级分类全部一致。
+- 同样本过滤平均耗时降低约 33%，Token 减少约 60%。
+- 同样本实体提取平均耗时降低约 42%，Token 减少约 39%。
 
 ## 数据流
 

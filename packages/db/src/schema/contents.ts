@@ -5,7 +5,14 @@
  * 用于存储通过所有过滤步骤的有价值内容。
  * 这些内容已经通过去重、硬规则过滤、AI 质量评分和实体提取等完整流程。
  */
-import { index, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+	index,
+	jsonb,
+	pgTable,
+	text,
+	timestamp,
+	uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 import { sources } from "./sources";
 
@@ -108,6 +115,10 @@ export const contents = pgTable(
 		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 	},
 	(table) => ({
+		sourceExternalUnique: uniqueIndex("contents_source_external_unique").on(
+			table.sourceId,
+			table.externalId,
+		),
 		// Indexes for performance optimization
 		publishedAtIdx: index("idx_contents_published_at").on(table.publishedAt),
 		categoryIdx: index("idx_contents_category").on(table.category),

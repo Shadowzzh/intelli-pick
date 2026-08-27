@@ -63,12 +63,11 @@ async function main() {
 	const aiFilterStep = new AiFilterStep(ai, {
 		hardRules: { enabled: false, blacklistDomains: [], spamKeywords: [] },
 		thresholds: {
-			passMinValueScore: 30,
-			rejectMaxValueScore: 15,
+			passMinValueScore: 50,
+			rejectMaxValueScore: 29,
 			quarantineOnSafety: true,
-			rejectToQuarantineMinScore: 30,
 		},
-		promptVersion: "v1.0",
+		promptVersion: "v2.0",
 		quarantineTTLDays: 30,
 	});
 	console.log("   ✅ AI Filter 步骤已创建");

@@ -16,6 +16,7 @@ import { toUTCISOString } from "@intellipick/shared";
 import dayjs from "dayjs";
 import { and, eq } from "drizzle-orm";
 import type { Logger } from "pino";
+import { recordDuplicateCandidates } from "../lib/duplicate-candidates";
 import { createLogger } from "../lib/logger";
 import {
 	type PipelineContext,
@@ -116,7 +117,20 @@ export class StorageStep implements PipelineStep {
 				// publishedAt 是 UTC ISO 字符串，需要转换为 Date 对象
 				publishedAt: raw.publishedAt ? new Date(raw.publishedAt) : null,
 			})
+			.onConflictDoNothing({
+				target: [contents.sourceId, contents.externalId],
+			})
 			.returning();
+		if (!content) {
+			log.info(
+				{ url: raw.url, sourceId: raw.sourceId, externalId: raw.externalId },
+				"Skipped concurrent duplicate content",
+			);
+			return {
+				status: StepStatus.Continue,
+				context: ctx,
+			};
+		}
 
 		log.info(
 			{ url: raw.url, contentId: content.id, title: content.title },
@@ -173,6 +187,27 @@ export class StorageStep implements PipelineStep {
 					sourceId: raw.sourceId,
 				});
 			}
+		}
+
+		try {
+			const duplicateCandidates = await recordDuplicateCandidates({
+				content,
+				sourceName: raw.sourceName,
+			});
+			if (duplicateCandidates.detected > 0) {
+				log.info(
+					{
+						contentId: content.id,
+						...duplicateCandidates,
+					},
+					"Recorded duplicate candidates",
+				);
+			}
+		} catch (error) {
+			log.error(
+				{ contentId: content.id, error },
+				"Failed to record duplicate candidates",
+			);
 		}
 
 		// 发送统计更新事件

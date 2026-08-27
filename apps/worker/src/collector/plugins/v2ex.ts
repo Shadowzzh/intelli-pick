@@ -35,6 +35,7 @@ export const v2exPlugin: CollectorPlugin = {
 
 		return topics.map((topic) => ({
 			sourceType: "v2ex",
+			sourceName: source.name,
 			sourceId: sourceId, // 使用数据库中的 source ID
 			externalId: String(topic.id),
 			title: topic.title,

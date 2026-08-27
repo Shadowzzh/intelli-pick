@@ -58,6 +58,7 @@ export const rssPlugin: CollectorPlugin = {
 
 		return (feed.items || []).map((item) => ({
 			sourceType: "rss",
+			sourceName: source.name,
 			sourceId: sourceId, // 使用数据库中的 source ID
 			externalId: item.guid || item.link || "",
 			title: item.title || null,

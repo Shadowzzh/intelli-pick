@@ -9,6 +9,10 @@ import fastify, { type FastifyInstance } from "fastify";
 import { NoSchemaIntrospectionCustomRule } from "graphql";
 import mercurius from "mercurius";
 import { createGraphQLServer } from "./graphql/index";
+import {
+	ApiMetricsCollector,
+	registerApiMetricsHooks,
+} from "./lib/api-metrics";
 import type { AuthService } from "./lib/auth";
 import { readAuthSession } from "./lib/auth";
 import { UnauthorizedError, handleError } from "./lib/errors";
@@ -40,6 +44,8 @@ export async function createApp(
 		logger: true,
 		trustProxy: true,
 	});
+	const apiMetrics = new ApiMetricsCollector();
+	registerApiMetricsHooks(app, apiMetrics);
 
 	// CORS (从配置文件读取)
 	const corsOrigin = config?.api?.corsOrigin || "*";
@@ -117,6 +123,7 @@ export async function createApp(
 		contentsService,
 		entitiesService,
 		jobHistoryService,
+		apiMetrics,
 		config?.ai,
 	);
 

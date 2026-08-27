@@ -69,7 +69,7 @@ export function OverviewWidget({ data, isLoading }: OverviewWidgetProps) {
 
 				{/* 队列任务 */}
 				<MetricItem
-					label="队列任务"
+					label="队列中任务"
 					value={queueTotal}
 					icon={<Layers className="size-4" />}
 				/>

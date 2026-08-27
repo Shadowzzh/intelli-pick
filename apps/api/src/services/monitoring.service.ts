@@ -4,15 +4,79 @@ import type {
 	AiPerformanceMetrics,
 	AiTaskPerformanceMetrics,
 	MonitoringData,
+	QueueStatsResponseData,
+	SourceHealthResponseData,
 	SystemOverview,
 	SystemResourceMetrics,
 } from "@intellipick/shared";
+import type { ApiMetricsCollector } from "../lib/api-metrics";
 import type { ContentsService } from "./contents.service";
 import type { EntitiesService } from "./entities.service";
 import type { JobHistoryService } from "./job-history.service";
 import type { QueueService } from "./queue.service";
 import type { SourcesService } from "./sources.service";
 import type { StatsService } from "./stats.service";
+
+export interface SystemStatusInput {
+	databaseConnected: boolean;
+	redisConnected: boolean;
+	queueWaiting: number;
+	queueFailed: number;
+	sourceTotal: number;
+	sourceDisabled: number;
+	sourceDelayed: number;
+	sourceErrors: number;
+	sourcePending: number;
+	filterSuccessRate: number | null;
+	extractSuccessRate: number | null;
+	apiRequestCount: number;
+	apiErrorRate: number;
+}
+
+export function deriveSystemStatus(
+	input: SystemStatusInput,
+): SystemOverview["systemStatus"] {
+	if (!input.databaseConnected || !input.redisConnected) {
+		return "error";
+	}
+
+	const activeSources = input.sourceTotal - input.sourceDisabled;
+	const allActiveSourcesFailed =
+		activeSources > 0 && input.sourceErrors >= activeSources;
+	const apiHasEnoughSamples = input.apiRequestCount >= 5;
+	if (
+		input.queueFailed > 50 ||
+		input.queueWaiting > 500 ||
+		allActiveSourcesFailed ||
+		(apiHasEnoughSamples && input.apiErrorRate >= 0.2)
+	) {
+		return "error";
+	}
+
+	let aiNeedsAttention = false;
+	for (const successRate of [
+		input.filterSuccessRate,
+		input.extractSuccessRate,
+	]) {
+		if (successRate !== null && successRate < 0.95) {
+			aiNeedsAttention = true;
+		}
+	}
+
+	if (
+		input.queueFailed > 10 ||
+		input.queueWaiting > 100 ||
+		input.sourceErrors > 0 ||
+		input.sourceDelayed > 0 ||
+		input.sourcePending > 0 ||
+		aiNeedsAttention ||
+		(apiHasEnoughSamples && input.apiErrorRate >= 0.05)
+	) {
+		return "warning";
+	}
+
+	return "healthy";
+}
 
 export class MonitoringService {
 	constructor(
@@ -22,6 +86,7 @@ export class MonitoringService {
 		private contentsService: ContentsService,
 		private entitiesService: EntitiesService,
 		private jobHistoryService: JobHistoryService,
+		private apiMetrics: ApiMetricsCollector,
 		private aiConfig?: AiConfig,
 	) {}
 
@@ -30,19 +95,21 @@ export class MonitoringService {
 	 */
 	async getMonitoringData(): Promise<MonitoringData> {
 		// 并行获取所有监控数据
-		const [
-			overview,
+		const [stats, queueStats, sourcesHealth, aiPerformance, systemResources] =
+			await Promise.all([
+				this.statsService.getStats(),
+				this.getQueueStats(),
+				this.getSourcesHealth(),
+				this.getAiPerformance(),
+				this.getSystemResources(),
+			]);
+		const overview = this.getSystemOverview({
+			stats,
 			queueStats,
 			sourcesHealth,
 			aiPerformance,
 			systemResources,
-		] = await Promise.all([
-			this.getSystemOverview(),
-			this.getQueueStats(),
-			this.getSourcesHealth(),
-			this.getAiPerformance(),
-			this.getSystemResources(),
-		]);
+		});
 
 		return {
 			overview,
@@ -57,31 +124,39 @@ export class MonitoringService {
 	/**
 	 * 获取系统概览统计
 	 */
-	private async getSystemOverview(): Promise<SystemOverview> {
-		const stats = await this.statsService.getStats();
-		const queueStats = this.queueService
-			? await this.queueService.getStats()
-			: null;
-
-		const queueData = queueStats?.data;
-		const queueWaiting = queueData?.queues[0]?.waiting || 0;
-		const queueActive = queueData?.queues[0]?.active || 0;
-		const queueFailed = queueData?.queues[0]?.failed || 0;
-
-		// 判断系统状态
-		let systemStatus: "healthy" | "warning" | "error" = "healthy";
-		if (queueFailed > 10 || queueWaiting > 100) {
-			systemStatus = "warning";
-		}
-		if (queueFailed > 50 || queueWaiting > 500) {
-			systemStatus = "error";
-		}
+	private getSystemOverview(params: {
+		stats: Awaited<ReturnType<StatsService["getStats"]>>;
+		queueStats: QueueStatsResponseData;
+		sourcesHealth: SourceHealthResponseData;
+		aiPerformance: AiPerformanceMetrics;
+		systemResources: SystemResourceMetrics;
+	}): SystemOverview {
+		const queue = params.queueStats.queues[0];
+		const queueWaiting = queue?.waiting || 0;
+		const queueActive = queue?.active || 0;
+		const queueFailed = queue?.failed || 0;
+		const sourceSummary = params.sourcesHealth.summary;
+		const systemStatus = deriveSystemStatus({
+			databaseConnected: params.systemResources.database.status === "connected",
+			redisConnected: params.systemResources.redis.status === "connected",
+			queueWaiting,
+			queueFailed,
+			sourceTotal: sourceSummary.total,
+			sourceDisabled: sourceSummary.disabled,
+			sourceDelayed: sourceSummary.delayed,
+			sourceErrors: sourceSummary.error,
+			sourcePending: sourceSummary.pending,
+			filterSuccessRate: params.aiPerformance.filter.successRate,
+			extractSuccessRate: params.aiPerformance.extract.successRate,
+			apiRequestCount: params.systemResources.api.requestCount,
+			apiErrorRate: params.systemResources.api.errorRate,
+		});
 
 		return {
-			totalContents: stats.totalContents,
-			totalEntities: stats.totalEntities,
-			activeSources: stats.activeSources,
-			todayNew: stats.todayNew,
+			totalContents: params.stats.totalContents,
+			totalEntities: params.stats.totalEntities,
+			activeSources: params.stats.activeSources,
+			todayNew: params.stats.todayNew,
 			queueWaiting,
 			queueActive,
 			systemStatus,
@@ -91,7 +166,7 @@ export class MonitoringService {
 	/**
 	 * 获取队列统计数据
 	 */
-	private async getQueueStats() {
+	private async getQueueStats(): Promise<QueueStatsResponseData> {
 		if (!this.queueService) {
 			return {
 				queues: [],
@@ -99,14 +174,21 @@ export class MonitoringService {
 			};
 		}
 
-		const result = await this.queueService.getStats();
-		return result.data;
+		try {
+			const result = await this.queueService.getStats();
+			return result.data;
+		} catch {
+			return {
+				queues: [],
+				workers: { active: 0, total: 0 },
+			};
+		}
 	}
 
 	/**
 	 * 获取数据源健康状态
 	 */
-	private async getSourcesHealth() {
+	private async getSourcesHealth(): Promise<SourceHealthResponseData> {
 		const result = await this.sourcesService.getHealthStatus();
 		return result.data;
 	}
@@ -160,24 +242,17 @@ export class MonitoringService {
 	 * 获取系统资源使用情况
 	 */
 	private async getSystemResources(): Promise<SystemResourceMetrics> {
-		// TODO: 实现真实的系统资源监控
-		// 可以考虑：
-		// 1. 数据库：通过 Drizzle 或原生查询获取连接池状态
-		// 2. Redis：通过 INFO 命令获取内存使用情况
-		// 3. API：记录请求统计（可以用中间件）
+		const [database, redis] = await Promise.all([
+			this.statsService.getDatabaseHealth(),
+			this.queueService
+				? this.queueService.getRedisHealth()
+				: Promise.resolve({ status: "disconnected" as const }),
+		]);
 
 		return {
-			database: {
-				status: "connected",
-			},
-			redis: {
-				status: this.queueService ? "connected" : "disconnected",
-			},
-			api: {
-				requestCount: 0,
-				avgResponseTime: 0,
-				errorRate: 0,
-			},
+			database,
+			redis,
+			api: this.apiMetrics.getSnapshot(),
 		};
 	}
 }

@@ -1,5 +1,9 @@
 import type { Config } from "@intellipick/config";
-import type { FilterResult } from "@intellipick/shared";
+import type {
+	FilterReason,
+	FilterResult,
+	RawContent,
+} from "@intellipick/shared";
 // apps/api/src/pipeline/ai-filter.ts
 import { generateObject } from "ai";
 import type { Logger } from "pino";
@@ -15,80 +19,121 @@ import {
 } from "./types";
 
 const logger = createLogger("ai-filter");
+const FILTER_TITLE_MAX_CHARS = 200;
+const FILTER_EXCERPT_MAX_CHARS = 300;
 
 const FilterResultSchema = z.object({
 	decision: z.enum(["pass", "reject", "quarantine"]),
-	valueScore: z.number().min(0).max(100),
-	noiseScore: z.number().min(0).max(100),
+	valueScore: z.number().int().min(0).max(100),
+	noiseScore: z.number().int().min(0).max(100),
 	safety: z.object({
-		nsfwSexual: z.number().min(0).max(3),
-		harassment: z.number().min(0).max(3),
-		scam: z.number().min(0).max(3),
+		nsfwSexual: z.number().int().min(0).max(3),
+		harassment: z.number().int().min(0).max(3),
+		scam: z.number().int().min(0).max(3),
 	}),
 	reasons: z.array(z.string()),
 	signals: z.array(z.string()),
 	oneLineWhy: z.string(),
 });
 
-const FILTER_PROMPT = `你是一个内容过滤器。判断以下内容是否应该进入后续处理流程。
+const FILTER_PROMPT = `你是快速内容预筛选器，只判断内容是否值得进入后续分析，不做事实核验。
 
-## 判定优先级
-安全合规 > 信息价值 > 噪声控制
+保留：明确产品、公司、人物或项目的动态；套餐、价格、性能、版本、政策变化；具体问题、风险、经验或解决方案。论坛求助和个人经验只要有明确对象与事件，就不算低价值。
+拒绝：广告导流、重复灌水、纯情绪、无明确对象或无信息增量。
+不确定时返回 quarantine，不要因为没有正文而拒绝信息明确的标题。安全风险始终返回 quarantine。
 
-## 特别规则
-- 短文本不等于低价值
-- 大V对喷若含可验证信息要保留
+评分与决策必须一致：
+- pass：valueScore 50-100
+- quarantine：valueScore 30-49，或真实性不确定、安全待审
+- reject：valueScore 0-29
+- noiseScore 只衡量噪声，0 最低、100 最高
 
-## 判定标准
+返回 decision、valueScore、noiseScore、safety、reasons、signals、oneLineWhy。safety 的 nsfwSexual、harassment、scam 均为 0-3；oneLineWhy 不超过 30 个汉字。
+reasons 使用 AD_SPAM、LOW_SIGNAL、PURE_EMOTION、NSFW_SEXUAL、HARASSMENT、SCAM、DUPLICATE、HAS_EVIDENCE。
+signals 使用 hasNumbers、hasSourceLink、hasNamedEntities、hasConcreteClaim、mentionsProduct、mentionsPerson、hasDataPoint。`;
 
-### quarantine（隔离）
-- 明确色情招嫖、未成年人性相关
-- 强诈骗导流
-- 个人隐私曝光
+function normalizeFilterText(value: string): string {
+	return value.replace(/\s+/g, " ").trim();
+}
 
-### reject（丢弃）
-- 广告导流、重复灌水
-- 纯情绪表达、无对象无事件
-- 无信息增量
+function readHostname(url: string): string {
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return "未知";
+	}
+}
 
-### pass（通过）
-- 有事件、有对象、有线索
-- 出现实体（公司/产品/人物/项目）+ 动作/事件 + 可追踪线索
-- 有爆料、风险提示、反驳证据、数据/截图描述
+export function createLightweightFilterPrompt(raw: RawContent): string {
+	const normalizedTitle = normalizeFilterText(raw.title || "").slice(
+		0,
+		FILTER_TITLE_MAX_CHARS,
+	);
+	const lines = [
+		FILTER_PROMPT,
+		"",
+		"输入：",
+		`标题：${normalizedTitle || "（无标题）"}`,
+		`数据源：${raw.sourceName || raw.sourceType}`,
+		`链接域名：${readHostname(raw.url)}`,
+	];
 
-## 必须返回的字段
+	if (!normalizedTitle) {
+		const excerpt = normalizeFilterText(raw.content).slice(
+			0,
+			FILTER_EXCERPT_MAX_CHARS,
+		);
+		lines.push(`无标题内容片段：${excerpt || "（无可用文本）"}`);
+	}
 
-### decision (必需)
-取值: "pass" | "reject" | "quarantine"
+	return lines.join("\n");
+}
 
-### valueScore (必需)
-信息价值评分，0-100 的整数
+function addReason(result: FilterResult, reason: FilterReason): void {
+	if (!result.reasons.includes(reason)) {
+		result.reasons.push(reason);
+	}
+}
 
-### noiseScore (必需)
-噪声程度评分，0-100 的整数
+export function applyFilterDecisionRules(
+	modelResult: FilterResult,
+	thresholds: Config["filter"]["thresholds"],
+): FilterResult {
+	const result: FilterResult = {
+		...modelResult,
+		reasons: [...modelResult.reasons],
+		signals: [...modelResult.signals],
+	};
 
-### safety (必需)
-安全评估对象，必须包含以下字段：
-- nsfwSexual: 0-3 的整数（0=无，1=暗示，2=明确，3=严重）
-- harassment: 0-3 的整数（0=无，1=轻微，2=中度，3=严重）
-- scam: 0-3 的整数（0=无，1=可疑，2=明确，3=严重）
+	if (thresholds.quarantineOnSafety) {
+		const { safety } = result;
+		if (safety.nsfwSexual >= 2 || safety.harassment >= 2 || safety.scam >= 2) {
+			result.decision = "quarantine";
+			return result;
+		}
+	}
 
-### reasons (必需)
-原因列表，可选值: AD_SPAM, LOW_SIGNAL, PURE_EMOTION, NSFW_SEXUAL, HARASSMENT, SCAM, DUPLICATE, BREAKING_NEWS_STYLE, HAS_EVIDENCE, WATCHLIST_OVERRIDE
+	if (
+		result.decision === "pass" &&
+		result.valueScore < thresholds.passMinValueScore
+	) {
+		addReason(result, "BELOW_VALUE_THRESHOLD");
+		if (result.valueScore <= thresholds.rejectMaxValueScore) {
+			result.decision = "reject";
+		} else {
+			result.decision = "quarantine";
+			addReason(result, "EDGE_CASE_PROTECTION");
+		}
+	} else if (
+		result.decision === "reject" &&
+		result.valueScore > thresholds.rejectMaxValueScore
+	) {
+		result.decision = "quarantine";
+		addReason(result, "EDGE_CASE_PROTECTION");
+	}
 
-### signals (必需)
-信号列表，可选值: hasNumbers, hasSourceLink, hasNamedEntities, hasConcreteClaim, isBreakingStyle, hasCodeBlock, hasQuote, mentionsProduct, mentionsPerson, hasDataPoint
-
-### oneLineWhy (必需)
-一句话解释判定原因
-
-## 输入
-作者: {{author}}
-来源: {{sourceType}}
-内容:
-{{content}}
-
-根据以上规则，输出完整的 JSON 判定结果，确保包含所有必需字段。`;
+	return result;
+}
 
 export class AiFilterStep implements PipelineStep {
 	name = "ai-filter";
@@ -107,60 +152,34 @@ export class AiFilterStep implements PipelineStep {
 		const taskInfo = this.ai.getTaskInfo("filter");
 		const startedAt = Date.now();
 
-		const prompt = FILTER_PROMPT.replace("{{author}}", raw.author || "unknown")
-			.replace("{{sourceType}}", raw.sourceType)
-			.replace("{{content}}", raw.content);
+		const prompt = createLightweightFilterPrompt(raw);
 
 		try {
 			const generation = await generateObject({
 				model: this.ai.getModel("filter"),
 				schema: FilterResultSchema,
 				prompt,
+				maxTokens: 400,
 			});
 
 			const durationMs = Date.now() - startedAt;
-			const result = generation.object as FilterResult;
+			const modelResult = generation.object as FilterResult;
+			const result = applyFilterDecisionRules(
+				modelResult,
+				this.config.thresholds,
+			);
 			log.info(
 				{
 					url: raw.url,
+					modelDecision: modelResult.decision,
 					decision: result.decision,
 					valueScore: result.valueScore,
 					noiseScore: result.noiseScore,
+					inputMode: raw.title?.trim() ? "title" : "excerpt",
 				},
 				"AI filter result",
 			);
 			log.debug({ url: raw.url, result }, "AI filter detailed result");
-
-			// 应用阈值调整
-			if (
-				result.decision === "pass" &&
-				result.valueScore < this.config.thresholds.passMinValueScore
-			) {
-				result.decision = "reject";
-				result.reasons.push("BELOW_VALUE_THRESHOLD");
-			}
-
-			// 安全检查
-			if (this.config.thresholds.quarantineOnSafety) {
-				const { safety } = result;
-				if (
-					safety.nsfwSexual >= 2 ||
-					safety.harassment >= 2 ||
-					safety.scam >= 2
-				) {
-					result.decision = "quarantine";
-				}
-			}
-
-			// 边界情况保护：如果最终决策是 reject 但分数 >= 阈值，改为 quarantine
-			// 这样可以保留可能有价值的内容，避免假阳性
-			if (
-				result.decision === "reject" &&
-				result.valueScore >= this.config.thresholds.rejectToQuarantineMinScore
-			) {
-				result.decision = "quarantine";
-				result.reasons.push("EDGE_CASE_PROTECTION");
-			}
 
 			ctx.filterResult = result;
 			ctx.aiMetrics.filter = createAiCallMetric({

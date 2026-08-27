@@ -6,6 +6,7 @@
 export interface RawContent {
 	// 来源标识
 	sourceType: string; // "twitter" | "rss" | "v2ex"
+	sourceName?: string; // 面向模型和界面展示的数据源名称
 	sourceId: string; // 配置中的 source id
 	externalId: string; // 原平台的唯一 ID
 

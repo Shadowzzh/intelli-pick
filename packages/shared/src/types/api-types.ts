@@ -389,6 +389,7 @@ export interface SystemResourceMetrics {
 		memoryLimit?: number;
 	};
 	api: {
+		windowMinutes: number;
 		requestCount: number;
 		avgResponseTime: number;
 		errorRate: number;

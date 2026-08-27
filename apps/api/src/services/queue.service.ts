@@ -2,6 +2,7 @@ import type {
 	QueueJobFilter,
 	QueueMetrics,
 	QueueStatsResponseData,
+	SystemResourceMetrics,
 	WorkerStats,
 } from "@intellipick/shared";
 // apps/api/src/services/queue.service.ts
@@ -47,6 +48,31 @@ export class QueueService {
 				workers: workerStats,
 			} as QueueStatsResponseData,
 		};
+	}
+
+	async getRedisHealth(): Promise<SystemResourceMetrics["redis"]> {
+		if (!this.queue) {
+			return { status: "disconnected" };
+		}
+
+		try {
+			const client = await this.queue.client;
+			const [ping, memoryInfo] = await Promise.all([
+				client.ping(),
+				client.info("memory"),
+			]);
+			if (ping !== "PONG") {
+				return { status: "disconnected" };
+			}
+
+			const memory = parseRedisMemoryInfo(memoryInfo);
+			return {
+				status: "connected",
+				...memory,
+			};
+		} catch {
+			return { status: "disconnected" };
+		}
 	}
 
 	/**
@@ -225,4 +251,31 @@ export class QueueService {
 			this.queue = null;
 		}
 	}
+}
+
+export function parseRedisMemoryInfo(info: string): {
+	memoryUsage?: number;
+	memoryLimit?: number;
+} {
+	let memoryUsage: number | undefined;
+	let memoryLimit: number | undefined;
+
+	for (const line of info.split("\n")) {
+		const [key, rawValue] = line.trim().split(":", 2);
+		if (!rawValue) {
+			continue;
+		}
+
+		const value = Number.parseInt(rawValue, 10);
+		if (!Number.isFinite(value)) {
+			continue;
+		}
+		if (key === "used_memory") {
+			memoryUsage = value;
+		} else if (key === "maxmemory") {
+			memoryLimit = value;
+		}
+	}
+
+	return { memoryUsage, memoryLimit };
 }

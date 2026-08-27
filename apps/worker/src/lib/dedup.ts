@@ -1,7 +1,7 @@
 // apps/api/src/lib/dedup.ts
-import { contents, db } from "@intellipick/db";
+import { contents, db, quarantine } from "@intellipick/db";
 import type { RawContent } from "@intellipick/shared";
-import { inArray, or } from "drizzle-orm";
+import { type SQL, and, eq, inArray, or } from "drizzle-orm";
 import { createLogger } from "./logger";
 
 const logger = createLogger("dedup");
@@ -16,29 +16,61 @@ export async function filterExistingContent(
 ): Promise<RawContent[]> {
 	if (items.length === 0) return [];
 
-	// 提取所有 URL 和 externalId
 	const urls = items.map((item) => item.url);
-	const externalIds = items.map((item) => item.externalId);
+	const externalIdsBySource = new Map<string, string[]>();
+	for (const item of items) {
+		const ids = externalIdsBySource.get(item.sourceId) || [];
+		ids.push(item.externalId);
+		externalIdsBySource.set(item.sourceId, ids);
+	}
+	const contentIdentityConditions: SQL[] = [];
+	const quarantineIdentityConditions: SQL[] = [];
+	for (const [sourceId, externalIds] of externalIdsBySource) {
+		contentIdentityConditions.push(
+			and(
+				eq(contents.sourceId, sourceId),
+				inArray(contents.externalId, externalIds),
+			) as SQL,
+		);
+		quarantineIdentityConditions.push(
+			and(
+				eq(quarantine.sourceId, sourceId),
+				inArray(quarantine.externalId, externalIds),
+			) as SQL,
+		);
+	}
 
-	// 单次查询检查所有内容
-	const existing = await db.query.contents.findMany({
-		where: or(
-			inArray(contents.url, urls),
-			inArray(contents.externalId, externalIds),
-		),
-		columns: {
-			url: true,
-			externalId: true,
-		},
-	});
+	const [existingContents, existingQuarantine] = await Promise.all([
+		db
+			.select({
+				sourceId: contents.sourceId,
+				url: contents.url,
+				externalId: contents.externalId,
+			})
+			.from(contents)
+			.where(or(inArray(contents.url, urls), ...contentIdentityConditions)),
+		db
+			.select({
+				sourceId: quarantine.sourceId,
+				url: quarantine.url,
+				externalId: quarantine.externalId,
+			})
+			.from(quarantine)
+			.where(
+				or(inArray(quarantine.url, urls), ...quarantineIdentityConditions),
+			),
+	]);
 
-	// 构建已存在内容的 Set（用于快速查找）
-	const existingUrls = new Set(existing.map((e) => e.url));
-	const existingIds = new Set(existing.map((e) => e.externalId));
+	const existing = [...existingContents, ...existingQuarantine];
+	const existingUrls = new Set(existing.map((item) => item.url));
+	const existingIdentities = new Set(
+		existing.map((item) => `${item.sourceId}\0${item.externalId}`),
+	);
 
-	// 过滤出新内容
 	const newItems = items.filter(
-		(item) => !existingUrls.has(item.url) && !existingIds.has(item.externalId),
+		(item) =>
+			!existingUrls.has(item.url) &&
+			!existingIdentities.has(`${item.sourceId}\0${item.externalId}`),
 	);
 
 	logger.info(

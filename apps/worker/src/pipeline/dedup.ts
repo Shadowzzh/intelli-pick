@@ -1,6 +1,6 @@
 // apps/api/src/pipeline/dedup.ts
-import { contents, db } from "@intellipick/db";
-import { eq, or } from "drizzle-orm";
+import { contents, db, quarantine } from "@intellipick/db";
+import { and, eq, or } from "drizzle-orm";
 import type { Logger } from "pino";
 import { createLogger } from "../lib/logger";
 import {
@@ -22,15 +22,28 @@ export class DedupStep implements PipelineStep {
 		const log = stepLogger || logger;
 		const { raw } = ctx;
 
-		// 检查 URL 或 externalId 是否已存在
-		const existing = await db.query.contents.findFirst({
-			where: or(
-				eq(contents.url, raw.url),
-				eq(contents.externalId, raw.externalId),
-			),
-		});
+		const [existingContent, existingQuarantine] = await Promise.all([
+			db.query.contents.findFirst({
+				where: or(
+					eq(contents.url, raw.url),
+					and(
+						eq(contents.sourceId, raw.sourceId),
+						eq(contents.externalId, raw.externalId),
+					),
+				),
+			}),
+			db.query.quarantine.findFirst({
+				where: or(
+					eq(quarantine.url, raw.url),
+					and(
+						eq(quarantine.sourceId, raw.sourceId),
+						eq(quarantine.externalId, raw.externalId),
+					),
+				),
+			}),
+		]);
 
-		if (existing) {
+		if (existingContent || existingQuarantine) {
 			log.debug(
 				{ url: raw.url, externalId: raw.externalId },
 				"Duplicate found, skipping",

@@ -64,6 +64,7 @@ export const twitterPlugin: CollectorPlugin = {
 					for (const tweet of timeline.data.data || []) {
 						results.push({
 							sourceType: "twitter",
+							sourceName: source.name,
 							sourceId: sourceId, // 使用数据库中的 source ID
 							externalId: tweet.id,
 							title: null,
@@ -105,6 +106,7 @@ export const twitterPlugin: CollectorPlugin = {
 						for (const tweet of tweets.data.data || []) {
 							results.push({
 								sourceType: "twitter",
+								sourceName: source.name,
 								sourceId: sourceId, // 使用数据库中的 source ID
 								externalId: tweet.id,
 								title: null,
@@ -138,6 +140,7 @@ export const twitterPlugin: CollectorPlugin = {
 					for (const tweet of listTweets.data.data || []) {
 						results.push({
 							sourceType: "twitter",
+							sourceName: source.name,
 							sourceId: sourceId, // 使用数据库中的 source ID
 							externalId: tweet.id,
 							title: null,
