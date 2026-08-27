@@ -134,7 +134,23 @@ graph LR
 - Redis 7
 - pnpm 9+
 
-### Docker 部署（推荐）
+### NAS 正式发布
+
+Mac mini 从已推送的干净 Git commit 构建 NAS 对应的 AMD64 镜像，通过校验后的镜像归档交付；NAS 只加载并运行版本化镜像，不再使用源码执行构建：
+
+```bash
+scripts/deploy-nas-images.sh
+```
+
+回滚到 NAS 已保留的版本：
+
+```bash
+scripts/rollback-nas-images.sh <commit-sha>
+```
+
+完整的发布边界、manifest 和回滚说明见 [`docs/nas-image-deployment.md`](docs/nas-image-deployment.md)。
+
+### 通用 Docker 部署
 
 ```bash
 # 克隆仓库
@@ -144,7 +160,7 @@ cd intellipick
 # 准备生产环境变量并填写数据库密码、AI Key 等必需配置
 cp .env.example .env.production
 
-# 构建镜像
+# 在目标机器构建镜像
 docker compose --env-file .env.production build
 
 # 首次部署先启动基础设施，再执行一次数据库迁移
